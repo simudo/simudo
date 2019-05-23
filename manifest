@@ -1,9 +1,11 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C add\slink\sto\sdoc
-D 2019-05-23T04:50:46.663
+C add\sLICENSE\sand\sCOPYRIGHT
+D 2019-05-23T20:23:28.243
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
+F COPYRIGHT e4da96c2b20f031ebd05c8ef466d29196f5ee6e96cc4d52d4e4378b6d614f35a
+F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
 F README.md 9301e04909cca379fd10a7e6411a258987f54ab10f6b67fe264a5f1891b13f74
 F build_docs.sh 6a4463cc345d1d531b1daad9cff7f7811c6e4d364de8fd1e6180575061f0e366 x
 F debian-backport-fenics.sh 8df4cb278324b512beb7264f7dc2eff0b02e0485a34796501d3004708402f597 x
@@ -32,7 +34,7 @@ F doc/source/user-guide.rst b6cd87e2f7471f3abaf2cc68786b484cbfa14cda2f9b1d1d79fb
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
 F get_data.sh d7ed4b028cf074d341c7e8b146df28ac1545209307382518064a2bf3911c853b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py 0d2a918eebdca5933a190100c24bcc57553e114964a73d9db9fe95874346e51d
+F setup.py 90b0e1431f2c63ccd6352cce1205c0c9f3508ac6051487d8a138251d62063610
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/pn_benchmark.py 366f2cec3863cdf93cba48750657f6d614a7ccc01f012e3099d2e391facafd4b
@@ -197,16 +199,16 @@ F simudo/util/string_system.py 2b4315e0271987cbdcf3a2eda010a2da0628c25fcc120eca4
 F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6aea4c7
 F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P b1d77a1709ea08083b02d19070ff4f364e16149e6b1f318dc9f28ab962d34ccd
-R cc03eede790ea0e0483393c40e00bc03
+P 20f86310c80d4e0297a27b02cb2878c9d23efa6425aa6e64609858ea8c6b8447
+R 7085cf0e13fefb7a8b9af057edb8f425
 U eduard
-Z bba0376bbac36fcbc924f1ce99695ebf
+Z 079a8502129bdfb1b186be2e6916261b
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXOYmph4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sD8YgD+OFrBpQhJHgOwDWSY
-v5gDuQGHHHNU3y/7KbO+nsXflAQA/0OENuI5Ik5FrGP8R/SNSaYTS01NZz32Ie0X
-7UKP09kH
-=Px07
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXOcBQB4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sD3fwD+Mz2XMvS0fOuuJPka
+sCiGwVKdnDzb6rOqnxxly80sSNgA/jDyuObqz7hHDr1cRcmbnd/50/SFHZTOempT
+9Tv1lzNU
+=WGll
 -----END PGP SIGNATURE-----
