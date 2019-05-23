@@ -1,0 +1,542 @@
+envs:
+  adt:
+    inherit:
+      - default
+    vars:
+      pm: /mesh/product_2d_mesh
+      a: /adt/
+
+fragments:
+  adt_problem_units:
+    env: minimal
+    default_prefix: /
+    defs:
+      /mesh_unit: 'u.dimensionless'
+
+  adt_problem:
+    env: adt
+    default_prefix: /adt/
+    defs:
+      exact/V: None # potential
+      # electric field
+      exact/E: |
+        p.project(_['exact/E_x'] * p.unitvec__x, space.vCG1)
+      exact/g: None # generation
+      exact/u: None # carrier density
+      exact/w: None # quasi-qfl; u = exp(-(w + V))
+      # current
+      exact/j: |
+        p.project(_['exact/j_x'] * p.unitvec__x, space.vCG1)
+      exact/eq/u: None # carrier density
+      # electric field
+      exact/eq/E: |
+        p.project(_['exact/eq/E_x'] * p.unitvec__x, space.vCG1)
+
+      # variables that actually get used; override these to use
+      # different interpolation
+      V: _.exact__V
+      E: _.exact__E
+      g: _.exact__g
+      u: _.exact__u
+      w: _.exact__w
+      j: _.exact__j
+
+      /common/form: 'sum_over_suffix(solution, "/form_contribution")'
+      /common/essential_bcs: 'sum_over_suffix(solution, "/@auto_essential")'
+
+      k: '1'
+
+      exact/u_proj: |
+        p.project(_.exact__u, space.CG1)
+
+      exact/du_proj: |
+        p.project(_.exact__u_proj - _.exact__eq__u, space.CG1)
+
+      exact/j_proj: |
+        p.project(_.exact__j, space.vCG1)
+
+      peclet: |
+        p.sqrt(p.dot(_.E, _.E))*p.h/(_.k*2.)
+
+      damkohler: |
+        p.h/p.sqrt(p.dot(_.E, _.E))
+
+      j1: |
+        _.u*_.E - p.grad(_.u)
+
+      j2_diffu/@clear_on_iteration: 'True'
+      j2_diffu: |
+        p.linterp(-p.grad(_.u), space.vCG1)
+
+      j2_drift/@clear_on_iteration: 'True'
+      j2_drift: |
+        p.linterp(_.u*_.E, space.vCG1)
+
+      j2/@clear_on_iteration: 'True'
+      j2: |
+        _.j2_drift + _.j2_diffu
+
+      j3: |
+        u.dimensionless*p.zerovec
+
+      j_contact_bc/projection_space:
+        'space.vCG1'
+
+      zero_j: p.zerovec * u.dimensionless
+
+      j3_interp/@clear_on_iteration: 'True'
+      j3_interp: |
+        p.linterp(_.j3, space.vCG1)
+
+      compute_surface_avg_j3_x: |
+        lambda dsS: p.average_over_surface(
+          p.dot(p.unitvec__x, _.j3_interp), dsS)
+
+      p_contact_avg_j3: |
+        _.compute_surface_avg_j3_x(g['facet_regions/p_contact/dsS'])
+
+      n_contact_avg_j3: |
+        _.compute_surface_avg_j3_x(g['facet_regions/n_contact/dsS'])
+
+      u/space: 'fsr.get_function_space(_.u.m, new=True)'
+      u_proj: "p.project(_.u, _.u__space)"
+      u_proj/@clear_on_iteration: 'True'
+
+      j_proj: "p.project(_.j, _.j__space)"
+      j_proj/@clear_on_iteration: 'True'
+
+      j_c_CG1proj: "p.project(_.j, space.vCG1)"
+      j_c_CG1proj/@clear_on_iteration: 'True'
+
+      j_c_DG0proj: "p.project(_.j, space.vDG0)"
+      j_c_DG0proj/@clear_on_iteration: 'True'
+
+      j_e_DG0proj: "p.project(_.exact__j, space.vDG0)"
+      j_e_DG0proj/@clear_on_iteration: 'True'
+
+      u_contact_bc_values: |
+        {'/geometry/facet_regions/contacts': _.exact__u_proj}
+
+      du_contact_bc_values: |
+        {'/geometry/facet_regions/contacts': _.exact__du_proj}
+
+      j_contact_bc_values: |
+        {'/geometry/facet_regions/top_bottom': _.exact__j_proj}
+
+    bcs:
+      u_contact_bc:
+        var: '_.u'
+        values: '_.u_contact_bc_values'
+
+      du_contact_bc:
+        var: '_.du'
+        values: '_.du_contact_bc_values'
+
+      j_contact_bc:
+        var: '_.j'
+        values: '_.j_contact_bc_values'
+
+  adt_exact_from_sentaurus:
+    env: adt
+    default_prefix: /adt/
+    defs:
+      exact/V: |
+        pm.create_function_from_x_values(_.sentaurus_df['V'].values)
+        * u.dimensionless
+      exact/E_x: |
+        pm.create_function_from_x_values(_.sentaurus_df['E_x'].values)
+        * u.dimensionless
+      exact/j_x: |
+        pm.create_function_from_x_values(_.sentaurus_df['j_x'].values)
+        * u.dimensionless
+      exact/g: |
+        pm.create_function_from_x_values(_.sentaurus_df['g'].values)
+        * u.dimensionless
+      exact/u: |
+        pm.create_function_from_x_values(_.sentaurus_df['u'].values)
+        * u.dimensionless
+      exact/w: |
+        pm.create_function_from_x_values(_.sentaurus_df['w'].values)
+        * u.dimensionless
+      exact/eq/u: |
+        pm.create_function_from_x_values(_.sentaurus_df_eq['u'].values)
+        * u.dimensionless
+      exact/eq/E_x: |
+        pm.create_function_from_x_values(_.sentaurus_df_eq['E_x'].values)
+        * u.dimensionless
+
+  adt_density_naive:
+    env: adt
+    default_prefix: /adt/
+    defs:
+      degree: '2'
+      naive/form_contribution: |
+        + p.dx*_.v*p.dot(_.E, p.grad(_.u))
+        + p.dx*_.v*_.u*p.div(_.E)
+        + p.dx*p.dot(_.k*p.grad(_.u), p.grad(_.v))
+        - p.dx*_.v*_.g
+
+      u_contact_bc/@auto_essential: _['u_contact_bc/essential']
+
+    trial_test_defs:
+      u:
+        test: v
+        trial_units: 'u.dimensionless'
+        test_units: 'u.dimensionless'
+        element: 'dolfin.FiniteElement("CG", ufl_cell, _.degree)'
+        target_space: /solution_space
+
+  adt_plot_debug:
+    env: adt
+    default_prefix: /adt/@plot/
+    defs:
+      u_e: a.exact__u
+      u_c: a.u
+      u_diff: '_.u_e - _.u_c'
+      u_absdiff: 'abs(_.u_diff)'
+      g: 'a.g'
+      E: 'a.E'
+
+      j_e: 'a.exact__j'
+      j_e_drift: 'a.exact__u * a.E'
+      j_e_diffu: '-p.grad(a.exact__u)'
+
+      j_c1: 'p.project(a.j1, space.vCG1)'
+      j_c1_diffu: 'a.u*a.E'
+      j_c1_drift: '-p.grad(a.u)'
+      j_c1_x_diff: |
+        p.linterp(p.dot(p.project(a.j1, space.vCG1) - a.exact__j,
+          u.dimensionless*p.unitvec__x), space.CG1)
+      j_c1_x_absdiff: |
+        p.linterp(p.abs(p.dot(p.project(a.j1, space.vCG1) - a.exact__j,
+          u.dimensionless*p.unitvec__x)), space.CG1)
+      j_c1_y_diff: |
+        p.linterp(p.dot(p.project(a.j1, space.vCG1) - a.exact__j,
+          u.dimensionless*p.unitvec__y), space.CG1)
+      j_c1_y_absdiff: |
+        p.linterp(p.abs(p.dot(p.project(a.j1, space.vCG1) - a.exact__j,
+          u.dimensionless*p.unitvec__y)), space.CG1)
+
+      j_c2: 'p.project(a.j2, space.vCG1)'
+
+      j_c2_x_absdiff: |
+        p.linterp(p.abs(p.dot(p.project(a.j2, space.vCG1) - a.exact__j,
+          u.dimensionless*p.unitvec__x)), space.CG1)
+
+      j_c3: 'p.project(a.j3, space.vCG1)'
+
+      j_c3_x_absdiff: |
+        p.linterp(p.abs(p.dot(p.project(a.j3, space.vCG1) - a.exact__j,
+          u.dimensionless*p.unitvec__x)), space.CG1)
+
+      E/space: space.vCG1
+
+      j_e/space: space.vCG1
+      j_e_drift/space: space.vCG1
+      j_e_diffu/space: space.vCG1
+
+      j_c1/space: space.vCG1
+      j_c2/space: space.vCG1
+      j_c1_diffu/space: space.vCG1
+      j_c1_drift/space: space.vCG1
+      j_c3/space: space.vCG1
+
+      w: a.qfl_mixed__base_w + a.qfl_mixed__delta_w
+      base_w: a.qfl_mixed__base_w
+      delta_w: a.qfl_mixed__delta_w
+
+      h: p.h
+      peclet: a.peclet
+      damkohler: a.damkohler
+
+  adt_density_mixed_naive:
+    env: adt
+    default_prefix: /adt/density_mixed/
+    defs:
+      degree: '3'
+      u_degree: '_.degree-1'
+      j_degree: '_.degree'
+
+      continuity_g_term: |
+        - p.dx * _.v * _.g
+
+      continuity_j_term: |
+        + p.dx * _.v * p.div(_.j)
+
+      drift_diffusion_j_term: |
+        - p.dx * p.dot(_.phi, _.j)
+
+      drift_diffusion_bc_term: |
+        - _.u_bc_ds * p.dot(_.phi, p.n)
+
+      drift_diffusion_delta_extra_term: '0'
+
+      form_contribution: |
+        + _.continuity_j_term
+        + _.continuity_g_term
+
+        + _.drift_diffusion_j_term
+        + p.dx * _.u * (p.dot(_.phi, _.E) + p.div(_.phi))
+        + _.drift_diffusion_delta_extra_term
+        + _.drift_diffusion_bc_term
+
+      u_bc_ds: "_['../u_contact_bc/natural_unsigned_ds']"
+
+      E: '_["../E"]'
+      g: '_["../g"]'
+
+      actual_density: '_.u'
+
+      ../j:  '_.j'
+      ../j3: '_.j'
+      ../j3/space: '_.j__space'
+      ../u: '_.actual_density'
+
+      j/space: 'fsr.get_function_space(_.j.m, new=True)'
+      ../j/space: '_.j__space'
+
+      j_contact_bc/@auto_essential: _['../j_contact_bc/essential']
+
+    trial_test_defs:
+      u:
+        test: v
+        trial_units: 'u.dimensionless'
+        test_units: 'u.dimensionless'
+        element: 'dolfin.FiniteElement("DG", ufl_cell, _.u_degree)'
+        target_space: /solution_space
+
+      j:
+        test: phi
+        trial_units: 'u.dimensionless'
+        test_units: 'u.dimensionless'
+        element: 'dolfin.FiniteElement("BDM", ufl_cell, _.j_degree)'
+        target_space: /solution_space
+
+  adt_density_mixed_naive_thm_equilibrium:
+    env: adt
+    default_prefix: /adt/density_mixed/
+    defs:
+      continuity_g_term: '0'
+      # continuity_j_term: |
+      #   + p.dx * _.v * p.abs(_.j)
+      # drift_diffusion_j_term: '0'
+      drift_diffusion_delta_extra_term: '0'
+      E: "_['../exact/eq/E']"
+
+  adt_delta_density_mixed_naive:
+    env: adt
+    default_prefix: /adt/density_mixed/
+    defs:
+      # in this formulation, du is the density itself instead
+      ../u_eqdiff: '_.u'
+      actual_density: '_.u + _.u_eq'
+      ../u/space: 'fsr.get_function_space(_.u.m, new=True)'
+
+      # FIXME
+      # u_eq: "_['../u_eq']"
+      # dE: '.E_eqdiff'
+
+      u_bc_ds: "_['../du_contact_bc/natural_unsigned_ds']"
+
+      drift_diffusion_delta_extra_term: |
+        + p.dx*_.u_eq*p.dot(_.phi, _.dE)
+
+      ../u_eq_computed: |
+        fsr.new_independent_function(_.u.magnitude) * u.dimensionless
+
+      # FIXME
+      u_eq: |
+        # _['../u_eq_computed']
+        p.project(_['../exact/eq/u'], space.CG1)
+
+      dE: |
+        p.project(_['../exact/E'] - _['../exact/eq/E'], space.vCG1)
+
+  adt_density_naive_SGS:
+    env: adt
+    default_prefix: /adt/SGS/
+    defs:
+      E: "_['../E']"
+      u: "_['../u']"
+      v: "_['../v']"
+      k: "_['../k']"
+
+      s: "1e-10" # what is this
+      abs_s: "p.sqrt(_.s)"
+      mk: '0.333'
+      vnorm: 'p.sqrt(p.dot(_.E, _.E))'
+      xi: |
+        lambda x: dolfin.conditional(
+          dolfin.le(p.dimensionless(x), 1.),
+          1., p.dimensionless(x)) * p.units(x)
+      term2: |
+        dolfin.conditional(
+          dolfin.le(p.dimensionless(2*_.k/(_.mk*p.h**2)), _.abs_s),
+          _.abs_s, 2*_.k/(_.mk*p.h**2))
+      pe2: '_.mk*_.vnorm*p.h / _.k'
+      residual: |
+        p.dot(_.E, p.grad(_.u)) + p.div(_.k*p.grad(_.u)) - _.g
+      tau: '1./(2*_.k*_.xi(pe2)/(_.mk*p.h**2) + _.term2)'
+      form_contribution: |
+        + p.dx*_.tau*(p.dot(_.E, p.grad(_.v))
+          + _.v*p.div(_.E)
+          + p.div(_.k*p.grad(_.v)))*_.residual
+        + p.dx*_.f*_.v
+
+  adt_qfl_mixed_naive:
+    env: adt
+    default_prefix: /adt/qfl_mixed/
+    defs:
+      # base_x + delta_x = actual_x
+
+      degree: '2'
+      w_degree: '_.degree-1'
+      j_degree: '_.degree'
+
+      continuity_g_term: |
+        - _.dx * _.v * _.g
+
+      drift_diffusion_bc_term: |
+        - _.delta_w_bc_ds * p.dot(_.phi, p.n)
+
+      drift_diffusion_base_w_jump_term: |
+        %
+        if _.base_w_from_majority_bc: return 0
+        w0 = _.base_w
+        return - p.dS*((p.mside(w0) - p.pside(w0))
+                     * p.dot(p.pside(_.phi), p.pside(p.n)))
+
+      drift_diffusion_j_term: |
+        + _.dx * (p.dot(_.phi, _.j)
+          * dolfin.exp(dimensionless(_.base_w + _.delta_w + _.actual_V)))
+
+      drift_diffusion_qfl_term: |
+        + _.dx*p.div(_.phi)*_.delta_w
+
+      form_contribution: |
+        + _.dx * _.v * p.div(_.j)
+        + _.continuity_g_term
+
+        + _.drift_diffusion_bc_term
+        + _.drift_diffusion_j_term
+        + _.drift_diffusion_qfl_term
+        + _.drift_diffusion_base_w_jump_term
+
+      delta_w_bc_ds: "_['delta_w_contact_bc/natural_unsigned_ds']"
+
+      # see doc/advection_diffusion_test.lyx
+      u_conversion_factor: 'u.dimensionless'
+      E_conversion_factor: 'u.dimensionless'
+      V_conversion_factor: 'u.dimensionless'
+      j_conversion_factor: 'u.dimensionless'
+      actual_V:  '_["../V"]'
+      g: '_["../g"]'
+
+      base_w: 'dolfin.Function(space.DG0) * u.dimensionless'
+
+      ## FIXME: can't use facet function because FEniCS can't use
+      ## two different `subdomain_data` in the same form >_>
+      # base_w_jump_ff: |
+      #   dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1, 0)
+
+      # exp(-(V + w)) = u
+      # w = -V - log(u)
+      u_to_w: |
+        lambda u: (-dolfin.ln(dimensionless(u/_.u_conversion_factor))
+                   - _.actual_V)
+
+      dx: 'p.dx'
+
+      u_expr: 'dolfin.exp(-dimensionless(_.base_w + _.delta_w + _.actual_V))'
+
+      # ${b}u/delta: '_.u_expr * _.u_conversion_factor'
+      # ${b}j/delta: '_.j * _.j_conversion_factor'
+
+      # ${b}w/space: "fsc.FunctionSpace(mesh, _.w__element)"
+      # ${b}j/space: "fsc.FunctionSpace(mesh, _.j__element)"
+
+      ../u: '_.u_expr * _.u_conversion_factor'
+      ../u/space: 'space.CG1'
+      ../j:  '_.j * _.j_conversion_factor'
+      ../j3: '_.j * _.j_conversion_factor'
+      ../j3/space: '_.j__space'
+
+      j_contact_bc/@auto_essential: _['../j_contact_bc/essential']
+
+      do_rebase_w: |
+        %def do_rebase_w(new_base_w_value=None):
+          from ..util import offset_partitioning as op
+          dl = dimensionless
+
+          base_w_space = fsr.get_function_space(_.base_w.m, new=True)
+
+          if new_base_w_value is not None:
+            new_base_w = dolfin.project(new_base_w_value, base_w_space)
+          else:
+            # new_base_w = (
+            new_base_w = op.partition_offsets(
+              dolfin.project(dl(_.base_w + _.delta_w), base_w_space))
+
+          new_delta_w = dolfin.project(dl(_.delta_w + _.base_w) - new_base_w,
+            fsr.get_function_space(_.delta_w.m, new=True))
+
+          fsr.assign(target=_.delta_w.m, source=new_delta_w)
+          fsr.assign(target=_.base_w.m, source=new_base_w)
+
+        return do_rebase_w
+      # do_rebase_w/@call_on_iteration: 'True'
+
+      dbg_j_helper_func: |
+        %def func(expr):
+          space = _.j__space
+          trial = dolfin.TrialFunction(space) * (mesh_unit ** -1)
+          phi = dolfin.TestFunction(space) * (mesh_unit ** -2)
+          r = dolfin.Function(space) * (mesh_unit ** -1)
+          e = ((_.dx*p.div(phi)*expr + _.dx*p.dot(trial, phi))
+               .to_ufl().m)
+          dolfin.solve(dolfin.lhs(e) == dolfin.rhs(e), r.m)
+          return r
+        return func
+
+      dbg_j1: |
+        _.dbg_j_helper_func(_.base_w) * _.u_expr * _.j_conversion_factor
+      dbg_j1/@clear_on_iteration: 'True'
+      dbg_j2: |
+        _.dbg_j_helper_func(_.delta_w) * _.u_expr * _.j_conversion_factor
+      dbg_j2/@clear_on_iteration: 'True'
+
+      base_w_from_majority_bc: 'True'
+
+      # dbg_drift1: '(_.u * _.actual_E) * _.j_conversion_factor'
+      # dbg_drift2: ''
+      # dbg_diff: 'p.grad(_.u) * _.j_conversion_factor'
+
+    trial_test_defs:
+      delta_w:
+        test: v
+        trial_units: 'u.dimensionless'
+        test_units: 'mesh_unit ** -1'
+        element: 'dolfin.FiniteElement("DG", ufl_cell, _.w_degree)'
+        target_space: /solution_space
+
+      j:
+        test: phi
+        trial_units: 'mesh_unit ** -1'
+        test_units: 'mesh_unit ** -2'
+        element: 'dolfin.FiniteElement("BDM", ufl_cell, _.j_degree)'
+        target_space: /solution_space
+
+    bcs:
+      delta_w_contact_bc:
+        var: '_.delta_w'
+        values: |
+          %
+          d = {k: -dolfin.ln(dimensionless(v/_.u_conversion_factor))
+              - _.base_w
+              - _.actual_V # FIXME: plug in as constant, at higher precision
+           for k, v in _['../u_contact_bc_values'].items()}
+          if _.base_w_from_majority_bc:
+            d["/geometry/facet_regions/n_contact"] = d.pop("/geometry/facet_regions/contacts")
+            d["/geometry/facet_regions/p_contact"] = p.Constant(0*u.dimensionless)
+          return d
+

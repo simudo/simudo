@@ -1,0 +1,48 @@
+
+- python: |
+    import numpy as np
+    import dolfin
+    import pint
+    from .test import OpticalField
+
+- classes:
+    OpticalModel_:
+      paths:
+        /optics:
+          expr: !cached "_.x + _.y"
+          expr_proj: !cached_proc |
+            a = _.x
+            b = None if a else _.y
+            yield None
+            yield expensive_computation(b)
+
+          fields: !cached_proc |
+            wavelengths = _.wavelengths
+            yield None
+            yield Namespace(
+              {"w={}".format(wavelength) : OpticalField(wavelength)
+               for wavelength in wavelengths})
+
+    OpticalField_:
+      paths:
+        ${}:
+          aa
+
+A: B + 2
+B: expensive_calculation(C)
+C: D
+
+@cached
+def tunneling(band, V):
+  bandE = band.band_edge
+  mu = band.quasi_fermi_level
+
+  yield (bandE, V, mu)
+  yield None
+
+  # ... actually do computation
+  yield result
+
+
+
+/optics/fields/w=544nm,angle=342/asdfsadf

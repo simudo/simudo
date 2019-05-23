@@ -1,0 +1,843 @@
+
+envs:
+  electro:
+    inherit:
+      - default
+    vars:
+      CB: /CB/
+      VB: /VB/
+      IB: /IB/
+      po: /poisson/
+
+  electro_CB:
+    inherit:
+      - electro
+    vars:
+      b: /CB/
+      band_sign: /misc/minus_one
+
+  electro_VB:
+    inherit:
+      - electro
+    vars:
+      b: /VB/
+      band_sign: /misc/plus_one
+
+  electro_IB:
+    inherit:
+      - electro
+    vars:
+      b: /IB/
+      band_sign: /misc/minus_one
+
+fragments:
+  electro_misc:
+    env: electro
+    default_prefix: /misc/
+    defs:
+      minus_one: '-1'
+      plus_one: '+1'
+
+  physics_common:
+    env: electro
+    default_prefix: /common/
+    defs:
+      q_e: 'u.elementary_charge'
+      temperature: '300 * u.kelvin'
+      beta: '1/(_.temperature * u.boltzmann_constant).to(u.eV)'
+      erho_unit: "u('V/mesh_unit ** 2')"
+
+      form: 'sum_over_suffix(solution, "/form_contribution")'
+      essential_bcs: 'sum_over_suffix(solution, "/@auto_essential")'
+
+      unit/E: '1 * (u.V/mesh_unit)'
+      unit/V: '1 * (u.V)'
+      unit/u: '1 * (1/mesh_unit ** 3)'
+      unit/j: '1 * (u.A/mesh_unit ** 2)'
+      unit/rho: '1 * (u.elementary_charge / mesh_unit ** 3)'
+      unit/g: '1 * (1/mesh_unit ** 3 / u.second)'
+
+  poisson_thmeq:
+    env: electro
+    default_prefix: /poisson/
+    defs:
+      static/@delta_rho_contribution: 'c.static_rho'
+
+  poisson:
+    env: electro
+    default_prefix: /poisson/
+    defs:
+      rho/base: p.zero * c.unit__rho
+      rho/delta: 'sum_over_suffix(solution, "/@delta_rho_contribution")'
+      rho: '_.rho__base + _.rho__delta'
+
+      V/base: 'p.zero * c.unit__V'
+      V/delta: 'p.zero * c.unit__V' # override in solution method
+      V: '_.V__base + _.V__delta'
+
+      E/base: '-p.grad(_.V__base)'
+      E/delta: '-p.grad(_.V__delta)'
+      E: '_.E__base + _.E__delta'
+
+      vacuum_permittivity: |
+        8.85418782e-12*u("C/m/V").to("elementary_charge/mesh_unit/V")
+      permittivity: matglobal.permittivity
+
+      delta_V_contact_bc_values: |
+        {k: v - _.V__base
+         for k, v in _.V_contact_bc_values.items()}
+
+      delta_E_contact_bc_values: |
+        {k: v - _.E__base
+         for k, v in _.E_contact_bc_values.items()}
+
+      delta_erho: '(_.rho__delta/_.permittivity).to("V/mesh_unit**2")'
+
+  poisson_CG:
+    env: electro
+    default_prefix: /poisson/CG/
+    defs:
+      degree: '3'
+      ${po}V/delta: _.V
+      form_contribution: |
+        + p.dx*p.dot(p.grad(_.V), p.grad(_.w))
+        # + c.poisson_neumann_E*_.w
+        - p.dx*po.delta_erho*_.w
+
+      V_contact_bc/@auto_essential: "_['V_contact_bc/essential']"
+
+    trial_test_defs:
+      V:
+        test: w
+        trial_units: 'u.volt'
+        test_units: 'u("1/mesh_unit/volt")'
+        target_space: /solution_space
+        element: 'dolfin.FiniteElement("CG", ufl_cell, _.degree)'
+
+    bcs:
+      V_contact_bc:
+        var: '_.V'
+        values: "_['../delta_V_contact_bc_values']"
+
+  poisson_mixed:
+    env: electro
+    default_prefix: /poisson/mixed/
+    defs:
+      degree: '2'
+      ${po}V/delta: _.V
+      ${po}E/delta: _.E
+      form_contribution: |
+        + p.dx*p.dot(_.E, _.psi)
+        - p.dx*_.V*p.div(_.psi)
+        + p.dx*_.w*p.div(_.E)
+        - p.dx*_.w*po.delta_erho
+        + _.V_bc_ds*p.dot(_.psi, p.n)
+
+      V_bc_ds: "_['V_contact_bc/natural_unsigned_ds']"
+      E_contact_bc/@auto_essential: "_['E_contact_bc/essential']"
+
+    trial_test_defs:
+      V:
+        test: w
+        trial_units: 'u.volt'
+        test_units: 'u("1/mesh_unit/volt")'
+        target_space: /solution_space
+        element: 'dolfin.FiniteElement("DG", ufl_cell, _.degree-1)'
+      E:
+        test: psi
+        trial_units: 'u("volt/mesh_unit")'
+        test_units: 'u("1/volt/mesh_unit**2")'
+        target_space: /solution_space
+        element: 'dolfin.FiniteElement("BDM", ufl_cell, _.degree)'
+
+    bcs:
+      V_contact_bc:
+        var: '_.V'
+        values: "_['../delta_V_contact_bc_values']"
+
+      E_contact_bc:
+        var: '_.E'
+        values: "_['../delta_E_contact_bc_values']"
+
+  poisson_charge_neutrality:
+    env: electro
+    default_prefix: /poisson/charge_neutrality/
+    defs:
+      degree: '1'
+      ${po}V/delta: _.V
+      form_contribution: |
+        + p.dx*_.w*po.delta_erho
+
+      E_contact_bc/@auto_essential: "[]"
+
+    trial_test_defs:
+      V:
+        test: w
+        trial_units: 'u.volt'
+        test_units: 'u("1/mesh_unit/volt")'
+        target_space: /solution_space
+        element: 'dolfin.FiniteElement("DG", ufl_cell, _.degree)'
+
+  material_simple_doping:
+    env: electro
+    default_prefix: /material/
+    defs:
+
+      pSi/doping_concentration: 'p.Constant((-1e18*u.cm**-3).to(mesh_unit**-3))'
+      nSi/doping_concentration: 'p.Constant((+1e16*u.cm**-3).to(mesh_unit**-3))'
+
+      Si/permittivity: 'p.Constant(11.7 * po.vacuum_permittivity)'
+
+      Si/VB/DoS: 'p.Constant(((3.2e19)*u.cm**-3).to(mesh_unit**-3))'
+      Si/CB/DoS: 'p.Constant(((1.8e19)*u.cm**-3).to(mesh_unit**-3))'
+
+#      Si/VB/D: 'p.Constant((20 * u.cm**2).to(mesh_unit**2)/u.s)'
+#      Si/CB/D: 'p.Constant((20 * u.cm**2).to(mesh_unit**2)/u.s)'
+
+      Si/VB/edgeE: 'p.Constant( 0.0 * u.eV)'
+      Si/CB/edgeE: 'p.Constant(1.12 * u.eV)'
+
+      Si/CB/SRH_pn_u1: |
+        c.u_i_eff
+      Si/VB/SRH_pn_u1: |
+        c.u_i_eff
+
+      Si/VB/SRH_pn_tau: 'p.Constant(1e-5 * u.s)'
+      Si/CB/SRH_pn_tau: 'p.Constant(1e-5 * u.s)'
+
+      # parameters for band-to-band tunneling
+      Si/VB/eff_mass_tunnel: 'p.Constant(0.05 * u.electron_mass)'
+      Si/CB/eff_mass_tunnel: 'p.Constant(0.35 * u.electron_mass)'
+      # These are offsets above/below the conduction/valence band edge. Useful to consider tunneling
+      # to a valley that is not the band minimum.
+      Si/VB/edgeE_tunnel_offset: 'p.Constant(0 * u.eV)'
+      Si/CB/edgeE_tunnel_offset: 'p.Constant(0 * u.eV)'
+
+      # must go from general to specific! TODO: enforce
+      regions: |
+        ['Si', 'pSi', 'nSi', 'pfsf']
+
+    material_properties:
+      - doping_concentration
+      - permittivity
+
+#      - CB/D
+      - CB/DoS
+      - CB/edgeE
+      - CB/SRH_pn_tau
+      - CB/SRH_pn_u1
+      - CB/eff_mass_tunnel
+      - CB/edgeE_tunnel_offset
+
+#      - VB/D
+      - VB/DoS
+      - VB/edgeE
+      - VB/SRH_pn_tau
+      - VB/SRH_pn_u1
+      - VB/eff_mass_tunnel
+      - VB/edgeE_tunnel_offset
+
+  material_strandbergium:
+    env: electro
+    default_prefix: /material/
+    defs:
+      Si/doping_concentration:  'p.Constant((0*u.cm**-3).to(mesh_unit**-3))'
+      pSi/doping_concentration: 'p.Constant((-1e17*u.cm**-3).to(mesh_unit**-3))'
+      nSi/doping_concentration: 'p.Constant((+1e17*u.cm**-3).to(mesh_unit**-3))'
+      pfsf/doping_concentration: 'p.Constant((-1e19*u.cm**-3).to(mesh_unit**-3))'
+
+      Si/actual_IB:  'p.Constant(0.0 * u.dimensionless)'
+      ISi/actual_IB: 'p.Constant(1.0 * u.dimensionless)'
+
+      Si/permittivity: 'p.Constant(11.7 * po.vacuum_permittivity)'
+
+      Si/VB/DoS: 'p.Constant(((2e19)*u.cm**-3).to(mesh_unit**-3))'
+      Si/CB/DoS: 'p.Constant(((2e19)*u.cm**-3).to(mesh_unit**-3))'
+
+      # Strandberg
+      # Si/VB/D: 'p.Constant((2000 * u.cm**2).to(mesh_unit**2)/u.s)'
+      # Si/CB/D: 'p.Constant((2000 * u.cm**2).to(mesh_unit**2)/u.s)'
+      # Si/IB/D: 'p.Constant((20   * u.cm**2).to(mesh_unit**2)/u.s)'
+
+      # Strandberg modified by Jacob
+      # "I suspect that Strandberg was sloppy about reporting mobilities rather than running with ridiculously high values"
+      Si/VB/D: 'p.Constant((2000/40 * u.cm**2).to(mesh_unit**2)/u.s)'
+      Si/CB/D: 'p.Constant((2000/40 * u.cm**2).to(mesh_unit**2)/u.s)'
+      Si/IB/D: 'p.Constant((20/40   * u.cm**2).to(mesh_unit**2)/u.s)'
+
+      Si/VB/edgeE: 'p.Constant( 0.0 * u.eV)'
+      Si/CB/edgeE: 'p.Constant( 2.0 * u.eV)'
+
+      # add in a very small IB density to prevent singular matrix
+      # Si/IB/N0: 'p.Constant((1e7 * u.cm**-3).to(mesh_unit**-3))'
+
+      ISi/doping_concentration: 'p.Constant((2.5e+17 / 2 *u.cm**-3).to(mesh_unit**-3))'
+      ISi/IB/N0: 'p.Constant((2.5e+17 * u.cm**-3).to(mesh_unit**-3))'
+      Si/IB/edgeE: 'p.Constant( 1.2 * u.eV)'
+
+      # get rid of these
+      Si/CB/SRH_pn_u1: |
+        c.u_i_eff
+      Si/VB/SRH_pn_u1: |
+        c.u_i_eff
+
+      Si/VB/SRH_pn_tau: 'p.Constant(1e-5 * u.s)'
+      Si/CB/SRH_pn_tau: 'p.Constant(1e-5 * u.s)'
+
+      Si/strb_I_ci: u("253673873.363764 / centimeter ** 2 / second")
+      Si/strb_I_cv: u("1.05734790261762E-11 / centimeter ** 2 / second")
+      Si/strb_I_iv: u("106.514937839450 / centimeter ** 2 / second")
+      Si/strb_α_cv: u("10000.0 / centimeter")
+      Si/strb_σ_ci: u("3e-14 centimeter ** 2")
+      Si/strb_σ_iv: u("3e-14 centimeter ** 2")
+      pfsf/strb_α_cv: u("0.0 / centimeter")
+
+
+
+      # must go from general to specific! TODO: enforce
+      regions: |
+        ['Si', 'pSi', 'nSi', 'ISi', 'pfsf']
+
+    material_properties:
+      - doping_concentration
+      - permittivity
+      - actual_IB
+
+      - strb_I_ci
+      - strb_I_cv
+      - strb_I_iv
+      - strb_α_cv
+      - strb_σ_ci
+      - strb_σ_iv
+
+      - CB/D
+      - CB/DoS
+      - CB/edgeE
+      - CB/SRH_pn_tau
+      - CB/SRH_pn_u1
+
+      - VB/D
+      - VB/DoS
+      - VB/edgeE
+      - VB/SRH_pn_tau
+      - VB/SRH_pn_u1
+
+      - IB/D
+      - IB/N0
+      - IB/edgeE
+      - IB/SRH_pn_tau
+      - IB/SRH_pn_u1
+
+  simple_nondegenerate_semiconductor:
+    env: electro
+    default_prefix: /common/
+    defs:
+      static_rho: 'matglobal.doping_concentration * c.q_e'
+      static_rho/@static_rho_contribution: _.static_rho
+      # TODO: generalize this to IB
+      u_i_eff: |
+        p.gmean2(r.VB__DoS, r.CB__DoS)*dolfin.exp(dimensionless(
+          (r.VB__edgeE - r.CB__edgeE)*c.beta/2))
+      N_D_minus_N_A: 'c.static_rho / c.q_e'
+      approx_equilibrium_mu: |
+        dolfin.Function(space.DG1) * u.electron_volt
+      approx_equilibrium_mu_guess: |
+        c.mu_i + 1/c.beta*p.asinh(dimensionless(
+          c.N_D_minus_N_A/(2*c.u_i_eff)))
+      mu_i: |
+        (1/c.beta*dolfin.ln(dimensionless(r.VB__DoS/r.CB__DoS))
+          + r.VB__edgeE + r.CB__edgeE)/2
+      SRH_pn: |
+        (VB.u*CB.u - c.u_i_eff**2)/
+        ((CB.u + CB.SRH_pn_u1)*VB.SRH_pn_tau +
+         (VB.u + VB.SRH_pn_u1)*CB.SRH_pn_tau)
+
+  strb_generation:
+    env: electro
+    default_prefix: /strbg/
+    defs:
+      r_ci: |
+        ((matglobal.strb_σ_ci * matglobal.strb_I_ci +
+          matglobal.nr_σ_ci * matglobal.vth_c * matglobal.nr_u1_c) *
+          IB.u *
+          ufle.expm1(dimensionless(
+          c.beta*(CB.mu - IB.mu)))).to(1/u.s/mesh_unit**3)
+      r_iv: |
+        ((matglobal.strb_σ_iv * matglobal.strb_I_iv +
+          matglobal.nr_σ_iv * matglobal.vth_v * matglobal.nr_u1_v) *
+          (IB.N0 - IB.u) *
+          ufle.expm1(dimensionless(
+          c.beta*(IB.mu - VB.mu)))).to(1/u.s/mesh_unit**3)
+      r_cv: |
+        (matglobal.strb_α_cv * matglobal.strb_I_cv *
+          ufle.expm1(dimensionless(
+          c.beta*(CB.mu - VB.mu)))).to(1/u.s/mesh_unit**3)
+
+      actual_IB: matglobal.actual_IB
+
+      /common/optical_coupling_strength: 'p.Constant(1.0 * u.dimensionless)'
+
+      oc: "r['/common/optical_coupling_strength']"
+
+      α_ci: 'matglobal.strb_σ_ci * IB.u'
+      α_iv: 'matglobal.strb_σ_iv * (IB.N0 - IB.u)'
+      α_cv: 'matglobal.strb_α_cv'
+
+      /o/ci/α: _.α_ci
+      /o/iv/α: _.α_iv
+      /o/cv/α: _.α_cv
+
+      og_ci: r['/o/ci/I_clipped'] * _.α_ci * _.oc
+      og_iv: r['/o/iv/I_clipped'] * _.α_iv * _.oc
+      og_cv: r['/o/cv/I_clipped'] * _.α_cv * _.oc
+
+      g_ci: (_.og_ci - _.r_ci) * _.actual_IB
+      g_iv: (_.og_iv - _.r_iv) * _.actual_IB
+      g_cv: (_.og_cv - _.r_cv)
+
+      /CB/delta_g: +_.g_ci +_.g_cv
+      /VB/delta_g: +_.g_cv +_.g_iv # negative sign for VB because VB tracks holes
+      /IB/delta_g: -_.g_ci +_.g_iv
+
+  base_band:
+    default_prefix: ${b}
+    defs:
+      base_g: 'p.zero * c.unit__g'
+      delta_g: 'p.zero * c.unit__g'
+      g: '_.base_g + _.delta_g'
+
+      sign: band_sign
+
+      u/base: p.zero * c.unit__u
+      u/delta: '_.u_from_mu'
+      u: '_.u__base + _.u__delta'
+
+      j/base: p.zerovec * c.unit__j
+      j/delta: p.zerovec * c.unit__j
+      j: '_.j__base + _.j__delta'
+
+      delta_u_contact_bc_values: |
+        {k: v - _.u__base
+         for k, v in _.u_contact_bc_values.items()}
+
+      delta_j_contact_bc_values: |
+        {k: v - _.j__base
+         for k, v in _.j_contact_bc_values.items()}
+
+      u_from_mu: '_.muV_to_number_density(_.mu + c.q_e*po.V)'
+      mu_from_u: '_.number_density_to_muV(_.u) - c.q_e*po.V'
+
+      # HACK: should get directly from 'w' if we run into precision issues
+      mu: _.mu_from_u
+
+      energy: '_.edgeE - c.q_e*po.V'
+
+      approx_equilibrium_u: |
+        _.muV_to_number_density(c.approx_equilibrium_mu)
+      approx_equilibrium_u_projected: |
+        p.project(_.approx_equilibrium_u, space.DG0)
+
+      mobility: "(matglobal+_).mobility"
+
+      # SRH_pn_u1: |
+      #   _.DoS*dolfin.exp(dimensionless(_.sign * (_.edgeE - mat.SRH_pn_trap_edgeE)))
+
+      D: _.mobility/(c.beta*c.q_e)
+      edgeE: "(matglobal+_).edgeE"
+      edgeE_tunnel_offset: "(matglobal+_).edgeE_tunnel_offset"
+      eff_mass_tunnel: "(matglobal+_).eff_mass_tunnel"
+      SRH_pn_tau: "(matglobal+_).SRH_pn_tau"
+      SRH_pn_u1: "(matglobal+_).SRH_pn_u1"
+
+      muj_gradmu_projected: |
+        p.grad(p.project(_.mu, space.CG2))
+
+      # 13.1.3 Expression for current when using chemical potentials
+      muj_j: |
+        _.muj_gradmu_projected*c.beta*c.q_e*_.D*_.u
+
+      conc_j: |
+        (+ _.mobility*c.q_e*_.u*po.E
+         - _.sign*c.q_e*b.D*p.grad(_.u))
+
+      # conc_j: '_.muj_j.to("mA/cm**2")'
+
+      conc_j_drift: |
+        (+ _.mobility*c.q_e*_.u*po.E).to("mA/cm**2")
+
+      conc_j_diff: |
+        (- _.sign*c.q_e*b.D*p.grad(_.u)).to("mA/cm**2")
+
+      '@delta_rho_contribution': _.u__delta * _.sign * c.q_e
+
+  nondegenerate_band:
+    default_prefix: ${b}
+    defs:
+      DoS: "(matglobal+_).DoS"
+
+      N0: |
+        _.DoS*dolfin.exp(dimensionless(_.sign*c.beta*_.edgeE))
+
+      number_density_to_muV: |
+        lambda u: -dolfin.ln(dimensionless(u/_.N0))/_.sign/c.beta
+      muV_to_number_density: |
+        lambda muV: _.N0*dolfin.exp(dimensionless(-_.sign*c.beta*muV))
+
+  intermediate_band:
+    default_prefix: ${b}
+    defs:
+      N0: "(matglobal+_).N0"
+
+      number_density_to_muV: |
+        lambda u: _.fermidirac__finv(dimensionless(u/_.N0))/(_.sign*c.beta) + _.edgeE
+      muV_to_number_density: |
+        lambda muV: _.N0*_.fermidirac__f(dimensionless(_.sign*c.beta*(muV - _.edgeE)))
+
+      fermidirac/f: |
+        lambda x: 1/(1 + dolfin.exp(x))
+      fermidirac/finv: |
+        lambda z: dolfin.ln((1/z - 1)*dolfin.Constant(1.0) + dolfin.DOLFIN_EPS)
+
+  nondegenerate_band_density_mixed_naive:
+    default_prefix: ${b}density_mixed/
+    defs:
+      # base_x + delta_x = actual_x
+      # to reduce verbosity, we make the 'delta_' implicit
+
+      degree: '3'
+      u_degree: '_.degree-1'
+      j_degree: '_.degree'
+
+      continuity_g_term: |
+        - _.dx * _.v * _.g
+
+      drift_diffusion_j_term: |
+        - _.dx * p.dot(_.phi, _.j)
+
+      drift_diffusion_bc_term: |
+        - _.u_bc_ds * p.dot(_.phi, p.n)
+
+      drift_diffusion_delta_extra_term: |
+        + _.dx*_.base_u*p.dot(_.phi, _.E)
+
+      form_contribution: |
+        + _.dx * _.v * p.div(_.j)
+        + _.continuity_g_term
+
+        + _.drift_diffusion_bc_term
+        + _.drift_diffusion_j_term
+        + _.dx * _.u * (p.dot(_.phi, _.actual_E) + p.div(_.phi))
+        + _.drift_diffusion_delta_extra_term
+
+      u_bc_ds: "_['u_contact_bc/natural_unsigned_ds']"
+
+      # see doc/advection_diffusion_test.lyx
+      u_conversion_factor: '1 / mesh_unit ** 3'
+      E_conversion_factor: 'b.sign * c.beta * c.q_e'
+      j_conversion_factor: 'b.sign * b.D * c.q_e * _.u_conversion_factor'
+      E:  '_.E_conversion_factor * po.E__delta'
+      actual_E:  '_.E_conversion_factor * po.E'
+      g: 'b.delta_g / b.D / _.u_conversion_factor'
+      base_u: 'b.u__base / _.u_conversion_factor'
+      base_j: 'b.j__base / _.j_conversion_factor'
+
+      dx: 'p.dx'
+
+      ${b}u/delta: '_.u * _.u_conversion_factor'
+      ${b}j/delta: '_.j * _.j_conversion_factor'
+
+      ${b}j_delta_expr: '_.j * _.j_conversion_factor'
+
+      ${b}u/space: "fsc.FunctionSpace(mesh, _.u__element)"
+      ${b}j/space: "fsc.FunctionSpace(mesh, _.j__element)"
+
+      j_contact_bc/@auto_essential: "_['j_contact_bc/essential']"
+
+      dbg_drift1: '(_.u * _.actual_E) * _.j_conversion_factor'
+      dbg_drift2: '(_.base_u * _.E) * _.j_conversion_factor'
+      dbg_diff: 'p.grad(_.u) * _.j_conversion_factor'
+
+      dbg_totdrift: '((_.u + _.base_u) * _.actual_E) * _.j_conversion_factor'
+      dbg_totdiff: 'p.grad(_.u + _.base_u) * _.j_conversion_factor'
+
+    trial_test_defs:
+      u:
+        test: v
+        trial_units: 'u.dimensionless'
+        test_units: 'mesh_unit ** -1'
+        element: 'dolfin.FiniteElement("DG", ufl_cell, _.u_degree)'
+        target_space: /solution_space
+
+      j:
+        test: phi
+        trial_units: 'mesh_unit ** -1'
+        test_units: 'mesh_unit ** -2'
+        element: 'dolfin.FiniteElement("BDM", ufl_cell, _.j_degree)'
+        target_space: /solution_space
+
+    bcs:
+      u_contact_bc:
+        var: '_.u'
+        values: |
+          {k: v/_.u_conversion_factor
+           for k, v in b.delta_u_contact_bc_values.items()}
+
+      j_contact_bc:
+        var: '_.j'
+        values: |
+          {k: v/_.j_conversion_factor
+           for k, v in b.delta_j_contact_bc_values.items()}
+
+  nondegenerate_band_density_mixed_naive_thm_equilibrium:
+    default_prefix: ${b}density_mixed/
+    defs:
+      continuity_g_term: '0'
+      # drift_diffusion_j_term: '0'
+
+  nondegenerate_band_qfl_mixed_naive:
+    default_prefix: ${b}qfl_mixed/
+    defs:
+      # base_x + delta_x = actual_x
+
+      degree: '1'
+      w_degree: '_.degree-1'
+      j_degree: '_.degree'
+
+      continuity_g_term: |
+        - _.dx * _.v * _.g
+
+      drift_diffusion_bc_term: |
+        - _.delta_w_bc_ds * p.dot(_.phi, p.n)
+
+      drift_diffusion_base_w_jump_term: |
+        %
+        w0 = _.base_w
+        return - p.dS*((p.mside(w0) - p.pside(w0))
+                     * p.dot(p.pside(_.phi), p.pside(p.n)))
+
+      drift_diffusion_j_term: |
+        + _.dx * (p.dot(_.phi, _.j) / _.u_expr)
+
+      drift_diffusion_qfl_term: |
+        + _.dx*p.div(_.phi)*_.delta_w
+
+      form_contribution: |
+        + _.dx * _.v * p.div(_.j)
+        + _.continuity_g_term
+
+        + _.drift_diffusion_bc_term
+        + _.drift_diffusion_j_term
+        + _.drift_diffusion_qfl_term
+        + _.drift_diffusion_base_w_jump_term
+
+      delta_w_bc_ds: "_['delta_w_contact_bc/natural_unsigned_ds']"
+
+      # see doc/advection_diffusion_test.lyx
+      u_conversion_factor: '1 / mesh_unit ** 3'
+      E_conversion_factor: 'b.sign * c.beta * c.q_e'
+      V_conversion_factor: '_.E_conversion_factor'
+      j_conversion_factor: 'b.sign * b.D * c.q_e * _.u_conversion_factor'
+      w_conversion_factor: 'b.sign * 1/c.beta'
+      delta_E:  '_.E_conversion_factor * po.E__delta'
+      actual_E:  '_.E_conversion_factor * po.E'
+      delta_V:  '_.V_conversion_factor * po.V__delta'
+      actual_V:  '_.V_conversion_factor * po.V'
+      g: 'b.delta_g / b.D / _.u_conversion_factor'
+      base_j: 'b.j__base / _.j_conversion_factor'
+
+      base_w: 'dolfin.Function(space.DG0) * u.dimensionless'
+
+      ## FIXME: can't use facet function because FEniCS can't use
+      ## two different `subdomain_data` in the same form >_>
+      # base_w_jump_ff: |
+      #   dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1, 0)
+
+      # exp(-(V + w)) = u
+      # w = -V - log(u)
+      u_to_w: |
+        lambda u:
+          (b.number_density_to_muV(u*_.u_conversion_factor)
+            / _.w_conversion_factor - _.actual_V).to('dimensionless')
+      w_to_u: |
+        lambda w: (b.muV_to_number_density(
+            (w + _.actual_V) * _.w_conversion_factor)
+          / _.u_conversion_factor).to('dimensionless')
+      u2_to_w: |
+        lambda u: (_.u_to_w(u/_.u_conversion_factor)).to('dimensionless')
+
+      dx: 'p.dx'
+
+      u_expr: '_.w_to_u(_.base_w + _.delta_w)'
+
+      u: '_.u_expr * _.u_conversion_factor'
+      ${b}u/delta: '_.u'
+      ${b}j/delta: '_.j * _.j_conversion_factor'
+      ${b}mu: '(_.base_w + _.delta_w) * _.w_conversion_factor'
+
+      ${b}w/space: "fsc.FunctionSpace(mesh, _.w__element)"
+      ${b}j/space: "fsc.FunctionSpace(mesh, _.j__element)"
+
+      j_contact_bc/@auto_essential: "_['j_contact_bc/essential']"
+
+      w_BC_clip_threshold: '1e-4'
+      w_BC_clip_damping: 'dolfin.Constant(1e-3)'
+
+      do_rebase_w: |
+        %def do_rebase_w():
+          from ..util import offset_partitioning as op
+          dl = dimensionless
+
+          base_w_space = fsr.get_function_space(_.base_w.m, new=True)
+
+          new_base_w = op.partition_offsets(
+          # new_base_w = (
+            dolfin.project(dl(_.base_w + _.delta_w), base_w_space))
+
+          new_delta_w = dolfin.project(dl(_.delta_w + _.base_w) - new_base_w,
+            fsr.get_function_space(_.delta_w.m, new=True))
+
+          fsr.assign(target=_.delta_w.m, source=new_delta_w)
+          fsr.assign(target=_.base_w.m, source=new_base_w)
+
+        return do_rebase_w
+      # do_rebase_w/@call_on_iteration: 'True'
+
+      dbg_j_helper_func: |
+        %def func(expr):
+          space = _.j__space
+          trial = dolfin.TrialFunction(space) * (mesh_unit ** -1)
+          phi = dolfin.TestFunction(space) * (mesh_unit ** -2)
+          r = dolfin.Function(space) * (mesh_unit ** -1)
+          e = ((_.dx*p.div(phi)*expr + _.dx*p.dot(trial, phi))
+               .to_ufl().m)
+          dolfin.solve(dolfin.lhs(e) == dolfin.rhs(e), r.m)
+          return r
+        return func
+
+      dbg_j1: |
+        _.dbg_j_helper_func(_.base_w) * _.u_expr * _.j_conversion_factor
+      dbg_j1/@clear_on_iteration: 'True'
+      dbg_j2: |
+        _.dbg_j_helper_func(_.delta_w) * _.u_expr * _.j_conversion_factor
+      dbg_j2/@clear_on_iteration: 'True'
+
+      # dbg_drift1: '(_.u * _.actual_E) * _.j_conversion_factor'
+      # dbg_drift2: ''
+      # dbg_diff: 'p.grad(_.u) * _.j_conversion_factor'
+
+      dbg_drift: '(_.u_expr * _.actual_E) * _.j_conversion_factor'
+      dbg_diff: '_.dbg_drift - (_.j * _.j_conversion_factor)'
+
+      delta_w_bc_values: |
+        {k: _.u_to_w(dimensionless(v/_.u_conversion_factor)) - _.base_w
+         for k, v in b.u_contact_bc_values.items()}
+
+    trial_test_defs:
+      delta_w:
+        test: v
+        trial_units: 'u.dimensionless'
+        test_units: 'mesh_unit ** -1'
+        element: 'dolfin.FiniteElement("DG", ufl_cell, _.w_degree)'
+        target_space: /solution_space
+
+      j:
+        test: phi
+        trial_units: 'mesh_unit ** -1'
+        test_units: 'mesh_unit ** -2'
+        element: 'dolfin.FiniteElement("BDM", ufl_cell, _.j_degree)'
+        target_space: /solution_space
+
+    bcs:
+      delta_w_contact_bc:
+        var: '_.delta_w'
+        values: |
+          %
+          d = {k: p.clip_towards_zero(  # warning: the damping thing is a HACK
+                 v, _.w_BC_clip_threshold, _.delta_w * _.w_BC_clip_damping)
+               for k, v in _.delta_w_bc_values.items()}
+          return d
+
+      j_contact_bc:
+        var: '_.j'
+        values: |
+          {k: v/_.j_conversion_factor
+           for k, v in b.delta_j_contact_bc_values.items()}
+
+  kill_IB_variables_outside_IB_material:
+    env: electro
+    default_prefix: /IB/spatial_restriction/
+    defs:
+      "@auto_essential": |
+        %
+        space1 = s['/function_subspace_registry'].get_function_space(
+          r['/IB/qfl_mixed/delta_w'].magnitude)
+        space2 = s['/function_subspace_registry'].get_function_space(
+          r['/IB/qfl_mixed/j'].magnitude)
+
+        cf  = s['/geometry/param/cell_function']
+        cvs = s['/geometry/cell_regions/no_IB/']
+
+        r = []
+        for cv in cvs:
+          for space in (space1, space2):
+            r.append(dolfin.DirichletBC(space, 0.0, cf, cv))
+
+  thermal_equilibrium_CB_VB_IB:
+    env: electro
+    default_prefix: /
+    defs:
+      CB/mu: p.Constant(0.0 * u.eV)
+      VB/mu: p.Constant(0.0 * u.eV)
+      IB/mu: p.Constant(0.0 * u.eV)
+
+  base_CB:
+    env: electro_CB
+    instantiate: base_band
+  base_VB:
+    env: electro_VB
+    instantiate: base_band
+  base_IB:
+    env: electro_IB
+    instantiate: base_band
+
+  nondegenerate_CB:
+    env: electro_CB
+    instantiate: nondegenerate_band
+  nondegenerate_VB:
+    env: electro_VB
+    instantiate: nondegenerate_band
+  intermediateband_IB:
+    env: electro_IB
+    instantiate: intermediate_band
+
+  nondegenerate_band_density_mixed_naive_CB:
+    env: electro_CB
+    instantiate: nondegenerate_band_density_mixed_naive
+  nondegenerate_band_density_mixed_naive_VB:
+    env: electro_VB
+    instantiate: nondegenerate_band_density_mixed_naive
+
+  nondegenerate_band_delta_density_mixed_naive_CB:
+    env: electro_CB
+    instantiate: nondegenerate_band_delta_density_mixed_naive
+  nondegenerate_band_delta_density_mixed_naive_VB:
+    env: electro_VB
+    instantiate: nondegenerate_band_delta_density_mixed_naive
+
+  nondegenerate_band_density_mixed_naive_thm_equilibrium_CB:
+    env: electro_CB
+    instantiate: nondegenerate_band_density_mixed_naive_thm_equilibrium
+  nondegenerate_band_density_mixed_naive_thm_equilibrium_VB:
+    env: electro_VB
+    instantiate: nondegenerate_band_density_mixed_naive_thm_equilibrium
+
+
+  nondegenerate_band_qfl_mixed_naive_CB:
+    env: electro_CB
+    instantiate: nondegenerate_band_qfl_mixed_naive
+  nondegenerate_band_qfl_mixed_naive_VB:
+    env: electro_VB
+    instantiate: nondegenerate_band_qfl_mixed_naive
+  intermediate_band_qfl_mixed_naive_IB:
+    env: electro_IB
+    instantiate: nondegenerate_band_qfl_mixed_naive

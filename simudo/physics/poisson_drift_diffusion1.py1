@@ -1,0 +1,495 @@
+#pyaml1
+
+preamble: |
+  from ${helper} import AttrPrefixProxy, PyamlBase
+
+  import dolfin
+  import sympy
+
+  from ..fem import PartitionOffsets
+
+classes:
+  Poisson:
+    inherit: [PyamlBase]
+    eval:
+      vacuum_permittivity: !c |
+        8.85418782e-12*u("C/m/V").to("elementary_charge/mesh_unit/V")
+
+      permittivity: !c |
+        _.spatial.get("poisson/permittivity")
+
+      static_rho: !c |
+        _.spatial.get("poisson/static_rho")
+
+      rho: !c |
+        _.static_rho + sum(x.rho_contribution for x in _.pdd.bands)
+
+      erho: !c |
+        (_.rho/_.permittivity).to("V/mesh_unit**2")
+
+    env:
+      default_:
+        u: !c self.unit_registry
+
+  MixedPoissonMixin:
+    inherit: [PyamlBase]
+    eval:
+      method_degree: !c '2'
+      mixed_:
+        degree: !c self.method_degree
+        weak_form: !c |
+          + _.dx*p.dot(_.E, _.psi)
+          - _.dx*_.phi*p.div(_.psi)
+          + _.dx*_.w*p.div(_.E)
+          - _.dx_rho*_.w*self.erho
+          + _.phi_bc_ds*p.dot(_.psi, p.n)
+
+        phi_bc_ds: !c "self.bcpair[1].get_natural_bc()"
+
+        dx_rho: !c "_.dx(metadata={'quadrature_degree': _.debug_quad_degree_rho})"
+        dx: !c p.dx
+
+        phi: !c self.get_subfunction("phi")
+        E:   !c self.get_subfunction("E")
+        w:   !c self.get_subfunction("w")
+        psi: !c self.get_subfunction("psi")
+
+        subfunctions_info: !c |
+          [dict(element=p.element("DG", _.degree-1),
+                trial_key   = "phi",
+                trial_units = u.volt,
+                test_key    = "w",
+                test_units  = u("1/mesh_unit/volt")),
+
+           dict(element     = p.element("BDM", _.degree),
+                trial_key   = "E",
+                trial_units = u("volt/mesh_unit"),
+                test_key    = "psi",
+                test_units=u("1/volt/mesh_unit**2"))]
+
+      phi: !c mix.phi
+      E:   !c mix.E
+
+      subfunctions_info: !c mix.subfunctions_info
+      essential_bcs: !c "_.bcpair[0].get_essential_bc()"
+
+      bcpair: !c |
+        _.pdd.spatial.get_mixed_bc_pair(
+          essential_key=_.subfunction_prefix("E"),
+          natural_key  =_.subfunction_prefix("phi"),
+          essential_var=mix.E,
+          natural_var  =mix.phi,
+          natural_ignore_sign=True)
+
+    env:
+      default_:
+        mix: !c AttrPrefixProxy(self, 'mixed_')
+        p: !c self.mesh_util
+
+  LocalChargeNeutralityPoissonMixin:
+    inherit: [PyamlBase]
+    eval:
+      method_degree: !c '1'
+      local_charge_neutrality_:
+        degree: !c self.method_degree
+        weak_form: !c |
+          + p.dx*_.w*self.erho
+
+        phi: !c self.get_subfunction("phi")
+        w  : !c self.get_subfunction("w")
+
+        subfunctions_info: !c |
+          [dict(element=p.element("DG", _.degree),
+                trial_key   = "phi",
+                trial_units = u.volt,
+                test_key    = "w",
+                test_units  = u("1/mesh_unit/volt"))]
+
+      phi: !c cn.phi
+      E: !c -p.grad(_.phi)
+
+      subfunctions_info: !c cn.subfunctions_info
+      essential_bcs: !c "()"
+
+    env:
+      default_:
+        cn: !c AttrPrefixProxy(self, 'local_charge_neutrality_')
+        p: !c self.mesh_util
+
+  Band:
+    inherit: [PyamlBase]
+    eval:
+      spatial_prefix: !c |
+        _.name + '/'
+
+      u: !c |
+        _.qfl_to_u(_.qfl)
+
+      e_phi: !c |
+        po.phi * u.elementary_charge
+
+      thermal_equilibrium_u: !c |
+        _.phiqfl_to_u(po.thermal_equilibrium_phi * u.elementary_charge)
+
+      qfl: !c |
+        p.Constant(u("0 eV"))
+
+      j: !c |
+        u("A/m^2") * p.zerovec
+
+      rho_contribution: !c |
+        _.u * _.sign * u.elementary_charge
+
+      kT: !c |
+        _.pdd.kT
+
+      mobility: !c |
+        _.spatial.get(_.spatial_prefix + "mobility")
+
+    env:
+      default_:
+        u: !c self.unit_registry
+        p: !c self.mesh_util
+        po: !c self.pdd.poisson
+
+  NondegenerateBand:
+    inherit: [PyamlBase]
+    eval:
+      nondegenerate_N0: !c |
+        _.effective_density_of_states*p.exp(
+          _.sign*_.energy_level/_.kT)
+
+      u_to_phiqfl: !c |
+        lambda u: -p.ln(u/_.nondegenerate_N0)/_.sign * _.kT
+      phiqfl_to_u: !c |
+        lambda phiqfl: _.nondegenerate_N0 * p.exp(-_.sign * phiqfl / _.kT)
+
+      energy_level: !c |
+        _.spatial.get(_.spatial_prefix + "energy_level")
+
+      effective_density_of_states: !c |
+        _.spatial.get(_.spatial_prefix + "effective_density_of_states")
+
+      # Einstein relation: μ = Dβe
+      diffusivity: !c |
+        self.mobility * _.kT / u.elementary_charge
+
+    env:
+      default_:
+        u: !c self.unit_registry
+        p: !c self.mesh_util
+
+  IntermediateBand:
+    inherit: [PyamlBase]
+    eval:
+      number_of_states: !c |
+        _.spatial.get(_.spatial_prefix + "number_of_states")
+
+      energy_level: !c |
+        _.spatial.get(_.spatial_prefix + "energy_level")
+
+      u_to_phiqfl: !c |
+        lambda u: p.fermidirac_f_inv(
+          u/_.number_of_states)*_.sign*_.kT + _.energy_level
+
+      phiqfl_to_u: !c |
+        lambda phiqfl: (_.number_of_states*
+          p.fermidirac_f(_.sign*(phiqfl - _.energy_level)/_.kT))
+
+      # TODO: derive and input diffusivity expression
+      diffusivity: !c |
+        %raise NotImplementedError()
+
+    env:
+      default_:
+        p: !c self.mesh_util
+
+  MixedQflBand:
+    inherit: [PyamlBase]
+    eval:
+      method_degree: !c '2'
+      mixedqfl_:
+        # base_x + delta_x = actual_x
+
+        degree: !c self.method_degree
+
+        continuity_j_term: !c |
+          + _.dx * _.v * p.div(_.j)
+
+        continuity_g_term: !c |
+          - band.sign * _.dx_g * _.v * u.elementary_charge * _.g
+
+        drift_diffusion_bc_term: !c |
+          - _.delta_w_bc_ds * p.dot(_.xi, p.n)
+
+        drift_diffusion_base_w_jump_term: !c |
+          %
+          w0 = _.base_w
+          return - p.dS*((p.mside(w0) - p.pside(w0))
+                       * p.dot(p.pside(_.xi), p.pside(p.n)))
+
+        drift_diffusion_j_term: !c |
+          + _.dx_super * (p.dot(_.xi, _.j) / band.mobility / _.u_expr)
+
+        drift_diffusion_qfl_term: !c |
+          + _.dx*p.div(_.xi)*_.delta_w
+
+        weak_form: !c |
+          + _.continuity_j_term
+          + _.continuity_g_term
+
+          + _.drift_diffusion_bc_term
+          + _.drift_diffusion_j_term
+          + _.drift_diffusion_qfl_term
+          + _.drift_diffusion_base_w_jump_term
+
+        delta_w_bc_ds: !c "_.bcpair[1].get_natural_bc()"
+
+        g: !c 'band.g'
+
+        # exp(-(V + w)) = u
+        # w = -V - log(u)
+        u_to_w: !c |
+          lambda u: (band.u_to_qfl(u)).to('eV')
+
+        w_to_u: !c |
+          lambda w: (band.qfl_to_u(w)).to('1/mesh_unit^3')
+
+        u2_to_w: !c |
+          lambda u: (_.u_to_w(u)).to('eV')
+
+        dx: !c 'p.dx'
+        # dx: !c _.dx_super
+
+        dx_super: !c "_.dx(metadata={'quadrature_degree': _.debug_quad_degree_super})"
+        dx_g: !c "_.dx(metadata={'quadrature_degree': _.debug_quad_degree_g})"
+
+        # just pull directly from band variables, since band presumably
+        # sets up relationship between qfl and carrier density
+        u_expr: !c 'band.u'
+
+        output_qfl: !c '(_.base_w + _.delta_w)'
+        output_j: !c '_.j'
+
+        w_BC_clip_threshold: !c 'dolfin.Constant(1e-4)'
+        w_BC_clip_damping: !c 'dolfin.Constant(1e-3)'
+
+        do_rebase_w: !c |
+          %def do_rebase_w():
+            # return
+            dl = p.dless
+            fsr = p.function_subspace_registry
+
+            assert _.base_w.u == _.delta_w.u
+
+            base_w_space = fsr.get_function_space(_.base_w.m, collapsed=True)
+
+            w_delta_DG0 = dolfin.project(_.delta_w.m, base_w_space)
+            w_DG0 = dolfin.Function(base_w_space)
+            fsr.assign(w_DG0, _.base_w.m)
+            w_DG0.vector()[:] += w_delta_DG0.vector()[:]
+            del w_delta_DG0
+
+            # thresholds = ((1e-6, 0.0),)
+            thresholds = (_.debug_fill_thresholds,)
+
+            op = PartitionOffsets(
+              function=w_DG0, out_function=w_DG0, mesh_util=p,
+              thresholds=thresholds)
+
+            if _.debug_fill_from_boundary:
+              xbc = self.pdd.spatial.make_combined_bc(
+                key=self.subfunction_prefix("u"),
+                value_extractor=lambda u: _.u_to_w(u.value),
+                essential_var=_.delta_w)
+              op.bc_cells = xbc.offset_partitioning_bc_cells
+
+            op.debug_fill_with_zero_except_bc = (
+              _.debug_fill_with_zero_except_bc)
+
+            op.update()
+            new_base_w = w_DG0
+            # new_base_w = w_DG0
+            # fsr.assign_scalar(new_base_w, 0)
+
+            new_delta_w = dolfin.project((_.delta_w + _.base_w).m - new_base_w,
+              fsr.get_function_space(_.delta_w.m, collapsed=True))
+
+            fsr.assign(target=_.delta_w.m, source=new_delta_w)
+            fsr.assign(target=_.base_w .m, source=new_base_w )
+
+          return do_rebase_w
+
+        transform1_w_bc: !c |
+          lambda v: _.u_to_w(v) - _.base_w
+
+        transform2_w_bc: !c |
+          lambda v: p.clip_towards_zero(  # warning: the damping thing is a HACK
+            v, _.w_BC_clip_threshold * band.kT, _.delta_w * _.w_BC_clip_damping)
+
+        extract_w_bc: !c |
+          lambda v:
+            (_.transform2_w_bc(_.transform1_w_bc(v.value))
+             if _.debug_use_bchack else
+             u.eV * dolfin.Constant(0.0)) # meh
+            #  _.transform1_w_bc(v.value))
+
+        extract_j_bc: !c |
+          lambda v: v.value
+
+        bcpair: !c |
+          self.pdd.spatial.get_mixed_bc_pair(
+            essential_key=self.subfunction_prefix("j"),
+            natural_key  =self.subfunction_prefix("u"),
+            essential_var=_.j,
+            natural_var  =_.delta_w,
+            natural_ignore_sign=True,
+            essential_extract=_.extract_j_bc,
+            natural_extract=_.extract_w_bc)
+
+        subfunctions_info: !c |
+          [dict(element=p.element("DG", _.degree-1),
+                trial_key   = "delta_w",
+                trial_units = u.electron_volt,
+                test_key    = "v",
+                test_units  = u("1 / A")),
+
+           dict(element     = p.element("BDM", _.degree),
+                trial_key   = "j",
+                trial_units = u("A / mesh_unit^2"),
+                test_key    = "xi",
+                test_units  = u("1 / mesh_unit^2 / electron_volt"))]
+
+        delta_w: !c self.get_subfunction("delta_w")
+        v      : !c self.get_subfunction("v"      )
+        j      : !c self.get_subfunction("j"      )
+        xi     : !c self.get_subfunction("xi"     )
+
+      subfunctions_info: !c mix.subfunctions_info
+
+      essential_bcs: !c "mix.bcpair[0].get_essential_bc()"
+
+      qfl: !c mix.output_qfl
+      j:   !c mix.output_j
+
+    env:
+      default_:
+        u: !c self.unit_registry
+        p: !c self.mesh_util
+        band: !c self
+        mix: !c AttrPrefixProxy(self, 'mixedqfl_')
+
+
+
+  MixedDensityBand:
+    inherit: [PyamlBase]
+    eval:
+      method_degree: !c '2'
+      mixed_:
+        # base_x + delta_x = actual_x
+
+        degree: !c self.method_degree
+
+        # same as in mixedqfl
+        continuity_j_term: !c |
+          + _.dx * _.v * p.div(_.j)
+
+        # same as in mixedqfl
+        continuity_g_term: !c |
+          - _.dx_g * band.sign * _.v * u.elementary_charge * _.g
+
+        drift_diffusion_bc_term: !c |
+          + _.u_bc_ds * band.sign * u.elementary_charge * p.dot(_.xi, p.n)
+
+        drift_diffusion_j_term: !c |
+          + _.dx * (p.dot(_.xi, _.j) / band.diffusivity)
+
+        drift_diffusion_diffusion_term: !c |
+          - _.dx_super * band.sign * u.elementary_charge * p.div(_.xi) * _.u
+
+        drift_diffusion_drift_term: !c |
+          - _.dx_super * u.elementary_charge * p.dot(_.xi, po.E) * _.u
+            * (band.mobility / band.diffusivity)
+
+        weak_form: !c |
+          + _.continuity_j_term
+          + _.continuity_g_term
+
+          + _.drift_diffusion_bc_term
+          + _.drift_diffusion_j_term
+          + _.drift_diffusion_diffusion_term
+          + _.drift_diffusion_drift_term
+
+        u_bc_ds: !c "_.bcpair[1].get_natural_bc()"
+
+        g: !c 'band.g'
+
+        # exp(-(V + w)) = u
+        # w = -V - log(u)
+        u_to_w: !c |
+          lambda u: (band.u_to_qfl(u)).to('eV')
+
+        w_to_u: !c |
+          lambda w: (band.qfl_to_u(w)).to('1/mesh_unit^3')
+
+        u2_to_w: !c |
+          lambda u: (_.u_to_w(u)).to('eV')
+
+        dx: !c 'p.dx'
+        # dx: !c _.dx_super
+
+        dx_super: !c "_.dx(metadata={'quadrature_degree': _.debug_quad_degree_super})"
+        dx_g: !c "_.dx(metadata={'quadrature_degree': _.debug_quad_degree_g})"
+
+        output_u: !c '_.u'
+        output_j: !c '_.j'
+
+        extract_u_bc: !c |
+          lambda v: v.value
+
+        extract_j_bc: !c |
+          lambda v: v.value
+
+        bcpair: !c |
+          self.pdd.spatial.get_mixed_bc_pair(
+            essential_key=self.subfunction_prefix("j"),
+            natural_key  =self.subfunction_prefix("u"),
+            essential_var=_.j,
+            natural_var  =_.u,
+            natural_ignore_sign=True,
+            essential_extract=_.extract_j_bc,
+            natural_extract=_.extract_u_bc)
+
+        subfunctions_info: !c |
+          [dict(element=p.element("DG", _.degree-1),
+                trial_key   = "u",
+                trial_units = u("1 / mesh_unit^3"),
+                test_key    = "v",
+                test_units  = u("1 / A")),
+
+           dict(element     = p.element("BDM", _.degree),
+                trial_key   = "j",
+                trial_units = u("A / mesh_unit^2"),
+                test_key    = "xi",
+                test_units  = u("mesh_unit / elementary_charge"))]
+
+        u : !c self.get_subfunction("u" )
+        v : !c self.get_subfunction("v" )
+        j : !c self.get_subfunction("j" )
+        xi: !c self.get_subfunction("xi")
+
+      subfunctions_info: !c mix.subfunctions_info
+
+      essential_bcs: !c "mix.bcpair[0].get_essential_bc()"
+
+      u: !c mix.output_u
+      j: !c mix.output_j
+
+    env:
+      default_:
+        u: !c self.unit_registry
+        p: !c self.mesh_util
+        band: !c self
+        mix: !c AttrPrefixProxy(self, 'mixed_')
+
+

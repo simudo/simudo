@@ -1,0 +1,1245 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{siunitx}
+%\usepackage{listings}
+\usepackage{booktabs}
+\usepackage[style=numeric,maxnames=999,backend=biber]{biblatex}
+\addbibresource{main.bib}
+%\sisetup{
+%  separate-uncertainty=true
+%}
+\end_preamble
+\use_default_options true
+\begin_modules
+theorems-ams
+\end_modules
+\maintain_unincluded_children false
+\language canadian
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format pdf2
+\output_sync 1
+\output_sync_macro "\synctex=-1"
+\bibtex_command biber
+\index_command default
+\paperfontsize 12
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\branch thermal
+\selected 1
+\filename_suffix 0
+\color #ffffff
+\end_branch
+\branch srh
+\selected 0
+\filename_suffix 0
+\color #ffffff
+\end_branch
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1cm
+\topmargin 2cm
+\rightmargin 1cm
+\bottommargin 2cm
+\footskip 1cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\sbn}[2]{\{#1\:|\:#2\}}
+{\{#1\:|\:#2\}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\norm}[1]{\Vert#1\Vert}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\abs}[1]{|#1|}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\vabs}[1]{\left|#1\right|}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\xhat}[1]{\hat{#1}}
+{\hat{#1}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\rsph}{r}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\rcyl}{\rho}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\xx}{\xhat x}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\xy}{\xhat y}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\xz}{\xhat z}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\d}{\mathrm{d}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\f}[3]{#1:\ #2\rightarrow#3}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\k}[1]{\mathop{\mathrm{#1}}\nolimits}
+{\mathrm{#1}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\braket}[2]{\Braket{#1|#2}}
+{\left\langle #1|#2\right\rangle }
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\bra}[1]{\Bra{#1}}
+{\left\langle #1\right|}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\ket}[1]{\Ket{#1}}
+{\left|#1\right\rangle }
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\u}[1]{\mathrm{\:#1}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\li}{\k{li}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Title
+IB
+\end_layout
+
+\begin_layout Section
+Strandberg comparison in the dark
+\end_layout
+
+\begin_layout Subsection
+Nonradiative trapping processes
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Shockley1952a"
+literal "false"
+
+\end_inset
+
+ didn't show the intermediate work for hole trapping, so we're just going
+ to guess the 
+\begin_inset Formula $U_{cp}$
+\end_inset
+
+ capture rate expression based on 
+\begin_inset Formula $U_{cn}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+U_{cn} & =[1-e^{(\mu_{t}-\mu_{n})/kT}]f_{pt}nC_{n}\\
+U_{cp} & =[1-e^{(\mu_{p}-\mu_{t})/kT}]f_{t}pC_{p}
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $f_{pt}=1-f_{t}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+For a hole-tracking IB, 
+\begin_inset Formula $f_{t}$
+\end_inset
+
+ is fill factor of IB 
+\emph on
+with holes
+\emph default
+, we instead have
+\begin_inset Formula 
+\begin{align}
+U_{cn} & =[1-e^{(\mu_{t}-\mu_{n})/kT}]f_{t}nC_{n}\\
+U_{cp} & =[1-e^{(\mu_{p}-\mu_{t})/kT}]f_{pt}pC_{p}
+\end{align}
+
+\end_inset
+
+after some reflection.
+\end_layout
+
+\begin_layout Remark
+The main assumption used to figure out the signs is that the trapping process
+ tends to equalize the imrefs.
+ Here's the logic, for holes, then electrons, while highlighting the differences
+ between the two.
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+If 
+\begin_inset Formula $\mu_{p}=\mu_{t}$
+\end_inset
+
+, then we have no trapping (normal, because identical imrefs so thermal
+ equilibrium).
+ Now imagine that 
+\begin_inset Formula $\mu_{t}$
+\end_inset
+
+ is a bit higher than 
+\begin_inset Formula $\mu_{p}$
+\end_inset
+
+.
+ Higher 
+\begin_inset Formula $\mu_{t}$
+\end_inset
+
+ means 
+\series bold
+fewer holes
+\series default
+, so the trap has 
+\series bold
+fewer holes
+\series default
+ than it would have if it had the same imref as the valence band.
+ We therefore expect the trapping process to remedy that by 
+\series bold
+giving the trap some holes from the VB
+\series default
+.
+ In other words, 
+\begin_inset Formula $U_{cp}$
+\end_inset
+
+ is 
+\series bold
+positive
+\series default
+.
+ The sign of 
+\begin_inset Formula $U_{cp}$
+\end_inset
+
+ is the same as the sign of 
+\begin_inset Formula $1-\exp x$
+\end_inset
+
+ where 
+\begin_inset Formula $x=s_{p}\cdot(\mu_{p}-\mu_{t})$
+\end_inset
+
+, where 
+\begin_inset Formula $s_{p}$
+\end_inset
+
+ is the mystery sign.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset Formula $U_{cp}>0$
+\end_inset
+
+ requires 
+\begin_inset Formula $x<0$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $\mu_{p}-\mu_{t}<0$
+\end_inset
+
+ (by assumption), this implies 
+\begin_inset Formula $s_{p}=1$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+If 
+\begin_inset Formula $\mu_{n}=\mu_{t}$
+\end_inset
+
+, then we have no trapping (normal, because identical imrefs so thermal
+ equilibrium).
+ Now imagine that 
+\begin_inset Formula $\mu_{t}$
+\end_inset
+
+ is a bit higher than 
+\begin_inset Formula $\mu_{n}$
+\end_inset
+
+.
+ Higher 
+\begin_inset Formula $\mu_{t}$
+\end_inset
+
+ means 
+\series bold
+more electrons
+\series default
+, so the trap has 
+\series bold
+more electrons
+\series default
+ than it would have if it had the same imref as the conduction band.
+ We therefore expect the trapping process to remedy that by 
+\series bold
+giving the CB some electrons from the trap
+\series default
+.
+ In other words, 
+\begin_inset Formula $U_{cp}$
+\end_inset
+
+ is 
+\series bold
+negative
+\series default
+.
+ The sign of 
+\begin_inset Formula $U_{cn}$
+\end_inset
+
+ is the same as the sign of 
+\begin_inset Formula $1-\exp x$
+\end_inset
+
+ where 
+\begin_inset Formula $x=s_{n}\cdot(\mu_{n}-\mu_{t})$
+\end_inset
+
+, where 
+\begin_inset Formula $s_{n}$
+\end_inset
+
+ is the mystery sign.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset Formula $U_{cn}<0$
+\end_inset
+
+ requires 
+\begin_inset Formula $x>0$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $\mu_{n}-\mu_{t}<0$
+\end_inset
+
+ (by assumption), this implies 
+\begin_inset Formula $s_{n}=-1$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Standard
+We can summarize these relations as
+\begin_inset Formula 
+\begin{align}
+U_{u\rightarrow t} & =[1-e^{s_{u}(\mu_{u}-\mu_{t})/kT}]f_{t,-s_{u}}uC_{u\rightarrow t}\label{eq:SRH-general-U}
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $s_{u}$
+\end_inset
+
+ is the sign of band 
+\begin_inset Formula $u$
+\end_inset
+
+ (
+\begin_inset Formula $+1$
+\end_inset
+
+ for holes, 
+\begin_inset Formula $-1$
+\end_inset
+
+ for electrons), 
+\begin_inset Formula $u$
+\end_inset
+
+ is carrier concentration of that band, and 
+\begin_inset Formula $f_{t,-s_{u}}$
+\end_inset
+
+ is the fill factor of the trap with carriers of the opposite sign of band
+ 
+\begin_inset Formula $u$
+\end_inset
+
+.
+ This can also be written as
+\begin_inset Formula 
+\begin{align}
+U_{u\rightarrow t} & =[1-e^{s_{u}(\mu_{u}-\mu_{t})/kT}]u_{\textnormal{trap},-s_{u}}u\langle c_{n}\rangle\label{eq:SRH-general-U-u}
+\end{align}
+
+\end_inset
+
+using 
+\begin_inset Formula $C_{u\rightarrow t}=N_{t}\langle c_{n}\rangle$
+\end_inset
+
+.
+ This expression does 
+\series bold
+not
+\series default
+ assume nondegeneracy.
+\end_layout
+
+\begin_layout Standard
+If we assume nondegeneracy for band 
+\begin_inset Formula $u$
+\end_inset
+
+, we have
+\begin_inset Formula 
+\begin{align}
+u & =N_{u}e^{s_{u}(E_{u}-\mu_{u})/kT}\\
+u_{1} & =N_{u}e^{s_{u}(E_{u}-E_{t})/kT}
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $u_{1}$
+\end_inset
+
+ is the 
+\begin_inset Formula $u$
+\end_inset
+
+ if the quasi-fermi level of band 
+\begin_inset Formula $u$
+\end_inset
+
+ were at the (effective) energy level of the trap 
+\begin_inset Formula $E_{t}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Using 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:fd-u"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:fp_over_f"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ we obtain that
+\begin_inset Formula 
+\begin{align}
+f_{\textnormal{trap},-s_{u}}/f_{\textnormal{trap},s_{u}} & =e^{s_{u}(\mu_{t}-E_{t})/kT}\\
+u_{\textnormal{trap},-s_{u}}/u_{\textnormal{trap},s_{u}} & =e^{s_{u}(\mu_{t}-E_{t})/kT}\\
+u_{\textnormal{trap},-s_{u}} & =u_{\textnormal{trap},s_{u}}e^{s_{u}(\mu_{t}-E_{t})/kT}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then
+\begin_inset Formula 
+\begin{align}
+u_{\textnormal{trap},-s_{u}}u & =u_{\textnormal{trap},s_{u}}e^{s_{u}(\mu_{t}-E_{t})/kT}\cdot N_{u}e^{s_{u}(E_{u}-\mu_{u})/kT}\\
+ & =u_{\textnormal{trap},s_{u}}e^{s_{u}(\mu_{t}-\mu_{u})/kT}\cdot\underbrace{N_{u}e^{s_{u}(E_{u}-E_{t})/kT}}_{u_{1}}\label{eq:SRH-flip-trap-rel}
+\end{align}
+
+\end_inset
+
+which we use to rewrite 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:SRH-general-U-u"
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align}
+U_{u\rightarrow t} & =[1-e^{s_{u}(\mu_{u}-\mu_{t})/kT}]\underbrace{u_{\textnormal{trap},-s_{u}}u}\langle c_{n}\rangle\\
+U_{u\rightarrow t} & =[1-e^{s_{u}(\mu_{u}-\mu_{t})/kT}]\overbrace{u_{\textnormal{trap},s_{u}}e^{-s_{u}(\mu_{u}-\mu_{t})/kT}u_{1}}\langle c_{n}\rangle\\
+U_{u\rightarrow t} & =[e^{s_{u}(\mu_{t}-\mu_{u})/kT}-1]u_{\textnormal{trap},s_{u}}u_{1}\langle c_{n}\rangle\label{eq:SRH-general-U-u1}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Radiative recombination
+\end_layout
+
+\begin_layout Standard
+From 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Strandberg2011b"
+literal "false"
+
+\end_inset
+
+ have
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+r_{if} & \approx Ke^{\beta\Delta\mu_{if}}\int\alpha_{if}E^{2}e^{-\beta E}\,\d E,
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $K=8\pi n_{r}^{2}/h^{3}c^{2}$
+\end_inset
+
+, where 
+\begin_inset Formula $n_{r}$
+\end_inset
+
+ is the index of refraction.
+\end_layout
+
+\begin_layout Standard
+We assume that the 
+\begin_inset Formula $\alpha_{if}(E)$
+\end_inset
+
+ is a top hat function from 
+\begin_inset Formula $E_{if,0}$
+\end_inset
+
+ to 
+\begin_inset Formula $E_{if,1}$
+\end_inset
+
+, i.e.
+\begin_inset Formula 
+\begin{align}
+\alpha_{if}(E) & =\begin{cases}
+\alpha_{if} & E\in[E_{if,0},E_{if,1}]\\
+0 & \textnormal{otherwise}
+\end{cases}.
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This allows us to take the 
+\begin_inset Formula $\alpha_{if}(E)$
+\end_inset
+
+ out of the integral.
+ For convenience, we write
+\begin_inset Formula 
+\begin{align}
+I_{if} & =K\,\int_{E_{if,0}}^{E_{if,1}}\,E^{2}e^{-E/kT}\,\d E,
+\end{align}
+
+\end_inset
+
+which must have dimensions of 
+\begin_inset Formula $\ell^{-2}\,t^{-1}$
+\end_inset
+
+.
+ Note that these are different from those in the paper because I put in
+ the 
+\begin_inset Formula $K$
+\end_inset
+
+.
+ The antiderivative is
+\begin_inset Formula 
+\begin{align}
+\int E^{2}e^{-E/kT}\,\d E & =-kT\,\big(2(kT)^{2}+2\,E\,kT+E^{2}\big)\,e^{-E/kT}
+\end{align}
+
+\end_inset
+
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Maxima code: factor(integrate(E^2 * exp(-E/kT), E));
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For CB-VB recombination we simply have
+\begin_inset Formula 
+\begin{align}
+r_{cv} & =\alpha_{cv}\,e^{\beta\Delta\mu_{cv}}\,I_{cv}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For the two trapping processes, we plug in
+\begin_inset Formula 
+\begin{align}
+\alpha_{ci} & =\sigma_{ci}n_{ib}\\
+\alpha_{iv} & =\sigma_{iv}(N_{ib}-n_{ib})
+\end{align}
+
+\end_inset
+
+and we obtain
+\begin_inset Formula 
+\begin{align}
+r_{ci} & =\sigma_{ci}n_{ib}\,e^{\beta\Delta\mu_{ci}}\,I_{ci}\\
+r_{iv} & =\sigma_{iv}(N_{ib}-n_{ib})\,e^{\beta\Delta\mu_{iv}}\,I_{iv}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The parameters 
+\begin_inset Formula $\sigma_{ci},\sigma_{iv},I_{cv},I_{iv},I_{ci},N_{ib},\beta$
+\end_inset
+
+ can be evaluated by running the parameters script.
+\end_layout
+
+\begin_layout Subsubsection
+Deriving the form we actually use
+\end_layout
+
+\begin_layout Standard
+We summarize the relations as
+\begin_inset Formula 
+\begin{align}
+\alpha_{u,\textnormal{trap}}^{\textnormal{opt}} & =\sigma_{u,\textnormal{trap}}^{\textnormal{opt}}u_{\textnormal{trap},s_{u}}
+\end{align}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align}
+r_{u\rightarrow t} & =\sigma_{u,\textnormal{trap}}^{\textnormal{opt}}u_{\textnormal{trap},s_{u}}\,e^{s_{u}(\mu_{t}-\mu_{u})/kT}\,I_{u\rightarrow t}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To force recombination to zero when the imrefs are equal, we replace the
+ exponential term with 
+\begin_inset Formula $e^{x}-1$
+\end_inset
+
+ to get
+\begin_inset Formula 
+\begin{align}
+r_{u\rightarrow t} & =[e^{s_{u}(\mu_{t}-\mu_{u})/kT}-1]\,u_{\textnormal{trap},s_{u}}\,(\sigma_{u,\textnormal{trap}}^{\textnormal{opt}}I_{u\rightarrow t})
+\end{align}
+
+\end_inset
+
+which has the same form as 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:SRH-general-U-u1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ To get the same form as 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:SRH-general-U-u"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, we use 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:SRH-flip-trap-rel"
+
+\end_inset
+
+ in the form
+\begin_inset Formula 
+\begin{align}
+\frac{u_{\textnormal{trap},-s_{u}}u}{u_{1}}e^{-s_{u}(\mu_{t}-\mu_{u})/kT} & =u_{\textnormal{trap},s_{u}}
+\end{align}
+
+\end_inset
+
+which yields
+\begin_inset Formula 
+\begin{align}
+r_{u\rightarrow t} & =[e^{s_{u}(\mu_{t}-\mu_{u})/kT}-1]\,\frac{u_{\textnormal{trap},-s_{u}}u}{u_{1}}e^{-s_{u}(\mu_{t}-\mu_{u})/kT}\,(\sigma_{u,\textnormal{trap}}^{\textnormal{opt}}I_{u\rightarrow t})\\
+ & =[1-e^{s_{u}(\mu_{u}-\mu_{t})/kT}]\,u_{\textnormal{trap},-s_{u}}u\,\frac{\sigma_{u,\textnormal{trap}}^{\textnormal{opt}}I_{u\rightarrow t}}{u_{1}}\label{eq:rad-u-form}
+\end{align}
+
+\end_inset
+
+which has the same mathematical form as 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:SRH-general-U-u"
+
+\end_inset
+
+ where 
+\begin_inset Formula $\frac{\sigma_{u,\textnormal{trap}}^{\textnormal{opt}}I_{u\rightarrow t}}{u_{1}}$
+\end_inset
+
+ takes the place of the capture coefficient 
+\begin_inset Formula $\langle c_{n}\rangle$
+\end_inset
+
+, and allows for common subexpression elimination.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "/home/lambda/Documents/bibtex/main,/home/user/Documents/bibtex/main"
+options "plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+printbibliography
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\start_of_appendix
+Computing equilibrium carrier concentrations
+\end_layout
+
+\begin_layout Standard
+We set 
+\begin_inset Formula $\mu_{k}=0\:\forall k\in(\textnormal{bands})$
+\end_inset
+
+, and we try to find 
+\begin_inset Formula $V(x)$
+\end_inset
+
+ at thermal equilibrium, requiring local charge neutrality everywhere, and
+ assuming zero mobility.
+\end_layout
+
+\begin_layout Standard
+So we write
+\begin_inset Formula 
+\begin{align*}
+\rho & =0\\
+\int v\,\rho & =0
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Of course, we need boundary conditions, either on 
+\begin_inset Formula $V$
+\end_inset
+
+ or 
+\begin_inset Formula $\vec{E}$
+\end_inset
+
+.
+ We enforce 
+\begin_inset Formula $\vec{E}=0$
+\end_inset
+
+ since we want charge neutrality everywhere anyway.
+\end_layout
+
+\begin_layout Section
+Fermi-Dirac
+\end_layout
+
+\begin_layout Standard
+For degenerate bands with carrier concentration
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+u & =N_{0}\,f\big(\pm\beta(\mu-E_{0})\big)\label{eq:fd-u}
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $u$
+\end_inset
+
+ carrier concentration, 
+\begin_inset Formula $\mu$
+\end_inset
+
+ quasi-Fermi level, 
+\begin_inset Formula $E_{0}$
+\end_inset
+
+ band energy level, 
+\begin_inset Formula $\beta^{-1}=kT$
+\end_inset
+
+, and 
+\begin_inset Formula $f$
+\end_inset
+
+ is the Fermi-Dirac distribution function
+\begin_inset Formula 
+\begin{align}
+f(x) & =\frac{1}{1+e^{x}}\label{eq:fd-f}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As usual, the convention is that the top sign corresponds to holes, and
+ bottom to electrons.
+\end_layout
+
+\begin_layout Standard
+Then
+\begin_inset Formula 
+\begin{align}
+f^{-1}(z) & =\ln(z^{-1}-1)
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Remark
+Note the catastrophic cancellation if 
+\begin_inset Formula $z\approx1$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+We derive the inverse relationship.
+\begin_inset Formula 
+\begin{align}
+u & =N_{0}\,f\big(\pm\beta(\mu-E_{0})\big)\\
+\mu & =E_{0}\pm\frac{1}{\beta}f^{-1}(u/N_{0})
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Remark
+For holes, we conveniently have
+\begin_inset Formula 
+\begin{align}
+1-f(x) & =1-\frac{1}{1+e^{x}}\\
+ & =\frac{1+e^{x}}{1+e^{x}}-\frac{1}{1+e^{x}}\\
+ & =\frac{e^{x}}{1+e^{x}}\\
+ & =\frac{1}{1+e^{-x}}\\
+ & =f(-x)
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Remark
+We have
+\begin_inset Formula 
+\begin{align}
+\frac{1-f(x)}{f(x)} & =1/f(x)-1\\
+ & =e^{x}\label{eq:fp_over_f}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Degeneracy in Fermi-Dirac
+\end_layout
+
+\begin_layout Standard
+In the previous part we assumed that the degeneracy of the band is 
+\begin_inset Formula $1$
+\end_inset
+
+.
+ We now relax that condition by turning the energy level 
+\begin_inset Formula $E_{0}$
+\end_inset
+
+ into an 
+\emph on
+effective
+\emph default
+ energy level, and relating it to the true energy level 
+\begin_inset Formula $E_{0}^{\textnormal{true}}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Suppose that 
+\begin_inset Formula $m_{0}$
+\end_inset
+
+ is the degeneracy when the band is empty (of whichever carrier type we
+ chose to represent its carrier density), and 
+\begin_inset Formula $m_{1}$
+\end_inset
+
+ is the degeneracy when the band is full.
+ Following 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "(19.31)-(19.32)"
+key "Marder2010a"
+literal "true"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Appendix B"
+key "Shockley1952a"
+literal "true"
+
+\end_inset
+
+, we have occupation probability
+\begin_inset Formula 
+\begin{align}
+p(E) & =\frac{1}{1+\frac{m_{0}}{m_{1}}e^{\pm\beta(\mu-E_{0}^{\textnormal{true}})}}\label{eq:fd-degen-occupation}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As a sanity check, we see that we can recover the Maxwell-Boltzmann expression
+ 
+\begin_inset Formula $p(E)\approx m_{0}e^{\mp\beta(\mu-E_{0}^{\textnormal{true}})}$
+\end_inset
+
+ when 
+\begin_inset Formula $p(E)\ll1$
+\end_inset
+
+ and 
+\begin_inset Formula $g_{1}=1$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Comparing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:fd-u"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:fd-f"
+
+\end_inset
+
+ against 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:fd-degen-occupation"
+
+\end_inset
+
+, we can write
+\begin_inset Formula 
+\begin{align}
+e^{\pm\beta(\mu-E_{0})} & =\frac{m_{0}}{m_{1}}e^{\pm\beta(\mu-E_{0}^{\textnormal{true}})}\\
+\mp\beta E_{0} & =\ln\frac{m_{0}}{m_{1}}\mp\beta E_{0}^{\textnormal{true}}\\
+E_{0} & =E_{0}^{\textnormal{true}}\mp kT\ln\frac{m_{0}}{m_{1}}
+\end{align}
+
+\end_inset
+
+which relates the effective energy level 
+\begin_inset Formula $E_{0}$
+\end_inset
+
+ to the true energy level 
+\begin_inset Formula $E_{0}^{\textnormal{true}}$
+\end_inset
+
+, where the upper sign is for holes and lower for electrons.
+\end_layout
+
+\end_body
+\end_document

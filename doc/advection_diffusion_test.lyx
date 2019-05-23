@@ -1,0 +1,2405 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{siunitx}
+%\usepackage{listings}
+\usepackage{booktabs}
+\usepackage[style=numeric,maxnames=999,backend=biber]{biblatex}
+
+\AtBeginDocument{%
+\renewcommand{\ref}[1]{\mbox{\autoref{#1}}}
+}
+\def\equationautorefname~#1\null{Eq.~#1\null}
+
+
+%\addbibresource{main.bib}
+%\sisetup{
+%  separate-uncertainty=true
+%}
+\end_preamble
+\use_default_options true
+\begin_modules
+theorems-ams
+subequations
+\end_modules
+\maintain_unincluded_children false
+\language canadian
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command biber
+\index_command default
+\paperfontsize 12
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\branch thermal
+\selected 1
+\filename_suffix 0
+\color #ffffff
+\end_branch
+\branch srh
+\selected 0
+\filename_suffix 0
+\color #ffffff
+\end_branch
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1cm
+\topmargin 2cm
+\rightmargin 1cm
+\bottommargin 2cm
+\footskip 1cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\sbn}[2]{\{#1\:|\:#2\}}
+{\{#1\:|\:#2\}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\norm}[1]{\Vert#1\Vert}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\abs}[1]{|#1|}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\vabs}[1]{\left|#1\right|}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\xhat}[1]{\hat{#1}}
+{\hat{#1}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\rsph}{r}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\rcyl}{\rho}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\xx}{\xhat x}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\xy}{\xhat y}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\xz}{\xhat z}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\d}{\mathrm{d}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\f}[3]{#1:\ #2\rightarrow#3}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\k}[1]{\mathop{\mathrm{#1}}\nolimits}
+{\mathrm{#1}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\braket}[2]{\Braket{#1|#2}}
+{\left\langle #1|#2\right\rangle }
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\bra}[1]{\Bra{#1}}
+{\left\langle #1\right|}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\ket}[1]{\Ket{#1}}
+{\left|#1\right\rangle }
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\u}[1]{\mathrm{\:#1}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\li}{\k{li}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Test for advection-diffusion
+\end_layout
+
+\begin_layout Standard
+The original equation is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial p}{\partial t} & =\mp\frac{1}{e}\nabla\cdot\vec{j}_{p}+g\\
+\vec{j}_{p} & =e\mu p\vec{E}\mp e\mathcal{D}\nabla p
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We write instead
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+0 & =\nabla\cdot\vec{j}-f\\
+\vec{j} & =u\vec{E}-\nabla u
+\end{align*}
+
+\end_inset
+
+without loss of degree of freedom.
+ The residual is then
+\begin_inset Formula 
+\begin{align*}
+0 & =\nabla\cdot(u\vec{E})-\nabla^{2}u-f\\
+0 & =u\nabla\cdot\vec{E}+\vec{E}\cdot\nabla u-\nabla^{2}u-f
+\end{align*}
+
+\end_inset
+
+ Then
+\begin_inset Formula 
+\begin{align*}
+0 & =\nabla\cdot\vec{j}-f\\
+0 & =\nabla\cdot(u\vec{E}-\nabla u)-f\\
+0 & =\nabla\cdot(u\vec{E})-\nabla^{2}u-f
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Integrate with test function 
+\begin_inset Formula $v$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+0 & =\int_{\Omega}v\nabla\cdot(u\vec{E})-\int_{\Omega}v\nabla^{2}u-\int_{\Omega}vf\\
+0 & =\int_{\Omega}v\nabla u\cdot\vec{E}+\int_{\Omega}vu\nabla\cdot\vec{E}-\underbrace{\int_{\Omega}v\nabla^{2}u}_{\star}-\int_{\Omega}vf
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Use identity 
+\begin_inset Formula $\int_{\Omega}w(\nabla\cdot\vec{\sigma})=\oint_{\Gamma}\vec{\sigma}w\cdot\hat{n}-\int_{\Omega}\vec{\sigma}\cdot\nabla w$
+\end_inset
+
+ with 
+\begin_inset Formula $\vec{\sigma}=\nabla u$
+\end_inset
+
+ and 
+\begin_inset Formula $w=v$
+\end_inset
+
+ on 
+\begin_inset Formula $\star$
+\end_inset
+
+ term.
+\begin_inset Formula 
+\begin{align*}
+0 & =\int_{\Omega}v\nabla u\cdot\vec{E}+\int_{\Omega}vu\nabla\cdot\vec{E}-\underbrace{\int_{\Omega}v\nabla^{2}u}_{\star}-\int_{\Omega}vf\\
+0 & =\int_{\Omega}v\nabla u\cdot\vec{E}+\int_{\Omega}vu\nabla\cdot\vec{E}-\Big(\oint_{\Gamma}v\nabla u\cdot\hat{n}-\int_{\Omega}\nabla u\cdot\nabla v\Big)-\int_{\Omega}vf\\
+0 & =\underbrace{\int_{\Omega}v\nabla u\cdot\vec{E}}_{\star}+\int_{\Omega}vu\nabla\cdot\vec{E}-\oint_{\Gamma}v\nabla u\cdot\hat{n}+\int_{\Omega}\nabla u\cdot\nabla v-\int_{\Omega}vf
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Use identity 
+\begin_inset Formula $\int_{\Omega}\vec{\sigma}\cdot\nabla w=\oint_{\Gamma}\vec{\sigma}w\cdot\hat{n}-\int_{\Omega}w(\nabla\cdot\vec{\sigma})$
+\end_inset
+
+ with 
+\begin_inset Formula $\vec{\sigma}=v\vec{E}$
+\end_inset
+
+ and 
+\begin_inset Formula $w=u$
+\end_inset
+
+ on 
+\begin_inset Formula $\star$
+\end_inset
+
+ term.
+\begin_inset Formula 
+\begin{align*}
+0 & =\underbrace{\int_{\Omega}v\nabla u\cdot\vec{E}}_{\star}+\int_{\Omega}vu\nabla\cdot\vec{E}-\oint_{\Gamma}v\nabla u\cdot\hat{n}+\int_{\Omega}\nabla u\cdot\nabla v-\int_{\Omega}vf\\
+0 & =\oint_{\Gamma}v\vec{E}u\cdot\hat{n}-\int_{\Omega}u(\nabla\cdot v\vec{E})+\int_{\Omega}vu\nabla\cdot\vec{E}-\oint_{\Gamma}v\nabla u\cdot\hat{n}+\int_{\Omega}\nabla u\cdot\nabla v-\int_{\Omega}vf\\
+0 & =\oint_{\Gamma}v\vec{E}u\cdot\hat{n}-\cancel{\int_{\Omega}uv\nabla\cdot\vec{E}}-\int_{\Omega}u(\vec{E}\cdot\nabla v)+\cancel{\int_{\Omega}vu\nabla\cdot\vec{E}}-\oint_{\Gamma}v\nabla u\cdot\hat{n}+\int_{\Omega}\nabla u\cdot\nabla v-\int_{\Omega}vf\\
+0 & =\oint_{\Gamma}v\vec{E}u\cdot\hat{n}-\oint_{\Gamma}v\nabla u\cdot\hat{n}-\int_{\Omega}u(\vec{E}\cdot\nabla v)+\int_{\Omega}\nabla u\cdot\nabla v-\int_{\Omega}vf
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Depletion region test
+\end_layout
+
+\begin_layout Standard
+Recall
+\begin_inset Formula 
+\begin{align*}
+0 & =\nabla\cdot\vec{j}-f\\
+\vec{j} & =u\vec{E}-\nabla u
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the depletion region, we assert that the current is relatively small
+ compared to the individual drift and diffusion terms.
+ Then
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+j & =uE-\partial_{x}u\\
+0 & =\big(E-\frac{j}{u}\big)\,\d x-\frac{\d u}{u}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Assert 
+\begin_inset Formula $j=ku$
+\end_inset
+
+ for some small 
+\begin_inset Formula $k$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+0 & =(E-k)\,\d x-\frac{\d u}{u}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then
+\begin_inset Formula 
+\begin{align*}
+0 & =\Delta(-V-kx-\ln u)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In other words,
+\begin_inset Formula 
+\begin{align*}
+-V_{1}-kx_{1}-\ln u_{1} & =-V-kx-\ln u\\
+0 & =-\Delta V-k\Delta x-\ln\frac{u}{u_{1}}\\
+u & =u_{1}e^{-\Delta V-k\Delta x}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Sentaurus comparison
+\end_layout
+
+\begin_layout Standard
+The original drift-diffusion equations are
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial p}{\partial t} & =\mp\frac{1}{e}\nabla_{x}\cdot\vec{j}_{p}+g\\
+\vec{j}_{p} & =e\mu p\vec{E}\mp e\mathcal{D}\nabla_{x}p
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We need to write this as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\begin{aligned}0 & =\nabla_{z}\cdot\vec{c}-f\\
+\vec{c} & =u\vec{\mathcal{E}}-\nabla_{z}u
+\end{aligned}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+0 & =-\nabla_{z}\cdot(u\vec{\mathcal{E}}-\nabla_{z}u)+f
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We already have the Einstein relation 
+\begin_inset Formula $\mu_{p}=\mathcal{D}_{p}\beta e=\mathcal{D}_{p}e/kT$
+\end_inset
+
+, so
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial p}{\partial t} & =\mp\frac{1}{e}\nabla\cdot\vec{j}_{p}+g\\
+\vec{j}_{p} & =\mu_{p}ep\vec{E}\mp kT\mu_{p}\nabla p
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We eliminate 
+\begin_inset Formula $\vec{j}_{p}$
+\end_inset
+
+ and set 
+\begin_inset Formula $\partial p/\partial t$
+\end_inset
+
+ to zero, 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{D}_{p}=kT\mu_{p}e^{-1}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+0 & =\mp\nabla_{x}\cdot(\mu_{p}p\vec{E}\mp kT\mu_{p}e^{-1}\nabla_{x}p)+g
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A further consideration is that the length scale should be micron (
+\begin_inset Formula $z$
+\end_inset
+
+ variable) instead of cm (
+\begin_inset Formula $x$
+\end_inset
+
+ variable) as is common in semiconductor physics.
+ We write 
+\begin_inset Formula $z=x/x_{c}$
+\end_inset
+
+, so 
+\begin_inset Formula $\nabla_{x}=x_{c}\nabla_{z}$
+\end_inset
+
+.
+ Then
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+0 & =\mp x_{c}\nabla_{z}\cdot(\mu_{p}p\vec{E}\mp kT\mu_{p}e^{-1}x_{c}\nabla_{z}p)+g\\
+0 & =\mp x_{c}^{2}\nabla_{z}\cdot(p\,x_{c}^{-1}(kT)^{-1}e\vec{E}\mp\nabla_{z}p)+\frac{eg}{kT\mu_{p}}\\
+0 & =-\nabla_{z}\cdot(\pm p\,x_{c}^{-1}(kT)^{-1}e\vec{E}-\nabla_{z}p)+\frac{eg}{x_{c}^{2}kT\mu_{p}}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\textnormal{Recall}\qquad0 & =-\nabla_{z}\cdot(u\vec{\mathcal{E}}-\nabla_{z}u)+f
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For convenience, we take 
+\begin_inset Formula $u=p$
+\end_inset
+
+, and deduce the substitutions
+\begin_inset Formula 
+\begin{align*}
+f & =\frac{eg}{x_{c}^{2}kT\mu_{p}}\\
+\vec{\mathcal{E}} & =\pm\,x_{c}^{-1}(kT)^{-1}e\vec{E}\\
+u & =p
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+f & =\frac{(g-r)}{x_{c}^{2}\mathcal{D}}\\
+\vec{\mathcal{E}} & =\pm\,x_{c}^{-1}\beta e\vec{E}\\
+\vec{c} & =\pm\frac{1}{ex_{c}\mathcal{D}}\vec{j}_{p}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\begin{aligned}f & =\frac{(g-r)}{x_{c}^{2}\mathcal{D}}\\
+\vec{\mathcal{E}} & =\pm\,x_{c}^{-1}\beta e\vec{E}\\
+\vec{c} & =\pm\frac{1}{ex_{c}\mathcal{D}}\vec{j}_{p}\\
+\\
+\end{aligned}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Actually, Sentaurus doesn't provide 
+\begin_inset Formula $\beta$
+\end_inset
+
+ directly, so we obtain it from 
+\begin_inset Formula $\mu_{p}=\mathcal{D}_{p}\beta e$
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\vec{\mathcal{E}} & =\pm\,x_{c}^{-1}\frac{\mu_{p}}{\mathcal{D}_{p}}\vec{E}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally, for 
+\begin_inset Formula $\vec{j}_{p}$
+\end_inset
+
+ we have
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+0 & =\mp\frac{1}{e}\nabla_{x}\cdot\vec{j}_{p}+g
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We require
+\begin_inset Formula 
+\begin{align*}
+0 & =\nabla_{z}\cdot\vec{c}-f\\
+0 & =\nabla_{z}\cdot\vec{c}-\frac{eg}{x_{c}^{2}kT\mu_{p}}\\
+0 & =x_{c}^{2}\,kT\mu_{p}e^{-1}\,\nabla_{z}\cdot\vec{c}-g\\
+0 & =x_{c}\,kT\mu_{p}e^{-1}\,(x_{c}\nabla_{z})\cdot\vec{c}-g\\
+0 & =x_{c}\,kT\mu_{p}e^{-1}\,\nabla_{x}\cdot\vec{c}-g\\
+0 & =\mp\frac{1}{e}\nabla_{x}\cdot(\underbrace{\pm x_{c}\,kT\mu_{p}\,\vec{c}}_{\vec{j}_{p}})+g
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\implies\qquad\vec{c} & =\pm\frac{1}{x_{c}kT\mu_{p}}\vec{j}_{p}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We express quasi-fermi level 
+\begin_inset Formula $F$
+\end_inset
+
+ (with a constant offset!) and potential 
+\begin_inset Formula $\varphi$
+\end_inset
+
+ in multiples of 
+\begin_inset Formula $1/kT$
+\end_inset
+
+ and 
+\begin_inset Formula $e/kT$
+\end_inset
+
+ respectively, so that
+\begin_inset Formula 
+\begin{align*}
+u & =p=e^{-(F+\varphi)}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We are then taking 
+\begin_inset Formula $\varphi=\pm eV/kT$
+\end_inset
+
+ and 
+\begin_inset Formula $F=-\ln p-\varphi$
+\end_inset
+
+.
+ We verify 
+\begin_inset Formula $\vec{\mathcal{E}}=-\nabla_{z}\varphi$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{align*}
+\nabla_{z}\varphi & =\pm\beta e\nabla_{z}V\\
+ & =\pm\frac{\beta e}{x_{c}}\,x_{c}\nabla_{z}V\\
+ & =\pm\frac{\beta e}{x_{c}}\,\nabla_{x}V\\
+ & =\pm\frac{\beta e}{x_{c}}\,(-\vec{E})\\
+ & =-\vec{\mathcal{E}}.
+\end{align*}
+
+\end_inset
+
+since 
+\begin_inset Formula $\vec{\mathcal{E}}=\pm\,x_{c}^{-1}\frac{e}{kT}\vec{E}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Then
+\begin_inset Formula 
+\begin{align*}
+\vec{c} & =u\vec{\mathcal{E}}-\nabla_{z}u\\
+ & =e^{-(F+\varphi)}\vec{\mathcal{E}}-\nabla_{z}e^{-(F+\varphi)}\\
+ & =e^{-(F+\varphi)}\vec{\mathcal{E}}-e^{-(F+\varphi)}\nabla_{z}(-(F+\varphi))\\
+ & =p(\vec{\mathcal{E}}-\nabla_{z}(-(F+\varphi)))\\
+ & =p(\vec{\mathcal{E}}+\nabla_{z}F+\underbrace{\nabla_{z}\varphi}_{-\vec{\mathcal{E}}})\\
+ & =p\,\nabla_{z}F
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Mixed formulation, I
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\begin{aligned}0 & =\nabla\cdot\vec{c}-f\\
+\vec{c} & =u\vec{\mathcal{E}}-\nabla u
+\end{aligned}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We introduce test functions 
+\begin_inset Formula $\vec{\phi},v$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+0 & =\nabla\cdot\vec{c}-f\\
+0 & =\int_{\Omega}v\,\nabla\cdot\vec{c}-\int_{\Omega}v\,f
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This is fine if we take 
+\begin_inset Formula $\vec{c}$
+\end_inset
+
+ to be in BDM (Hdiv) space.
+ The other equation:
+\begin_inset Formula 
+\begin{align*}
+\vec{c} & =u\vec{\mathcal{E}}-\nabla u\\
+0 & =\vec{c}-u\vec{\mathcal{E}}+\nabla u\\
+0 & =\int_{\Omega}\vec{\phi}\cdot\vec{c}-\int_{\Omega}\vec{\phi}\cdot u\vec{\mathcal{E}}+\int_{\Omega}\vec{\phi}\cdot\nabla u
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Integrate last term by parts, use 
+\begin_inset Formula $\int_{\Omega}\vec{\sigma}\cdot\nabla w=\oint_{\Gamma}\vec{\sigma}w\cdot\hat{n}-\int_{\Omega}w(\nabla\cdot\vec{\sigma})$
+\end_inset
+
+ with 
+\begin_inset Formula $w=u$
+\end_inset
+
+ and 
+\begin_inset Formula $\vec{\sigma}=\vec{\phi}$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align}
+0 & =\int_{\Omega}\vec{\phi}\cdot\vec{c}-\int_{\Omega}\vec{\phi}\cdot u\vec{\mathcal{E}}+\int_{\Omega}\vec{\phi}\cdot\nabla u\nonumber \\
+0 & =\int_{\Omega}\vec{\phi}\cdot\vec{c}-\int_{\Omega}\vec{\phi}\cdot u\vec{\mathcal{E}}+\oint_{\Gamma}\vec{\phi}u\cdot\hat{n}-\int_{\Omega}u(\nabla\cdot\vec{\phi})\nonumber \\
+0 & =\int_{\Omega}\vec{\phi}\cdot\vec{c}-\int_{\Omega}\vec{\phi}\cdot u\vec{\mathcal{E}}-\int_{\Omega}u(\nabla\cdot\vec{\phi})+\underbrace{\oint_{\Gamma}\vec{\phi}u\cdot\hat{n}}_{\textnormal{natural BC}}\label{eq:mixed1-weak}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+According to FEniCS docs, we need to use a DG element of order one less
+ than the BDM element for the current 
+\begin_inset Formula $\vec{c}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Hypothesis: Nodal representation loss of precision
+\end_layout
+
+\begin_layout Standard
+We suspect there is a loss of precision issue in the computation of current,
+ both due to the near-cancellation of advection and diffusion terms, and
+ the inability to resolve cell-wise variations in 
+\begin_inset Formula $u$
+\end_inset
+
+ that are small compared to its magnitude.
+\end_layout
+
+\begin_layout Standard
+Several workarounds are presented here.
+\end_layout
+
+\begin_layout Subsubsection
+Constant offset representation
+\end_layout
+
+\begin_layout Standard
+We suggest a constant offset representation instead.
+ Let 
+\begin_inset Formula $u_{0}$
+\end_inset
+
+ be an appropriate cell average (in an iterative process, taken from the
+ previous iteration's 
+\begin_inset Formula $u$
+\end_inset
+
+), and let 
+\begin_inset Formula $\delta u$
+\end_inset
+
+ be the new current density offset variable, such that 
+\begin_inset Formula $u=u_{0}+\delta u$
+\end_inset
+
+.
+ Then the weak form 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:mixed1-weak"
+
+\end_inset
+
+ becomes
+\begin_inset Formula 
+\begin{align*}
+0 & =\int_{\Omega}\vec{\phi}\cdot\vec{c}-\int_{\Omega}\vec{\phi}\cdot u\vec{\mathcal{E}}-\int_{\Omega}u(\nabla\cdot\vec{\phi})+\underbrace{\oint_{\Gamma}\vec{\phi}u\cdot\hat{n}}_{\textnormal{natural BC}}\\
+0 & =\int_{\Omega}\vec{\phi}\cdot\vec{c}-\int_{\Omega}u(\vec{\phi}\cdot\vec{\mathcal{E}}+\nabla\cdot\vec{\phi})+\underbrace{\oint_{\Gamma}\vec{\phi}u\cdot\hat{n}}_{\textnormal{natural BC}}\\
+0 & =\int_{\Omega}\vec{\phi}\cdot\vec{c}-\int_{\Omega}(u_{0}+\delta u)(\vec{\phi}\cdot\vec{\mathcal{E}}+\nabla\cdot\vec{\phi})+\underbrace{\oint_{\Gamma}\vec{\phi}(u_{0}+\delta u)\cdot\hat{n}}_{\textnormal{natural BC}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Using thermal equilibrium as 
+\begin_inset Formula $u_{0}$
+\end_inset
+
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:mixed-u0-thmeq"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Recall that
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\begin{aligned}\vec{c} & =u\vec{\mathcal{E}}-\nabla u\end{aligned}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If 
+\begin_inset Formula $u_{0}$
+\end_inset
+
+ is taken to be the carrier concentration at thermal equilibrium (no applied
+ bias, no illumination, no current), then
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\begin{aligned}\cancelto{0}{\vec{c}_{0}} & =u_{0}\vec{\mathcal{E}}_{0}-\nabla u_{0}\\
+0 & =u_{0}\vec{\mathcal{E}}_{0}-\nabla u_{0}
+\end{aligned}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then we can write
+\begin_inset Formula 
+\begin{align*}
+\vec{c} & =u\vec{\mathcal{E}}-\nabla u-(u_{0}\vec{\mathcal{E}}_{0}-\nabla u_{0})\\
+\vec{c} & =u\vec{\mathcal{E}}-u_{0}\vec{\mathcal{E}}_{0}-\nabla(u-u_{0})\\
+\vec{c} & =u\vec{\mathcal{E}}-u_{0}\vec{\mathcal{E}}+u_{0}\vec{\mathcal{E}}-u_{0}\vec{\mathcal{E}}_{0}-\nabla(u-u_{0})\\
+\vec{c} & =(u-u_{0})\vec{\mathcal{E}}+u_{0}(\vec{\mathcal{E}}-\vec{\mathcal{E}}_{0})-\nabla(u-u_{0})
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using the notation 
+\begin_inset Formula $\delta a=a-a_{0}$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{align*}
+\vec{c} & =\vec{\mathcal{E}}\delta u+u_{0}\delta\vec{\mathcal{E}}-\nabla\delta u
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This modifies 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:mixed1-weak"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+0 & =\int_{\Omega}\vec{\phi}\cdot\vec{c}-\int_{\Omega}\vec{\phi}\cdot u\vec{\mathcal{E}}-\int_{\Omega}u(\nabla\cdot\vec{\phi})+\underbrace{\oint_{\Gamma}\vec{\phi}u\cdot\hat{n}}_{\textnormal{natural BC}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+through the relabelling 
+\begin_inset Formula $u\rightarrow\delta u$
+\end_inset
+
+ and the addition of a new term
+\begin_inset Formula 
+\begin{align*}
+0 & =\int_{\Omega}\vec{\phi}\cdot\vec{c}-\int_{\Omega}\vec{\phi}\cdot(\delta u)\vec{\mathcal{E}}-\int_{\Omega}(\delta u)(\nabla\cdot\vec{\phi})-\overbrace{\int_{\Omega}u_{0}(\phi\cdot\delta\vec{\mathcal{E}})}^{\text{new term}}+\underbrace{\oint_{\Gamma}\vec{\phi}(\delta u)\cdot\hat{n}}_{\textnormal{natural BC}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This is implemented as 
+\begin_inset Quotes eld
+\end_inset
+
+
+\family typewriter
+adt_delta_density_mixed_naive
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Units
+\end_layout
+
+\begin_layout Standard
+Assert that 
+\begin_inset Formula $u$
+\end_inset
+
+ is dimensionless.
+ Then from 
+\begin_inset Formula 
+\[
+\begin{aligned}0 & =\nabla\cdot\vec{c}-f\\
+\vec{c} & =u\vec{\mathcal{E}}-\nabla u
+\end{aligned}
+\]
+
+\end_inset
+
+we conclude that
+\begin_inset Formula 
+\begin{align*}
+[u] & =1\\{}
+[f] & =1/\ell^{2}\\{}
+[\vec{c}] & =1/\ell\\{}
+[\vec{\mathcal{E}}] & =1/\ell
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Looking at the weak forms above and asserting that each term must come out
+ dimensionless, we additionally conclude that
+\begin_inset Formula 
+\begin{align*}
+[v] & =1/\ell\\{}
+[\vec{\phi}] & =1/\ell^{2}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Overall solution method
+\end_layout
+
+\begin_layout Enumerate
+Solve Poisson only at thermal equilibrium 
+\begin_inset Quotes eld
+\end_inset
+
+po_thmeq
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The chemical potential is set to zero everywhere, and the carrier concentration
+s are represented as 
+\begin_inset Formula $N_{0}e^{\beta eV(x)}$
+\end_inset
+
+ (so quadrature of spatially exponential integrals is used).
+ This solution is used as the initial guess for the next step.
+\end_layout
+
+\begin_layout Enumerate
+Solve full coupled problem still at thermal equilibrium 
+\begin_inset Quotes eld
+\end_inset
+
+thmeq
+\begin_inset Quotes erd
+\end_inset
+
+.
+ This solution is used as the 
+\begin_inset Formula $u_{0},\vec{\mathcal{E}}_{0}$
+\end_inset
+
+ in 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "subsec:mixed-u0-thmeq"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Slowly ramp up electrostatic potential and illumination, solving the coupled
+ problem using the delta representation (with 
+\begin_inset Formula $u_{0}$
+\end_inset
+
+ from the previous step).
+\end_layout
+
+\begin_layout Section
+QFL mixed formulation
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+0 & =\nabla\cdot\vec{c}-f\\
+\vec{c} & =u\vec{\mathcal{E}}-\nabla u
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Write 
+\begin_inset Formula $u=e^{-(w+\mathcal{V})}$
+\end_inset
+
+ where 
+\begin_inset Formula $\nabla\mathcal{V}=-\mathcal{E}$
+\end_inset
+
+.
+ Then
+\begin_inset Formula 
+\begin{align*}
+\nabla u & =\nabla(e^{-(w+\mathcal{V})})\\
+ & =u\,\nabla(-(w+\mathcal{V}))\\
+ & =-u\,\nabla w-u\,\underbrace{\nabla\mathcal{V}}_{-\mathcal{E}}\\
+ & =-u\,\nabla w+u\mathcal{E}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\vec{c} & =u\vec{\mathcal{E}}-\nabla u\\
+ & =u\vec{\mathcal{E}}-(-u\,\nabla w+u\mathcal{E})\\
+ & =u\,\nabla w
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Problem: 
+\begin_inset Formula $\nabla w/w\lll1$
+\end_inset
+
+ in majority region.
+ We can hack this by introducing a DG0 function 
+\begin_inset Formula $\bar{w}$
+\end_inset
+
+ which is updated at each iteration to be the cell-wise average of 
+\begin_inset Formula $w$
+\end_inset
+
+, and represent 
+\begin_inset Formula $w$
+\end_inset
+
+ as an offset away from 
+\begin_inset Formula $\bar{w}$
+\end_inset
+
+.
+ 
+\begin_inset Formula $\delta w=w-\bar{w}$
+\end_inset
+
+ becomes then the dynamical variable.
+\end_layout
+
+\begin_layout Standard
+We rearrange
+\begin_inset Formula 
+\begin{align*}
+\vec{0} & =\frac{\vec{c}}{u}-\nabla w\\
+\vec{0} & =\int_{\Omega}\vec{\phi}\cdot\frac{\vec{c}}{u}-\int_{\Omega}\vec{\phi}\cdot\nabla w
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Integrate last term by parts, using 
+\begin_inset Formula $\int_{\Omega}\vec{\sigma}\cdot\nabla a=\oint_{\Gamma}\vec{\sigma}a\cdot\hat{n}-\int_{\Omega}a(\nabla\cdot\vec{\sigma})$
+\end_inset
+
+ with 
+\begin_inset Formula $a=w$
+\end_inset
+
+ and 
+\begin_inset Formula $\vec{\sigma}=\vec{\phi}$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+\vec{0} & =\int_{\Omega}\vec{\phi}\cdot\frac{\vec{c}}{u}-\int_{\Omega}\vec{\phi}\cdot\nabla w\\
+\vec{0} & =\int_{\Omega}\vec{\phi}\cdot\frac{\vec{c}}{u}-\oint_{\Gamma}\vec{\phi}w\cdot\hat{n}+\int_{\Omega}w(\nabla\cdot\vec{\phi})\\
+\vec{0} & =\int_{\Omega}\vec{\phi}\cdot\frac{\vec{c}}{u}+\int_{\Omega}w(\nabla\cdot\vec{\phi})-\underbrace{\iint_{\Gamma}\vec{\phi}w_{\textnormal{bc}}\cdot\hat{n}}_{\textnormal{natural BC}}
+\end{align*}
+
+\end_inset
+
+where 
+\begin_inset Formula $u^{-1}=e^{w+\mathcal{V}}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Rederivation of 2018-12-05
+\end_layout
+
+\begin_layout Subsubsection
+The physics
+\end_layout
+
+\begin_layout Standard
+We begin with the drift-diffusion equation
+\begin_inset Flex Subequations
+status open
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "eq:original-dd"
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align}
+\frac{\partial u}{\partial t} & =\mp\frac{1}{q}\vec{\nabla}\cdot\vec{j}_{u}+g\label{eq:original-dd-g}\\
+\vec{j}_{u} & =q\mu u\vec{E}\mp q\mathcal{D}\,\vec{\nabla}u\label{eq:original-dd-j}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Introduce 
+\begin_inset Formula $w_{u}$
+\end_inset
+
+ as 
+\begin_inset Formula $u=u_{0}e^{\mp(w_{u}+q\phi)/kT}$
+\end_inset
+
+, and assume that 
+\begin_inset Formula $u_{0}$
+\end_inset
+
+ and 
+\begin_inset Formula $kT$
+\end_inset
+
+ are spatially constant.
+ Then 
+\begin_inset Formula $\vec{\nabla}u=\mp u\,(\vec{\nabla}w_{u}+q\,\vec{\nabla}\phi)/kT$
+\end_inset
+
+.
+ Note Einstein relation 
+\begin_inset Formula $\mu=q\mathcal{D}/kT$
+\end_inset
+
+, or 
+\begin_inset Formula $\mathcal{D}=\mu kT/q$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align}
+\vec{j}_{u} & =q\mu u\vec{E}\mp q\mathcal{D}\,\vec{\nabla}u\\
+ & =q\mu u\vec{E}\mp(\mu kT)\,\vec{\nabla}u\\
+ & =q\mu u\vec{E}+(\mu kT)\,u\,(\vec{\nabla}w_{u}+q\,\underbrace{\vec{\nabla}\phi}_{-\vec{E}})/kT\\
+ & =\cancel{q\mu u\vec{E}}+\mu\,u\,(\vec{\nabla}w_{u}-\cancel{q\vec{E}})\\
+ & =\mu u\,\vec{\nabla}w_{u}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We have equations
+\begin_inset Formula 
+\begin{align}
+\frac{\partial u}{\partial t} & =\mp\frac{1}{q}\vec{\nabla}\cdot\vec{j}_{u}+g\\
+\vec{j}_{u} & =\mu u\,\vec{\nabla}w_{u}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We either set 
+\begin_inset Formula $\frac{\partial u}{\partial t}$
+\end_inset
+
+ to zero or pack it in the 
+\begin_inset Formula $g$
+\end_inset
+
+.
+ Either way we get
+\begin_inset Formula 
+\begin{align}
+\pm qg & =\vec{\nabla}\cdot\vec{j}_{u}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Our final answer is then
+\begin_inset Formula 
+\begin{align}
+\pm qg & =\vec{\nabla}\cdot\vec{j}_{u}\label{eq:dd1}\\
+\vec{j}_{u} & =\mu u\,\vec{\nabla}w_{u}\label{eq:dd2}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+FEM
+\end_layout
+
+\begin_layout Standard
+We multiply 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dd1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ by test function 
+\begin_inset Formula $v\in\k{DG}(d_{\textnormal{dd}}-1)$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{align}
+\pm\int_{\Omega}v\,qg & =\int_{\Omega}v\,\vec{\nabla}\cdot\vec{j}_{u}\\
+0 & =\int_{\Omega}v\,\vec{\nabla}\cdot\vec{j}_{u}\mp\int_{\Omega}v\,qg\label{eq:mixed-dd-g}
+\end{align}
+
+\end_inset
+
+and we're done.
+ Next we rearrange 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dd2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ a little,
+\begin_inset Formula 
+\begin{align}
+\vec{j}_{u} & =\mu u\,\vec{\nabla}w_{u}\\
+\vec{j}_{u}/(\mu u) & =\vec{\nabla}w_{u}
+\end{align}
+
+\end_inset
+
+and we multiply 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dd2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ by test function 
+\begin_inset Formula $\vec{\psi}\in\k{BDM}(d_{\textnormal{dd}})$
+\end_inset
+
+ to obtain
+\begin_inset Formula 
+\begin{align}
+\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/(\mu u) & =\int_{\Omega}\vec{\psi}\cdot\vec{\nabla}w_{u}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Integrate last term by parts, use 
+\begin_inset Formula $\int_{\Omega}\vec{\sigma}\cdot\vec{\nabla}a=\oint_{\Gamma}\vec{\sigma}a\cdot\hat{n}-\int_{\Omega}a(\vec{\nabla}\cdot\vec{\sigma})$
+\end_inset
+
+ with 
+\begin_inset Formula $a=w_{u}$
+\end_inset
+
+ and 
+\begin_inset Formula $\vec{\sigma}=\vec{\psi}$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{align}
+\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/(\mu u) & =\oint_{\Gamma}\vec{\psi}w_{u}\cdot\hat{n}-\int_{\Omega}w_{u}(\vec{\nabla}\cdot\vec{\psi})\\
+\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/(\mu u) & =\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,w_{u,\textnormal{BC}}-\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,w_{u}
+\end{align}
+
+\end_inset
+
+and we obtain the final weak form
+\begin_inset Formula 
+\begin{align}
+0 & =\int_{\Omega}v\,\vec{\nabla}\cdot\vec{j}_{u}\mp\int_{\Omega}v\,qg\label{eq:ddf1}\\
+0 & =\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/(\mu u)-\underbrace{\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,w_{u,\textnormal{BC}}}_{\textnormal{natural BC}}+\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,w_{u}\label{eq:ddf2}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Why divide by mobility in the second equation?
+\end_layout
+
+\begin_layout Standard
+We start off with
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+\vec{j}_{u} & =\mu u\,\vec{\nabla}w_{u}\\
+\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u} & =\int_{\Omega}\vec{\psi}\cdot\mu u\,\vec{\nabla}w_{u}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Integrate by parts using 
+\begin_inset Formula $\int_{\Omega}\vec{\sigma}\cdot\vec{\nabla}a=\oint_{\Gamma}\vec{\sigma}a\cdot\hat{n}-\int_{\Omega}a(\vec{\nabla}\cdot\vec{\sigma})$
+\end_inset
+
+ with 
+\begin_inset Formula $a=w_{u}$
+\end_inset
+
+ and 
+\begin_inset Formula $\vec{\sigma}=\mu u\vec{\psi}$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{align}
+\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u} & =\int_{\Omega}\vec{\psi}\cdot\mu u\,\vec{\nabla}w_{u}\\
+\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u} & =\oint_{\Gamma}\mu u\vec{\psi}w_{u}\cdot\hat{n}-\int_{\Omega}w(\vec{\nabla}\cdot\mu u\vec{\psi})\\
+\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u} & =\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,\mu uw_{u}-\int_{\Omega}(\vec{\nabla}\cdot(\mu u\vec{\psi}))\,w_{u}
+\end{align}
+
+\end_inset
+
+which has a 
+\begin_inset Formula $\vec{\nabla}\cdot(\mu u\vec{\psi})$
+\end_inset
+
+ term instead of 
+\begin_inset Formula $\vec{\nabla}\cdot\vec{\psi}$
+\end_inset
+
+ term.
+\end_layout
+
+\begin_layout Subsubsection
+Delta representation
+\end_layout
+
+\begin_layout Standard
+We write 
+\begin_inset Formula $w_{u}=w_{u0}+\delta w_{u}$
+\end_inset
+
+, where 
+\begin_inset Formula $w_{u0}\in\mathrm{DG}(0)$
+\end_inset
+
+ (cell-wise constant function).
+\begin_inset Formula 
+\begin{align}
+0 & =\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/(\mu u)-\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,(w_{u0,\textnormal{BC}}+\delta w_{u,\textnormal{BC}})+\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,(w_{u0}+\delta w_{u})
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If 
+\begin_inset Formula $w_{u0}$
+\end_inset
+
+ is spatially constant throughout the entire domain, we have
+\begin_inset Formula 
+\begin{align}
+0 & =\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/(\mu u)-\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,(\delta w_{u,\textnormal{BC}})+\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,(\delta w_{u})
+\end{align}
+
+\end_inset
+
+since 
+\begin_inset Formula $\nabla w_{u}=\nabla(w_{u0}+\delta w_{u})=\nabla(\delta w_{u})$
+\end_inset
+
+ in 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dd2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The idea is to partition the domain into regions, each having its own (spatially
+ constant) base qfl value 
+\begin_inset Formula $w_{u0}$
+\end_inset
+
+ relative to which the dynamical variable 
+\begin_inset Formula $\delta w_{u}$
+\end_inset
+
+ is expressed.
+ This yields a weak form with an additional term,
+\begin_inset Formula 
+\begin{align}
+0 & =\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/(\mu u)-\underbrace{\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,\delta w_{u,\textnormal{BC}}}_{\textnormal{natural BC}}+\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,\delta w_{u}+\underbrace{\sum_{f\in\textnormal{interior facets}}\int_{f}(\vec{\psi}\cdot\hat{n})\,[w_{u0}]}_{\textnormal{region boundary term}}\label{eq:dd2-offset}
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $[w_{u0}]$
+\end_inset
+
+ is the jump operator, which takes the difference between the values of
+ a discontinuous expression on either side of a facet.
+\end_layout
+
+\begin_layout Standard
+We now derive that additional term.
+ We substitute 
+\begin_inset Formula $w_{u}=w_{u0}+\delta w_{u}$
+\end_inset
+
+ into 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dd2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, and we obtain
+\begin_inset Formula 
+\begin{align}
+0 & =\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/(\mu u)-\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,w_{u,\textnormal{BC}}+\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,w_{u}\\
+0 & =\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/(\mu u)-\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,\delta w_{u,\textnormal{BC}}+\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,\delta w_{u}\underbrace{-\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,w_{u0,\textnormal{BC}}+\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,w_{u0}}_{(\star)}\label{eq:dd2-offset-inter}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Our goal now is to rewrite the 
+\begin_inset Formula $(\star)$
+\end_inset
+
+ term.
+ We begin by noting that 
+\begin_inset Formula $w_{u0}$
+\end_inset
+
+ is constant on each cell 
+\begin_inset Formula $K$
+\end_inset
+
+, 
+\begin_inset Formula $\vec{\nabla}w_{u0}=\vec{0}$
+\end_inset
+
+ on each cell.
+ We use the vector identity 
+\begin_inset Formula $\int_{\Omega}\vec{\sigma}\cdot\vec{\nabla}a+\int_{\Omega}a(\vec{\nabla}\cdot\vec{\sigma})=\oint_{\Gamma}\vec{\sigma}a\cdot\hat{n}$
+\end_inset
+
+ with 
+\begin_inset Formula $a=w_{u0}$
+\end_inset
+
+ and 
+\begin_inset Formula $\vec{\sigma}=\vec{\psi}$
+\end_inset
+
+, yielding
+\begin_inset Formula 
+\begin{align}
+\int_{K}\vec{\psi}\cdot\underbrace{\vec{\nabla}w_{u0}}_{\vec{0}}+\int_{K}(\vec{\nabla}\cdot\vec{\psi})\,w_{u0} & =\oint_{\partial K}(\vec{\psi}\cdot\hat{n})\,w_{u0}\\
+\underbrace{\sum_{K}\int_{K}}_{\int_{\Omega}}(\vec{\nabla}\cdot\vec{\psi})\,w_{u0} & =\sum_{K}\oint_{\partial K}(\vec{\psi}\cdot\hat{n})\,w_{u0}\\
+\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,w_{u0} & =\sum_{f\in\textnormal{interior facets}}\int_{f}(\vec{\psi}\cdot\hat{n})\,[w_{u0}]+\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,w_{u0}\\
+\underbrace{-\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,w_{u0}+\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,w_{u0}}_{(*)} & =\sum_{f\in\textnormal{interior facets}}\int_{f}(\vec{\psi}\cdot\hat{n})\,[w_{u0}]
+\end{align}
+
+\end_inset
+
+which, plugged into 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dd2-offset-inter"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, yields 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dd2-offset"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Units
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $\ell$
+\end_inset
+
+ be length unit, 
+\begin_inset Formula $q$
+\end_inset
+
+ charge, 
+\begin_inset Formula $t$
+\end_inset
+
+ time, 
+\begin_inset Formula $E$
+\end_inset
+
+ energy, 
+\begin_inset Formula $j$
+\end_inset
+
+ current density, 
+\begin_inset Formula $i$
+\end_inset
+
+ current.
+ 
+\begin_inset Formula $i=q/t$
+\end_inset
+
+, or 
+\begin_inset Formula $q=it$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+From 
+\begin_inset Formula $\int_{\Omega}v\,qg$
+\end_inset
+
+ we have that 
+\begin_inset Formula $\ell^{3}\cdot[v]\cdot q\cdot(1/t/\ell^{3})=1$
+\end_inset
+
+.
+ Thus 
+\begin_inset Formula $[v]=t/q=t/(it)=1/i$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+From 
+\begin_inset Formula $\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,w$
+\end_inset
+
+ we have that 
+\begin_inset Formula $\ell^{3}\cdot\ell^{-1}\cdot[\vec{\psi}]\cdot E=1$
+\end_inset
+
+.
+ Thus 
+\begin_inset Formula $[\vec{\psi}]=\ell^{-2}\cdot E^{-1}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Iterative delta representation
+\end_layout
+
+\begin_layout Standard
+The main problem with this representation is that 
+\begin_inset Formula $\nabla w/w\lll1$
+\end_inset
+
+; coupled with the fact that DG elements are represented nodally, this causes
+ catastrophic cancellation in the calculation of 
+\begin_inset Formula $\nabla w$
+\end_inset
+
+.
+ Instead, we choose to represent 
+\begin_inset Formula $w$
+\end_inset
+
+ as an offset away from a guessed value 
+\begin_inset Formula $\bar{w}$
+\end_inset
+
+ of element DG0.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+\vec{0} & =\int_{\Omega}\vec{\phi}\cdot\vec{c}\,e^{w+\mathcal{V}}+\int_{\Omega}w(\nabla\cdot\vec{\phi})-\oint_{\Gamma}\vec{\phi}w\cdot\hat{n}\\
+\vec{0} & =\int_{\Omega}\vec{\phi}\cdot\vec{c}\,e^{\bar{w}+\delta w+\mathcal{V}}+\int_{\Omega}(\bar{w}+\delta w)(\nabla\cdot\vec{\phi})-\oint_{\Gamma}\vec{\phi}(\bar{w}+\delta w)\cdot\hat{n}\\
+\vec{0} & =\int_{\Omega}\vec{\phi}\cdot\vec{c}\,e^{\bar{w}+\delta w+\mathcal{V}}+\int_{\Omega}(\nabla\cdot\vec{\phi})\bar{w}+\int_{\Omega}(\nabla\cdot\vec{\phi})\delta w-\oint_{\Gamma}\vec{\phi}(\bar{w}+\delta w)\cdot\hat{n}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Remark*
+The quasi-fermi level 
+\begin_inset Formula $w=-\log u-\mathcal{V}$
+\end_inset
+
+ is much flatter than 
+\begin_inset Formula $w'=\log u=-w-\mathcal{V}$
+\end_inset
+
+.
+ This can be readily seen from the relationship 
+\begin_inset Formula $\nabla w=\vec{c}/u$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Remark*
+This doesn't work because the catastrophic cancellation still happens in
+ 
+\begin_inset Formula $\int_{\Omega}(\nabla\cdot\vec{\phi})\bar{w}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+QFL offset partitioning
+\end_layout
+
+\begin_layout Standard
+The idea is to partition the domain into regions, each having its own (spatially
+ constant) base qfl value 
+\begin_inset Formula $w_{0}$
+\end_inset
+
+ relative to which the dynamical variable 
+\begin_inset Formula $\delta w$
+\end_inset
+
+ is expressed.
+\end_layout
+
+\begin_layout Standard
+Let's consider the case of two such regions, 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+, such that 
+\begin_inset Formula $A\cup B=\Omega$
+\end_inset
+
+.
+ Let the boundaries of 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ be 
+\begin_inset Formula $\Gamma_{A},\Gamma_{B}$
+\end_inset
+
+, let 
+\begin_inset Formula $\Gamma_{A}^{o},\Gamma_{B}^{o}$
+\end_inset
+
+ be the outer boundaries of 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ (where 
+\begin_inset Formula $\Gamma_{A}\cup\Gamma_{B}=\Gamma$
+\end_inset
+
+), and 
+\begin_inset Formula $\Gamma_{A}^{B}$
+\end_inset
+
+ be their shared boundary (pointing from 
+\begin_inset Formula $A$
+\end_inset
+
+ outwards), and 
+\begin_inset Formula $\Gamma_{B}^{A}$
+\end_inset
+
+ the same but pointing from 
+\begin_inset Formula $B$
+\end_inset
+
+ outwards.
+ We have 
+\begin_inset Formula 
+\begin{align}
+\vec{0} & =\int_{\Omega_{A}}\vec{\phi}\cdot\vec{c}\,e^{w_{0A}+w+\mathcal{V}}+\int_{\Omega_{A}}(\delta w)(\nabla\cdot\vec{\phi})-\oint_{\Gamma_{A}}\vec{\phi}(\delta w_{\textnormal{BC}})\cdot\hat{n}\\
+ & +\int_{\Omega_{B}}\vec{\phi}\cdot\vec{c}\,e^{w_{0B}+w+\mathcal{V}}+\int_{\Omega_{B}}(\delta w)(\nabla\cdot\vec{\phi})-\oint_{\Gamma_{B}}\vec{\phi}(\delta w_{\textnormal{BC}})\cdot\hat{n}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We require that at the AB boundary, 
+\begin_inset Formula $w$
+\end_inset
+
+ be continuous.
+ Then
+\begin_inset Formula 
+\begin{align}
+w_{0,A}+\delta w_{\text{BC},A} & =w_{0,B}+\delta w_{\text{BC},B}\\
+\delta w_{\text{BC},A}-\delta w_{\text{BC},B} & =w_{0,B}-w_{0,A}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We have
+\begin_inset Formula 
+\begin{align}
+ & \hphantom{=}\oint_{\Gamma_{A}^{B}}\vec{\phi}\delta w_{\textnormal{BC},A}\cdot\hat{n}+\oint_{\Gamma_{B}^{A}}\vec{\phi}\delta w_{\textnormal{BC},B}\cdot\hat{n}\\
+ & =\oint_{\Gamma_{A}^{B}}\vec{\phi}\delta w_{\textnormal{BC},A}\cdot\hat{n}-\oint_{\Gamma_{A}^{B}}\vec{\phi}\delta w_{\textnormal{BC},B}\cdot\hat{n}\\
+ & =\oint_{\Gamma_{A}^{B}}\vec{\phi}(\delta w_{\textnormal{BC},A}-\delta w_{\textnormal{BC},B})\cdot\hat{n}\\
+ & =\oint_{\Gamma_{A}^{B}}\vec{\phi}(w_{0,B}-w_{0,A})\cdot\hat{n}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Testing the above
+\end_layout
+
+\begin_layout Standard
+Reduce problem to
+\begin_inset Formula 
+\begin{align}
+0 & =\nabla\cdot\vec{c}-f\\
+e^{w}\vec{c} & =\nabla w
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Given a solution 
+\begin_inset Formula $w$
+\end_inset
+
+, we can derive 
+\begin_inset Formula $\vec{c}$
+\end_inset
+
+ and 
+\begin_inset Formula $f$
+\end_inset
+
+.
+ This is implemented in 
+\begin_inset Quotes eld
+\end_inset
+
+
+\family typewriter
+misc/qflop/qflop_test.py
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Boundary conditions
+\end_layout
+
+\begin_layout Standard
+Implementing the method as described above, we see large magnitude noise
+ in the majority current near the contact.
+ The issue (we believe) is that the boundary condition value 
+\begin_inset Formula $\delta w_{\textnormal{BC}}$
+\end_inset
+
+ suffers from catastrophic cancellation – the enforced boundary condition
+ on 
+\begin_inset Formula $w$
+\end_inset
+
+ is therefore nonsense.
+\end_layout
+
+\begin_layout Standard
+The fix is to clip 
+\begin_inset Formula $\delta w_{\textnormal{BC}}$
+\end_inset
+
+ to zero if its magnitude falls below a certain threshold value (e.g., 
+\begin_inset Formula $10^{-4}$
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+Another option is to 
+\begin_inset Quotes eld
+\end_inset
+
+half-care
+\begin_inset Quotes erd
+\end_inset
+
+ about the boundary condition by writing
+\begin_inset Formula 
+\begin{equation}
+\delta w_{\textnormal{BC}}^{\textnormal{new}}=\alpha\delta w_{\textnormal{BC}}+(1-\alpha)\delta w
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Combining these two approaches leads to the following expression,
+\begin_inset Formula 
+\begin{align*}
+\delta w_{\textnormal{BC}}^{\textnormal{new}} & =\begin{cases}
+\delta w_{\textnormal{BC}} & \abs{\delta w_{\textnormal{BC}}}>\textnormal{threshold}\\
+\varepsilon\delta w & \textnormal{otherwise}
+\end{cases}
+\end{align*}
+
+\end_inset
+
+where 
+\begin_inset Formula $\varepsilon=10^{-4}$
+\end_inset
+
+.
+ This does better that either of the previous two alternatives and I don't
+ really understand why.
+\end_layout
+
+\begin_layout Subsection
+Density formulation for comparison
+\end_layout
+
+\begin_layout Standard
+We derived a mixed method that uses density (instead of qfl) and current.
+ It will only be valid for non-degenerate semiconductors as we will use
+ the simple Einstein relation 
+\begin_inset Formula $\mathcal{D}=\mu kT/q$
+\end_inset
+
+.
+ We can use 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:ddf1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ as-is.
+ For the current density equation, we have
+\begin_inset Formula 
+\begin{align}
+\vec{j}_{u} & =q\mu u\vec{E}\mp q\mathcal{D}\,\vec{\nabla}u\\
+0 & =\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}-\int_{\Omega}\vec{\psi}\cdot q\mu u\vec{E}\pm\int_{\Omega}\vec{\psi}\cdot q\mathcal{D}\,\vec{\nabla}u\\
+0 & =\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/\mathcal{D}-q\int_{\Omega}\vec{\psi}\cdot\frac{\mu}{\mathcal{D}}u\vec{E}\pm q\underbrace{\int_{\Omega}\vec{\psi}\cdot\vec{\nabla}u}_{(\star)}\\
+0 & =\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/\mathcal{D}-q\int_{\Omega}\vec{\psi}\cdot\frac{\mu}{\mathcal{D}}u\vec{E}\pm q\big(\overbrace{\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,u-\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,u}\big)\\
+0 & =\int_{\Omega}\vec{\psi}\cdot\vec{j}_{u}/\mathcal{D}-q\int_{\Omega}\vec{\psi}\cdot\frac{\mu}{\mathcal{D}}u\vec{E}\pm\underbrace{q\oint_{\Gamma}(\vec{\psi}\cdot\hat{n})\,u_{\textnormal{BC}}}_{\textnormal{natural BC}}\mp q\int_{\Omega}(\vec{\nabla}\cdot\vec{\psi})\,u
+\end{align}
+
+\end_inset
+
+where we applied 
+\begin_inset Formula $\int_{\Omega}\vec{\sigma}\cdot\vec{\nabla}a=\oint_{\Gamma}\vec{\sigma}a\cdot\hat{n}-\int_{\Omega}a(\vec{\nabla}\cdot\vec{\sigma})$
+\end_inset
+
+ with 
+\begin_inset Formula $a=u$
+\end_inset
+
+ and 
+\begin_inset Formula $\vec{\sigma}=\vec{\psi}$
+\end_inset
+
+ to the 
+\begin_inset Formula $(\star)$
+\end_inset
+
+ term.
+\end_layout
+
+\begin_layout Section
+QFL formulation
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+0 & =\nabla\cdot\vec{j}-f\\
+\vec{j} & =u\vec{E}-\nabla u
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Write 
+\begin_inset Formula $u=e^{-(w+V)}$
+\end_inset
+
+.
+ Then
+\begin_inset Formula 
+\begin{align*}
+\nabla u & =\nabla e^{-(w+V)}\\
+ & =e^{-(w+V)}\nabla(-(w+V))\\
+ & =-u\nabla w-u\nabla V\\
+ & =-u\nabla w+u\vec{E}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\vec{j} & =u\vec{E}-\nabla u\\
+\vec{j} & =e^{w}\vec{E}-(-u\nabla w+u\vec{E})\\
+\vec{j} & =u\nabla w
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+0 & =\nabla\cdot\vec{j}-f\\
+0 & =\nabla\cdot(u\nabla w)-f\\
+0 & =(\nabla u\cdot\nabla w)+(u\nabla^{2}w)-f\\
+0 & =(\frac{\nabla u}{u}\cdot\nabla w)+(\nabla^{2}w)-\frac{f}{u}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\frac{\nabla u}{u} & =\frac{-u\nabla w+u\vec{E}}{u}\\
+ & =\vec{E}-\nabla w
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+0 & =(\frac{\nabla u}{u}\cdot\nabla w)+(\nabla^{2}w)-\frac{f}{u}\\
+0 & =(\vec{E}-\nabla w)\cdot\nabla w+\nabla^{2}w-\frac{f}{u}\\
+0 & =\vec{E}\cdot\nabla w-(\nabla w)^{2}+\underbrace{\nabla^{2}w}_{\star}-\frac{f}{u}\\
+0 & =\int_{\Omega}v\vec{E}\cdot\nabla w-\int_{\Omega}v(\nabla w)^{2}+\underbrace{\int_{\Omega}v\,\nabla\cdot\nabla w}_{\star}-\int_{\Omega}v\frac{f}{u}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Use identity 
+\begin_inset Formula $\int_{\Omega}z(\nabla\cdot\vec{\sigma})=\oint_{\Gamma}\vec{\sigma}z\cdot\hat{n}-\int_{\Omega}\vec{\sigma}\cdot\nabla z$
+\end_inset
+
+ with 
+\begin_inset Formula $\vec{\sigma}=\nabla w$
+\end_inset
+
+ and 
+\begin_inset Formula $z=v$
+\end_inset
+
+ on 
+\begin_inset Formula $\star$
+\end_inset
+
+ term.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+0 & =\int_{\Omega}v\vec{E}\cdot\nabla w-\int_{\Omega}v(\nabla w)^{2}+\overbrace{\int_{\Omega}\oint_{\Gamma}v\,\nabla w\cdot\hat{n}-\int_{\Omega}\nabla w\cdot\nabla v}-\int_{\Omega}v\frac{f}{u}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Part*
+Future work
+\end_layout
+
+\begin_layout Section
+Exact integrals
+\end_layout
+
+\begin_layout Standard
+This is an idea to be implemented very likely in the far future.
+\end_layout
+
+\begin_layout Standard
+To the extent of my knowledge of FEM software, the integrals are not computed
+ exactly.
+ Instead, some form of quadrature is used (FEniCS even allows the user the
+ courtesy of picking the number of quadrature points for each term).
+ This, I believe, is a bad idea.
+\end_layout
+
+\begin_layout Standard
+A simple example for why is the following term: 
+\begin_inset Formula $\int_{\Omega}e^{3(x+y)}$
+\end_inset
+
+ (evaluated over a unit square made up of two triangles).
+ Achieving double precision using vanilla Gaussian quadrature seems to require
+ approximately 
+\begin_inset Formula $10^{d}$
+\end_inset
+
+ quadrature points to achieve double precision (where 
+\begin_inset Formula $d$
+\end_inset
+
+ is the number of dimensions).
+ Evaluating the symbolic integral requires just two 
+\begin_inset Formula $\exp()$
+\end_inset
+
+ evaluations, and gives double precision right away.
+ For many problems that people are interested in (maybe even most of them),
+ the cell and surface integral expressions could be derived symbolically,
+ and have that symbolic expression evaluated for each cell and surface directly.
+ And if a symbolic integral doesn't exist, there may still be a more efficient
+ way to numerically evaluate it that takes advantage of the knowledge of
+ the symbolic integrand.
+\end_layout
+
+\end_body
+\end_document

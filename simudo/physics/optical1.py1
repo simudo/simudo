@@ -1,0 +1,70 @@
+#pyaml1
+
+preamble: |
+  from ${helper} import AttrPrefixProxy, PyamlBase
+
+  import dolfin
+  import sympy
+
+classes:
+  OpticalFieldMSORTE:
+    inherit: [PyamlBase]
+    eval:
+      method_degree: !c '2'
+
+      Phi_space: !c |
+        fsr.get_function_space(msorte.Phi.magnitude, collapsed=True)
+
+      msorte_:
+        Phi: !c self.get_subfunction("Phi")
+        v: !c self.get_subfunction("v")
+
+        alpha: !c self.alpha
+        g: !c self.g
+
+        omega: !c 'dolfin.as_vector(tuple(self.direction)) * u.dimensionless'
+
+        preform: !c |
+          %
+          dot, grad, div = p.dot, p.grad, p.div
+
+          # TODO: check line below
+          S = _.g
+          omega, v, beta, Phi = _.omega, _.v, _.alpha, _.Phi
+
+          a = dot(omega, grad(Phi))
+          w = v*omega
+          n = p.n
+
+          a_bc = S - beta*Phi
+
+          return (dot(w, n)*a_bc,
+                  -a*div(w) + dot(w, grad(beta*Phi)) - dot(w, grad(S)))
+
+        form: !c |
+          p.ds*_.preform[0] + p.dx*_.preform[1]
+
+        subfunctions_info: !c |
+          [dict(element=p.element("CG", self.method_degree),
+                trial_key   = "Phi",
+                trial_units = u("1 / second / mesh_unit^2"),
+                test_key    = "v",
+                test_units  = u("mesh_unit * u.second"))]
+
+      subfunctions_info: !c msorte.subfunctions_info
+
+      essential_bcs: !c |
+        _.optical.spatial.get_single_essential_bc(
+          var=msorte.Phi,
+          key=_.subfunction_prefix("Phi"),
+          extract=lambda bc: bc.value*self._Phi_scale).get_essential_bc()
+
+      Phi: !c msorte.Phi
+
+    env:
+      default_:
+        msorte: !c AttrPrefixProxy(self, 'msorte_')
+        p: !c self.mesh_util
+        u: !c self.unit_registry
+        fsr: !c self.function_subspace_registry
+

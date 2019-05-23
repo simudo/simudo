@@ -1,0 +1,138 @@
+
+fragments:
+  diode_problem_material:
+    env: electro
+    default_prefix: /material/
+
+  diode_problem:
+    env: electro
+    default_prefix: /common/
+    defs:
+      null_E: 'p.Constant(p.unitvec__x * dolfin.Constant(0.0) * u("V/m"))'
+      null_j: 'p.Constant(p.unitvec__x * dolfin.Constant(0.0) * u("A/m^2"))'
+#      V_ext: 'dolfin.Constant(0.0) * u.V'
+
+      p_contact_bias: 'dolfin.Constant(0.0) * u.V'
+      n_contact_bias: 'dolfin.Constant(0.0) * u.V'
+      p_contact_V: 'c.approx_equilibrium_mu/c.q_e + c.p_contact_bias'
+      n_contact_V: 'c.approx_equilibrium_mu/c.q_e + c.n_contact_bias'
+
+      # contact_p_V: 'c.approx_equilibrium_mu/c.q_e'
+      # contact_n_V: 'c.approx_equilibrium_mu/c.q_e - c.V_ext'
+
+      /VB/j_contact_bc_values: |
+        {'/geometry/facet_regions/top_bottom': _.null_j}
+      /CB/j_contact_bc_values: |
+        {'/geometry/facet_regions/top_bottom': _.null_j}
+      /IB/j_contact_bc_values: |
+        {'/geometry/facet_regions/top_bottom': _.null_j,
+         '/geometry/facet_regions/contacts'  : _.null_j}
+      /VB/u_contact_bc_values: |
+        {'/geometry/facet_regions/p_contact':
+          r.VB__approx_equilibrium_u,
+         '/geometry/facet_regions/n_contact':
+          r.VB__approx_equilibrium_u}
+      /CB/u_contact_bc_values: |
+        {'/geometry/facet_regions/p_contact':
+          r.CB__approx_equilibrium_u,
+         '/geometry/facet_regions/n_contact':
+          r.CB__approx_equilibrium_u}
+      /IB/u_contact_bc_values: '{}'
+      /poisson/V_contact_bc_values: |
+        {'/geometry/facet_regions/p_contact': _.p_contact_V,
+         '/geometry/facet_regions/n_contact': _.n_contact_V}
+      /poisson/E_contact_bc_values: |
+        {'/geometry/facet_regions/top_bottom': _.null_E}
+
+      solar_concentration: "1.0"
+
+      opt_fluxes: |
+        %
+        def cval(c): # ugh
+          return c.m.values()[0]*c.u
+
+        Ev = cval(r['/material/Si/VB/edgeE'])
+        Ei = cval(r['/material/Si/IB/edgeE'])
+        Ec = cval(r['/material/Si/CB/edgeE'])
+
+        Eiv = Ei-Ev
+        Eci = Ec-Ei
+        Ecv = Ec-Ev
+
+        from ..util.blackbody import Blackbody
+        b = Blackbody(u)
+        b.sun_temperature = 6000 * u.K
+        f = lambda *a: (_.solar_concentration
+                        * b.photon_flux_integral_on_earth(*a))
+
+        Emin = min(Eiv, Eci)
+        Emid = max(Eiv, Eci)
+        Emax = Ecv
+
+        ϕmin = f(Emin, Emid)
+        ϕmid = f(Emid, Emax)
+        ϕmax = f(Emax, 20*u.eV)
+
+        if Eci < Eiv:
+          kmin, kmid = 'ci', 'iv'
+        else:
+          kmin, kmid = 'iv', 'ci'
+
+        return {kmin: ϕmin, kmid: ϕmid, 'cv': ϕmax}
+
+      /o/iv/I_bc_value: _.opt_fluxes['iv']
+      /o/ci/I_bc_value: _.opt_fluxes['ci']
+      /o/cv/I_bc_value: _.opt_fluxes['cv']
+
+  poisson_only_thermal_equilibrium:
+    env: electro
+    default_prefix: /common/
+    defs:
+      /poisson/V_contact_bc_values: |
+        {'/geometry/facet_regions/p_contact':
+         _.approx_equilibrium_mu / u.elementary_charge,
+         '/geometry/facet_regions/n_contact':
+         _.approx_equilibrium_mu / u.elementary_charge}
+
+  mesh_unit_micrometer:
+    env: minimal
+    default_prefix: /
+    defs:
+      /mesh_unit: 'u.micrometer'
+
+  fullcoupled_pn_from_sentaurus:
+    env: electro
+    default_prefix: /sentaurus/
+    defs:
+      interp: |
+        %from ..misc import sentaurus_import
+        return sentaurus_import.interpolate(
+          _.df, _.df_units, _['/mesh'], mesh_unit, space.CG1)
+      var/V: '_.interp["V"]'
+      var/g: '_.interp["g"]'
+      var/VB/u: '_.interp["VB_u"]'
+      var/CB/u: '_.interp["CB_u"]'
+      var/E: |
+        p.project(_.interp["E_x"] * p.unitvec__x, space.vCG1)
+      var/VB/j: |
+        p.project(_.interp["VB_j_x"] * p.unitvec__x, space.vCG1)
+      var/CB/j: |
+        p.project(_.interp["CB_j_x"] * p.unitvec__x, space.vCG1)
+
+  diode_doping_from_params:
+    env: electro
+    default_prefix: /run_params/
+    defs:
+      keydict: r.run_params['keydict']
+      doping_concentration: |
+        (float(_.keydict['c'])*u.cm**-3).to(mesh_unit**-3)
+      ### disabling this for IB hack
+      # /material/pSi/doping_concentration: p.Constant(-_.doping_concentration)
+      # /material/nSi/doping_concentration: p.Constant(+_.doping_concentration)
+
+  diode_recombination_1em9:
+    env: electro
+    default_prefix: /material/
+    defs:
+      Si/VB/SRH_pn_tau: 'p.Constant(1e-6 * u.s)'
+      Si/CB/SRH_pn_tau: 'p.Constant(1e-9 * u.s)'

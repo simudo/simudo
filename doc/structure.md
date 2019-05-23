@@ -1,0 +1,35 @@
+# Source tree organization
+
+- `meshgen`:
+    - `meshgen.py`: separate application for mesh generation
+- `pyaml`: the parser and compiler for Python-in-YAML code aka pyamlthon
+    - `astutil.py`: various Python AST utilities
+    - `load.py`: main loader; see `load()` method
+        - `Env`: execution environment for compiling and evaluating Python-in-YAML code
+        - `BaseFragment`: base pyaml fragment class
+- `solution`: code for a single solution
+    - `solution.py`:
+        - `Solution`: main container for simulation data for a single run
+        - `SolutionFactory`: prototype for instantiating `Solution` objects
+        - `PyamlFragment`
+        - TODO solution copying
+    - `util.py`:
+        - `ConstantValue`
+        - `suffix_sum_function` etc
+    - `basic.py` and `basic.yaml`:
+        - test trial function definition
+        - geometry definition
+        - bc definition
+            - TODO implement robin BC
+        - mesh refinement
+- `util`:
+    - `function_space_cache.py`: keep track of function spaces and re-use whenever possible to save on memory
+    - `function_subspace_registry.py`: keep track of function subspaces and their dofs, and enable assignment of subvariables
+    - `newton_solver.py`: Newton solver
+    - `expr.py`: unit and expression handling
+- `io`: input/output code
+    - `plot`: plotting code
+        - `xdmf`: xdmf plotting for paraview
+    - `hdf`:
+        - save and load mesh (maybe overlap with code in solution)
+

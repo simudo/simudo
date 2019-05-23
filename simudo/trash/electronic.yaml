@@ -1,0 +1,69 @@
+
+  poisson_mixed_Hdiv:
+    env: electro
+    default_prefix: /common/poisson_mixed_Hdiv/
+    defs:
+      degree: '0'
+      ${c}V: _.V
+      ${c}E: _.E
+      form_contribution: |
+        + p.dx*p.dot(_.E, _.psi)
+        - p.dx*_.V*p.div(_.psi)
+        + p.dx*_.w*p.div(_.E)
+        - p.dx*_.w*c.erho
+        + c.poisson_neumann_V*p.dot(_.psi, p.n)
+
+    trial_test_defs:
+      V:
+        test: w
+        trial_units: 'u.volt'
+        test_units: 'u("1/mesh_unit/volt")'
+        target_space: /solution_space
+        element: 'dolfin.FiniteElement("DG", ufl_cell, _.degree)'
+      E:
+        test: psi
+        trial_units: 'u("volt/mesh_unit")'
+        test_units: 'u("1/volt/mesh_unit**2")'
+        target_space: /solution_space
+        element: 'dolfin.FiniteElement("BDM", ufl_cell, _.degree+1)'
+
+  etc:
+    default_prefix: /common/
+    defs:
+      E_negligible: 'u.V / (p.h * 1e12)'
+      E_direction: |
+        dolfin.conditional(dolfin.gt(dimensionless(p.abs(_.E)/_.E_negligible), 1.0),
+        dimensionless(c.E/p.abs(c.E)), p.unitvec__x)
+
+  nondegenerate_SUPG_CB:
+    env: electro_CB
+    instantiate: nondegenerate_band_SUPG
+  nondegenerate_SUPG_VB:
+    env: electro_VB
+    instantiate: nondegenerate_band_SUPG
+
+  nondegenerate_band_SUPG:
+    default_prefix: ${b}SUPG/
+    defs:
+      degree: '2'
+      r: |
+        + b.sign*b.mobility*p.dot(c.E, p.grad(_.u))
+        - b.D*p.div(p.grad(_.u))
+        - b.g
+      form_contribution: |
+        - b.sign*p.dx*b.mobility*_.u*p.dot(c.E, p.grad(_.v))
+        + p.dx*b.D*p.dot(p.grad(_.u), p.grad(_.v))
+        - p.dx*_.v*b.g
+        + p.dx*_.stabilization*-b.sign * 1e-20
+      # possibly wrong sign on stabilization?
+      stabilization: |
+        (p.h/2)*p.dot(c.old_E_direction, p.grad(_.v))*_.r
+      ${b}u: '_.u'
+
+    trial_test_defs:
+      u:
+        test: v
+        trial_units: 'mesh_unit**-3'
+        test_units: 'u.second'
+        element: 'dolfin.FiniteElement("CG", ufl_cell, _.degree)'
+        target_space: /solution_space

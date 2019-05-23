@@ -1,0 +1,211 @@
+
+envs:
+  minimal:
+    meta:
+      module_name_prefix: simudo.solution._pyaml_
+      setup: |
+        from ..util import ufl_extra as ufle
+        from ..util import extra_bindings
+        from ..util import expr as util_expr
+        from ..util.expr import (DelayedForm, CellMidpointExpression,
+                                 CellFunctionFunction)
+        from .fragment import sum_over_suffix
+        import dolfin
+        import numpy as np
+        import ufl
+    vars:
+      r: /
+      u: /unit_registry
+
+  default:
+    inherit:
+      - minimal
+    vars:
+      mesh: /mesh
+      p: /pde/ # low-level stuff
+      c: /common/
+      g: /geometry/
+      fsr: /function_subspace_registry
+      fsc: /function_space_cache
+      ufl_cell: /ufl_cell
+      magnitude: /unit_registry/magnitude
+      units: /unit_registry/units
+      dimensionless: /unit_registry/dimensionless
+      mat: /material/
+      matglobal: /material/GLOBAL/
+      space: /pde/space/
+      mesh_unit: /mesh_unit
+
+fragments:
+  minimal:
+    env: minimal
+    default_prefix: /
+    defs:
+      /mesh: 'dolfin.Mesh()'
+      /cell_function: 'dolfin.MeshFunction("size_t", r.mesh, r.D, 0)'
+      /facet_function: 'dolfin.MeshFunction("size_t", r.mesh, r.D-1, 0)'
+      ufl_cell: 'r.mesh.ufl_cell()'
+      /D: 'r.mesh.geometry().dim()'
+      /unit_registry/magnitude: |
+        lambda x: x.magnitude if hasattr(x, 'magnitude') else x
+      /unit_registry/units: |
+        lambda x: x.units if hasattr(x, 'units') else r.unit_registry.dimensionless
+      /unit_registry/dimensionless: |
+        lambda x: x.m_as('dimensionless')
+      /mesh_unit: 'u.dimensionless'
+
+  mesh_from_product2d:
+    env: minimal
+    default_prefix: /mesh/
+    defs:
+      product_2d_mesh: |
+        %pm = _.product_2d_mesh_phantom.copy()
+        pm.mesh = _['../mesh']
+        solution['/function_subspace_registry'].register(pm.space)
+        return pm
+
+  pde:
+    env: default
+    default_prefix: /pde/
+    defs:
+
+      dx: |
+        DelayedForm(
+          (mesh_unit**3,  dolfin.dx(
+            domain=mesh, subdomain_data=r.cell_function)))
+      ds: |
+        DelayedForm(
+        (mesh_unit**2, dolfin.ds(
+            domain=mesh, subdomain_data=r.facet_function)))
+      dS: |
+        DelayedForm(
+          (mesh_unit**2, dolfin.dS(
+            domain=mesh, subdomain_data=r.facet_function)))
+
+      assemble: |
+        %def f(expr, *args, **kwargs):
+          ufl = expr.to_ufl()
+          return dolfin.assemble(ufl.magnitude)*ufl.units
+        return f
+      average_over_surface: |
+        %def average_over_surface(expr, dsS):
+          return (_.assemble(dsS*expr*u.dimensionless)
+                / _.assemble(dsS*u.dimensionless))
+        return average_over_surface
+      integrate_over_surface: |
+        %def integrate_over_surface(expr, dsS):
+          return _.assemble(dsS*expr*u.dimensionless)
+        return integrate_over_surface
+      dot: "lambda a, b: \
+        u.Quantity(dolfin.dot(magnitude(a), magnitude(b)), units(a) * units(b))"
+      inner: "lambda a, b: \
+        u.Quantity(dolfin.inner(magnitude(a), magnitude(b)), units(a) * units(b))"
+      grad: "lambda f: \
+        u.Quantity(dolfin.grad(magnitude(f)), units(f)/mesh_unit)"
+      div: "lambda f: \
+        u.Quantity(dolfin.div(magnitude(f)), units(f)/mesh_unit)"
+      dimensionless: |
+        lambda x: x.m_as('dimensionless')
+      bernoulli: |
+        lambda z: dolfin.conditional(
+                    dolfin.gt(z*z, 1e-40), # prevent 0/0
+                    z/ufle.expm1(z), 1.0)
+      sqrt: |
+        lambda f: u.Quantity(dolfin.sqrt(magnitude(f)), units(f)**0.5)
+      abs: |
+        lambda f: u.Quantity(dolfin.sqrt(dolfin.dot(magnitude(f), magnitude(f))))*units(f)
+      Constant: |
+        lambda f: u.Quantity(dolfin.Constant(f.magnitude), f.units)
+      gmean2: |
+        %def result(a, b):
+          uu = a.units
+          return u.Quantity(dolfin.sqrt(a.magnitude)*dolfin.sqrt(b.m_as(uu)), uu)
+        return result
+      project: |
+        %def project_(expr, space, function=None):
+          if function is None:
+            return u.Quantity(dolfin.project(_.fold_zeros(expr).magnitude, space), expr.units)
+          else:
+            dolfin.project(_.fold_zeros(expr).m_as(function.units), space,
+                           function=function.magnitude)
+            return function
+        return project_
+      linterp: |
+        %def linterp(expr, space):
+          uu = expr.units
+          func = util_expr.interpolate(expr.magnitude, space)
+          return u.Quantity(func, uu)
+        return linterp
+      n: 'dolfin.FacetNormal(mesh)'
+      cellsize: 'dolfin.CellSize(mesh)*mesh_unit'
+      h: '_.cellsize'
+      h_avg: '(_.pside(_.h) + _.mside(_.h))/2'
+      MinFacetEdgeLength: 'dolfin.MinFacetEdgeLength(mesh)*mesh_unit'
+      MaxFacetEdgeLength: 'dolfin.MaxFacetEdgeLength(mesh)*mesh_unit'
+      jump: 'lambda x, n=None: dolfin.jump(magnitude(x), n) * units(x)'
+      side: 'lambda x, pm: magnitude(x)(pm)*units(x)'
+      pside: 'lambda x: _.side(x, "+")'
+      mside: 'lambda x: _.side(x, "-")'
+      cell_midpoint: |
+        u.Quantity(
+          CellMidpointExpression(mesh, element=space.vDG0__element),
+          mesh_unit)
+      x: 'u.Quantity(dolfin.SpatialCoordinate(mesh), mesh_unit)'
+      midpoint_relative_x: '_.x - _.cell_midpoint'
+      cell_midpoints_distance: |
+        _.abs(_.pside(p.cell_midpoint) - _.mside(_.cell_midpoint))
+      asinh: |
+        lambda z: dolfin.conditional(dolfin.gt(z, 0.0),
+           dolfin.ln( z + dolfin.sqrt(1 + z**2)),
+          -dolfin.ln(-z + dolfin.sqrt(1 + z**2)))
+
+      extract_subfunction: |
+        %def extract_subfunction(v):
+          return fsr.copy(magnitude(_.fold_zeros(v)))*units(v)
+        return extract_subfunction
+
+      fold_zeros: |
+        %def fold_zeros(e):
+          return ufl.replace(magnitude(e), {
+            _.zero   : 0,
+            _.zerovec: dolfin.as_vector((0, 0))}) * units(e)
+        return fold_zeros
+
+      zero: 'dolfin.Constant(0, cell=ufl_cell)'
+      zerovec: "dolfin.Constant((0, 0), cell=ufl_cell)"
+
+      unitvec/x: "dolfin.Constant((1, 0))"
+      unitvec/y: "dolfin.Constant((0, 1))"
+
+      clip_towards_zero: |
+        lambda z, threshold, zero=0.0: dolfin.conditional(
+          dolfin.gt(magnitude(z)**2,
+          (threshold*u.dimensionless).m_as(units(z))**2),
+          magnitude(z), zero.m_as(units(z))) * units(z)
+
+    misc_predefine_spaces: {}
+
+  solution_mixed_function_space:
+    env: default
+    default_prefix: /
+    mixed_function_space:
+      solution_space: {}
+    mixed_functions:
+      solution_space/function:
+        space: solution_space
+      solution_space/newton_function:
+        space: solution_space
+
+  geometry_param:
+    env: default
+    default_prefix: /geometry/param/
+    defs:
+      dx: 'r["/pde/dx"]'
+      ds: 'r["/pde/ds"]'
+      dS: 'r["/pde/dS"]'
+      chi_element: 'r["/pde/space/DG0/element"]'
+      cell_function: 'r["/cell_function"]'
+      cell_function/func: |
+        CellFunctionFunction(_.cell_function, space.DG0)
+      facet_function: 'r["/facet_function"]'
+    make_geometry: {}

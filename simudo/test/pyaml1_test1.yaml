@@ -1,0 +1,30 @@
+#pyaml1
+
+preamble: |
+  import sympy
+
+  # the two imports below actually refer to the same module
+  from $helper import PyamlBase
+  from ${pyaml}.helper import AttrPrefixProxy
+
+classes:
+  Example:
+    inherit: [PyamlBase]
+    eval:
+      w: !c u.eV * sympy.S("w")
+      qw: !c qflmix.w
+      qflmixed_:
+        w: !c |
+          (self.w / _.w0).to("dimensionless")
+        w0: !c 10.0 * u.eV
+        expr: !c 5 * _.w
+      qflmixed_@part2:
+        expr2: !c |
+          %
+          x = 10 * _.w
+          return x
+    env:
+      default_:
+        u: !c self.unit_registry
+        qflmix: !c AttrPrefixProxy(self, 'qflmixed_')
+

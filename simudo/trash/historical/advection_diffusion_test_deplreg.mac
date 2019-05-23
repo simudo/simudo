@@ -1,0 +1,11 @@
+
+E : -diff(V(x), x);
+
+u : u0*exp(-V(x) - k*x);
+
+j : u*E - diff(u, x), factor;
+
+j_expected: k*u$
+
+j - j_expected, factor;
+

@@ -1,0 +1,583 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{siunitx}
+%\usepackage{listings}
+\usepackage{booktabs}
+\usepackage[style=numeric,maxnames=999,backend=biber]{biblatex}
+%\addbibresource{main.bib}
+%\sisetup{
+%  separate-uncertainty=true
+%}
+\end_preamble
+\use_default_options true
+\begin_modules
+theorems-ams
+\end_modules
+\maintain_unincluded_children false
+\language canadian
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command biber
+\index_command default
+\paperfontsize 12
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\branch thermal
+\selected 1
+\filename_suffix 0
+\color #ffffff
+\end_branch
+\branch srh
+\selected 0
+\filename_suffix 0
+\color #ffffff
+\end_branch
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1cm
+\topmargin 2cm
+\rightmargin 1cm
+\bottommargin 2cm
+\footskip 1cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\sbn}[2]{\{#1\:|\:#2\}}
+{\{#1\:|\:#2\}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\norm}[1]{\Vert#1\Vert}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\abs}[1]{|#1|}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\vabs}[1]{\left|#1\right|}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\xhat}[1]{\hat{#1}}
+{\hat{#1}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\rsph}{r}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\rcyl}{\rho}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\xx}{\xhat x}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\xy}{\xhat y}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\xz}{\xhat z}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\d}{\mathrm{d}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\f}[3]{#1:\ #2\rightarrow#3}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\k}[1]{\mathop{\mathrm{#1}}\nolimits}
+{\mathrm{#1}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\braket}[2]{\Braket{#1|#2}}
+{\left\langle #1|#2\right\rangle }
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\bra}[1]{\Bra{#1}}
+{\left\langle #1\right|}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\ket}[1]{\Ket{#1}}
+{\left|#1\right\rangle }
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\u}[1]{\mathrm{\:#1}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\li}{\k{li}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Title
+Optics
+\end_layout
+
+\begin_layout Section
+MSORTE
+\end_layout
+
+\begin_layout Standard
+From [Zhao2007a], we have that in an absorbing, emitting, and anisotropically
+ scattering medium, the radiative transfer equation reads
+\begin_inset Formula 
+\begin{align}
+\frac{\d I}{\d s}+\beta I & =\kappa_{a}I_{b}+\frac{\kappa_{s}}{4\pi}\int I(s,\boldsymbol{\Omega}')\,\Phi(\boldsymbol{\Omega}',\boldsymbol{\Omega})\,\d\boldsymbol{\Omega}'\qquad s\in[0,L]\label{eq:RTE-1}
+\end{align}
+
+\end_inset
+
+with inflow BC
+\begin_inset Formula 
+\begin{align*}
+I\big|_{s=0} & =I_{0}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For the rest of the section, we follow [Zhao2011a] (which supersedes [Zhao2007a]
+).
+\end_layout
+
+\begin_layout Standard
+The radiative transfer equation is presented as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\hat{\Omega}\cdot\nabla I+\beta I & =S
+\end{align*}
+
+\end_inset
+
+where 
+\begin_inset Formula $S$
+\end_inset
+
+ contains emission and the scattering integral.
+\end_layout
+
+\begin_layout Standard
+In the ray coordinate, this is written as
+\begin_inset Formula 
+\begin{align*}
+\frac{\d I}{\d s}+\beta I & =S\qquad s\in[0,L]
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The streaming operator 
+\begin_inset Formula $\d/\d s$
+\end_inset
+
+ is applied directly to the above equation,
+\begin_inset Formula 
+\begin{align}
+\frac{\d I}{\d s}+\beta I & =S\nonumber \\
+\frac{\d^{2}I}{\d s^{2}}+\frac{\d}{\d s}(\beta I) & =\frac{\d S}{\d s}\label{eq:msorte}
+\end{align}
+
+\end_inset
+
+which yields the MSORTE form of the equation (the 
+\begin_inset Quotes eld
+\end_inset
+
+M
+\begin_inset Quotes erd
+\end_inset
+
+ is for Mixture of first and second order derivatives, and SORTE is Second
+ Order Radiative Transfer Equation).
+\end_layout
+
+\begin_layout Standard
+The boundary conditions are then
+\begin_inset Formula 
+\begin{align*}
+I\bigg|_{s=0} & =I_{0}\\
+\frac{\d I}{\d s}+\beta I\bigg|_{s=L} & =S
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using the substitution 
+\begin_inset Formula $\frac{\d}{\d s}\rightarrow\hat{\Omega}\cdot\vec{\nabla}$
+\end_inset
+
+, we obtain
+\begin_inset Formula 
+\begin{align*}
+\hat{\Omega}\cdot\vec{\nabla}(\hat{\Omega}\cdot\vec{\nabla}I)+\hat{\Omega}\cdot\vec{\nabla}(\beta I) & =\hat{\Omega}\cdot\vec{\nabla}S
+\end{align*}
+
+\end_inset
+
+and the boundary conditions become
+\begin_inset Formula 
+\begin{align*}
+I & =I_{0}\qquad\vec{x}\in\Gamma_{d}\\
+\hat{\Omega}\cdot\vec{\nabla}I+\beta I & =S\qquad\vec{x}\in\Gamma_{n}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+FEM
+\end_layout
+
+\begin_layout Standard
+We have
+\begin_inset Formula 
+\begin{align*}
+\hat{\Omega}\cdot\vec{\nabla}(\hat{\Omega}\cdot\vec{\nabla}I)+\hat{\Omega}\cdot\vec{\nabla}(\beta I) & =\hat{\Omega}\cdot\vec{\nabla}S
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We integrate with a test function 
+\begin_inset Formula $v$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+\int_{\Omega}v\,\hat{\Omega}\cdot\vec{\nabla}(\hat{\Omega}\cdot\vec{\nabla}I)+\int_{\Omega}v\,\hat{\Omega}\cdot\vec{\nabla}(\beta I) & =\int_{\Omega}v\,\hat{\Omega}\cdot\vec{\nabla}S
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "eq:vector-identity-for-MSORTE-FEM"
+
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{align*}
+\oint_{\Gamma}v\,\hat{\Omega}(\hat{\Omega}\cdot\vec{\nabla}I_{\textnormal{BC}})\cdot\hat{n}-\int_{\Omega}(\hat{\Omega}\cdot\vec{\nabla}I)(\nabla\cdot(v\,\hat{\Omega}))+\int_{\Omega}v\,\hat{\Omega}\cdot\vec{\nabla}(\beta I) & =\int_{\Omega}v\,\hat{\Omega}\cdot\vec{\nabla}S
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For convenience, we write 
+\begin_inset Formula $\vec{w}=v\,\hat{\Omega}$
+\end_inset
+
+ and 
+\begin_inset Formula $a=\hat{\Omega}\cdot\vec{\nabla}I$
+\end_inset
+
+, so
+\begin_inset Formula 
+\begin{align*}
+\underbrace{\oint_{\Gamma}\vec{w}a_{\textnormal{BC}}\cdot\hat{n}}_{\textnormal{natural BC}}-\int_{\Omega}a(\nabla\cdot\vec{w})+\int_{\Omega}\vec{w}\cdot\vec{\nabla}(\beta I) & =\int_{\Omega}\vec{w}\cdot\vec{\nabla}S
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We insert the natural boundary condition
+\begin_inset Formula 
+\begin{align*}
+\underbrace{\hat{\Omega}\cdot\vec{\nabla}I}_{a}+\beta I & =S\\
+a_{\textnormal{BC}} & =S-\beta I
+\end{align*}
+
+\end_inset
+
+and obtain the final weak form
+\begin_inset Formula 
+\begin{align*}
+\oint_{\Gamma}\vec{w}\,(S-\beta I)\cdot\hat{n}-\int_{\Omega}a\,(\nabla\cdot\vec{w})+\int_{\Omega}\vec{w}\cdot\vec{\nabla}(\beta I) & =\int_{\Omega}\vec{w}\cdot\vec{\nabla}S
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+An example can be found in 
+\begin_inset Quotes eld
+\end_inset
+
+
+\family typewriter
+simudo/trash/optics/msorte.py
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Blackbody
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+B_{\nu}(\nu,T) & =\frac{2h\nu^{3}}{c^{2}}\frac{1}{e^{h\nu/kT}-1}\\
+ & =\frac{2E^{3}}{h^{2}c^{2}}\frac{1}{e^{\beta E}-1}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+B_{\nu}\,\d\nu & =B_{E}\,\d E\\
+B_{E} & =\frac{\d\nu}{\d E}\,B_{\nu}\\
+ & =\frac{1}{h}B_{\nu}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+B_{E}(E,T) & =\frac{2E^{3}}{h^{3}c^{2}}\frac{1}{e^{E/T}-1}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+B_{\lambda}\,\abs{\d\lambda} & =B_{E}\,\abs{\d E}\\
+B_{E} & =\bigg|\frac{\d\lambda}{\d E}\bigg|\,B_{\lambda}\\
+ & =\frac{hc}{E^{2}}B_{\nu}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+f\lambda & =c\\
+\frac{E}{h}\lambda & =c\\
+\lambda & =\frac{hc}{E}\\
+\frac{\d\lambda}{\d E} & =\frac{-hc}{E^{2}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\start_of_appendix
+Vector identity for MSORTE+FEM
+\end_layout
+
+\begin_layout Standard
+We have vector identity
+\begin_inset Formula 
+\begin{align*}
+\int_{\Omega}w(\nabla\cdot\vec{\sigma})+\int_{\Omega}\vec{\sigma}\cdot\nabla w & =\oint_{\Gamma}\vec{\sigma}w\cdot\hat{n}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We want to apply this to 
+\begin_inset Formula $\int_{\Omega}(v\,\hat{\Omega})\cdot\vec{\nabla}(\hat{\Omega}\cdot\vec{\nabla}I)$
+\end_inset
+
+.
+ We write 
+\begin_inset Formula $\vec{\sigma}=v\,\hat{\Omega}$
+\end_inset
+
+ and 
+\begin_inset Formula $w=(\hat{\Omega}\cdot\vec{\nabla}I)$
+\end_inset
+
+, so
+\begin_inset Formula 
+\begin{align}
+\int_{\Omega}w(\nabla\cdot\vec{\sigma})+\int_{\Omega}\vec{\sigma}\cdot\nabla w & =\oint_{\Gamma}\vec{\sigma}w\cdot\hat{n}\nonumber \\
+\int_{\Omega}\vec{\sigma}\cdot\nabla w & =\oint_{\Gamma}\vec{\sigma}w\cdot\hat{n}-\int_{\Omega}w(\nabla\cdot\vec{\sigma})\nonumber \\
+\int_{\Omega}(v\,\hat{\Omega})\cdot\nabla(\hat{\Omega}\cdot\vec{\nabla}I) & =\oint_{\Gamma}v\,\hat{\Omega}(\hat{\Omega}\cdot\vec{\nabla}I)\cdot\hat{n}-\int_{\Omega}(\hat{\Omega}\cdot\vec{\nabla}I)(\nabla\cdot(v\,\hat{\Omega}))\label{eq:vector-identity-for-MSORTE-FEM}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

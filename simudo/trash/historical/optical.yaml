@@ -1,0 +1,79 @@
+
+envs:
+  optical:
+    inherit:
+      - default
+
+  # painful
+  opt_strbg_msorte_iv:
+    inherit:
+      - optical
+    vars:
+      o: /o/iv/
+  opt_strbg_msorte_ci:
+    inherit:
+      - optical
+    vars:
+      o: /o/ci/
+  opt_strbg_msorte_cv:
+    inherit:
+      - optical
+    vars:
+      o: /o/cv/
+
+fragments:
+  opt_strbg_msorte:
+    default_prefix: ${o}
+    defs:
+      I_space: space.CG2
+      I_unit: 'u("1 / second") / mesh_unit ** 2'
+      I: 'dolfin.Function(_.I_space) * _.I_unit'
+      I_clipped: |
+        dolfin.conditional(dolfin.lt(_.I.m, 0.0), 0.0, _.I.m) * _.I.u
+      α: None
+      α_proj: 'dolfin.Function(_.I_space) * (1 / mesh_unit)'
+      do_α_proj: |
+        lambda: p.project(_.α, _.I_space, _.α_proj)
+      Ω: 'dolfin.as_vector((1.0, 0.0)) * u.dimensionless'
+
+      v: 'dolfin.TestFunction(_.I_space) * (mesh_unit * u.second)'
+
+      preform: |
+        %
+        dot, grad, div = p.dot, p.grad, p.div
+
+        S = p.zero * u("1 / second") / mesh_unit ** 3
+        omega, v, beta, I = _.Ω, _.v, _.α_proj, _.I
+
+        a = dot(omega, grad(I))
+        w = v*omega
+        n = p.n
+
+        a_bc = S - beta*I
+
+        return (dot(w, n)*a_bc,
+                -a*div(w) + dot(w, grad(beta*I)) - dot(w, grad(S)))
+
+      form: |
+        p.ds*_.preform[0] + p.dx*_.preform[1]
+
+      essential_bcs: |
+        %
+        ff = r['/geometry/param/facet_function']
+        fvs = frozenset(fv for fv, sign in
+                        r['/geometry/facet_regions/p_contact/fvs'])
+        return [dolfin.DirichletBC(
+                  _.I_space, _.I_bc_value.m_as(_.I_unit), ff, fv)
+                for fv in fvs]
+
+  opt_strbg_msorte_iv:
+    env: opt_strbg_msorte_iv
+    instantiate: opt_strbg_msorte
+
+  opt_strbg_msorte_ci:
+    env: opt_strbg_msorte_ci
+    instantiate: opt_strbg_msorte
+
+  opt_strbg_msorte_cv:
+    env: opt_strbg_msorte_cv
+    instantiate: opt_strbg_msorte
