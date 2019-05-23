@@ -1,10 +1,10 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C This\sdoes\snot\sdeserve\sa\sversion\sas\shigh\sas\s0.1.0
-D 2019-05-23T04:40:08.054
+C add\slink\sto\sdoc
+D 2019-05-23T04:50:46.663
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
-F README.md 67d98b4cd03414de119586f5d2063713e11910b7b9a17f21c7e08146006bec75
+F README.md 9301e04909cca379fd10a7e6411a258987f54ab10f6b67fe264a5f1891b13f74
 F build_docs.sh 6a4463cc345d1d531b1daad9cff7f7811c6e4d364de8fd1e6180575061f0e366 x
 F debian-backport-fenics.sh 8df4cb278324b512beb7264f7dc2eff0b02e0485a34796501d3004708402f597 x
 F default-deploy.sh 6f134c9886cc09b363045e4cd7ce254f7b5528abda4ac33702ebc22508c4c5f3
@@ -197,16 +197,16 @@ F simudo/util/string_system.py 2b4315e0271987cbdcf3a2eda010a2da0628c25fcc120eca4
 F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6aea4c7
 F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P 544dcfadb7fc8d7f8f45471adc565a5ec182ef58053f2574d4f956fb2c212dc1
-R 3287f9aaa8ef325f5f152523d7e01df8
+P b1d77a1709ea08083b02d19070ff4f364e16149e6b1f318dc9f28ab962d34ccd
+R cc03eede790ea0e0483393c40e00bc03
 U eduard
-Z 3ff5b986c112b9fe9e934a4035d23c38
+Z bba0376bbac36fcbc924f1ce99695ebf
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXOYkKB4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sBHRwD/chwusQXhmQfUsunC
-4qxZV5l8CkEy8wq1oBqLjNZutAUA/jTH1v7MupmRcbIZ0dlBL5veXZLz5Yr02XKG
-nsMiMyNe
-=U+Aa
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXOYmph4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sD8YgD+OFrBpQhJHgOwDWSY
+v5gDuQGHHHNU3y/7KbO+nsXflAQA/0OENuI5Ik5FrGP8R/SNSaYTS01NZz32Ie0X
+7UKP09kH
+=Px07
 -----END PGP SIGNATURE-----
