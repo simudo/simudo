@@ -1,7 +1,7 @@
 # encoding: utf-8
 from setuptools import setup, find_packages
 pkg = "simudo"
-ver = '0.1.2'
+ver = '0.2.0'
 
 with open(pkg+'/version.py', 'wt') as h:
     h.write('__version__ = "{}"\n'.format(ver))

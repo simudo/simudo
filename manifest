@@ -1,8 +1,8 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C add\sLICENSE\sand\sCOPYRIGHT
-D 2019-05-23T20:23:28.243
+C Swap\s`region`\sand\s`key`\sarguments\sin\s`spatial.add_BC`\s(breaking\schange).
+D 2019-05-25T04:49:37.909
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
 F COPYRIGHT e4da96c2b20f031ebd05c8ef466d29196f5ee6e96cc4d52d4e4378b6d614f35a
 F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
@@ -34,10 +34,10 @@ F doc/source/user-guide.rst b6cd87e2f7471f3abaf2cc68786b484cbfa14cda2f9b1d1d79fb
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
 F get_data.sh d7ed4b028cf074d341c7e8b146df28ac1545209307382518064a2bf3911c853b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py 90b0e1431f2c63ccd6352cce1205c0c9f3508ac6051487d8a138251d62063610
+F setup.py 9fc14fd9db94dba489380c986d8ad7cbc94dc07c2b1f2bff81428784907f14e5
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
-F simudo/example/pn_benchmark.py 366f2cec3863cdf93cba48750657f6d614a7ccc01f012e3099d2e391facafd4b
+F simudo/example/pn_benchmark.py e01458f99ce230b9662349483582eefba254ee8245569dbb780a3db9ddf83149
 F simudo/fem/__init__.py 77ed63c971578b9d26d9cfb318f48e57bbc3e9658bbfcb38e10599860d291578
 F simudo/fem/adaptive_stepper.py b4cce5cb2f37fec1bd3d0be45b141d3316044254f068bd20451abb0a92b0562e
 F simudo/fem/assign.py 5c6a56add60fe5c937e2913e8362e0db655f1fde2b61c9d7e9d49648ec697da0
@@ -56,7 +56,7 @@ F simudo/fem/mesh_util1.py1 5f0438f3699148098ad1cf125f3c3434f5b2debf7e06adcae9e9
 F simudo/fem/newton_solver.py 426799d971e156f9f15ea95d1e197f5fcf259c62dce6029d2253e1624e0a197f
 F simudo/fem/offset_partitioning.py 651492227f4001a4aaea9d978cc1594ae52c806ae0253650dda577502d1f0e3d
 F simudo/fem/plot.py 133c77e99f5537d91a7d4310b93f231b56eb1ab7666e4bb50b8ce4696619c790
-F simudo/fem/spatial.py 5d0dca86aab065732105a0cdb7f2f4c59529e8da1d1c8c853ce3bd1cbb749f34
+F simudo/fem/spatial.py 7b975a02594aa6cca342e0f9905565daad2ed904d748c68fda2b9c75859e4f7b
 F simudo/fem/sympy_dolfin_printer.py 730e2c056a98df6f6b8e343912ccaec6cf909c188503b9ffb8416cdcf7e22327
 F simudo/fem/ufl_extra.py de68c54d35365e26b9d9c01361bfa5b28f862abe6a6e475b2b0b35c0018ed582
 F simudo/io/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
@@ -84,7 +84,7 @@ F simudo/misc/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a
 F simudo/misc/comparison_parameters.py 20e4eda6a1a65eede0f2182dac188374a83095ddcb3a3676c856cba48357d2ba
 F simudo/misc/sentaurus_import.py d5c7ad0a9bc82454449cfca3d5ffdce41930c448a92e411cf171f869b66abb29
 F simudo/misc/strandberg_comparison_parameters.py f7ac9a22dc3e162c0bc997fb7562b7a756009b30cb64d6406ffa72ae580c6a18
-F simudo/misc/strandberg_comparison_parameters_check.py 670d8e879c5fa5cf705faa3398960c105c0f3d36fd1574a3128f447a15b3e4f3
+F simudo/misc/strandberg_comparison_parameters_check.py e73204e2dc65ab121460783942ad946b9bd0a68aae98f0292f5cc58edbd28a9d
 F simudo/misc/visualize_elements.py 379ce9a57ff3182025087aeac27e3da24e7c120023431db6a48492956fcdd1b9
 F simudo/physics/__init__.py 9b227e38863588329b84e7d4626c4013a57c5833e913be61dcad16a6c1ddeb09
 F simudo/physics/electro_optical_process.py 06b686726f6ca7786da0606329db6c4123868c24143ef5ec5d9d2520de6e4837
@@ -199,16 +199,16 @@ F simudo/util/string_system.py 2b4315e0271987cbdcf3a2eda010a2da0628c25fcc120eca4
 F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6aea4c7
 F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P 20f86310c80d4e0297a27b02cb2878c9d23efa6425aa6e64609858ea8c6b8447
-R 7085cf0e13fefb7a8b9af057edb8f425
+P 548b1c2e6d961b35aaa7956955f58132a53bf620a7668162e55bb02ba752709c
+R 856b1af10a232f4ea474a8f7980bb3c0
 U eduard
-Z 079a8502129bdfb1b186be2e6916261b
+Z d779acd25bbd62daeb0451bd5c0a287f
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXOcBQB4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sD3fwD+Mz2XMvS0fOuuJPka
-sCiGwVKdnDzb6rOqnxxly80sSNgA/jDyuObqz7hHDr1cRcmbnd/50/SFHZTOempT
-9Tv1lzNU
-=WGll
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXOjJYR4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sANggD+N4dqsXY8XKX8zS+D
+dMbYB4OmnmJwSe9Vt0s43qrlU3kA/1RuNhtRmsCPyf/odNKRcUfKaInnk6StSF+N
+nr8/M5Im
+=pwf0
 -----END PGP SIGNATURE-----

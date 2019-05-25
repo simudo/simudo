@@ -257,36 +257,36 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
                     name='beer_lambert',
                     get_alpha=lambda wavelength: 1/U("0.1 um"))
 
-                ospatial.add_BC(F.left_contact, 'forward/Phi',
+                ospatial.add_BC('forward/Phi', F.left_contact,
                                 1e20 * U('1/cm^2/s'))
 
-            spatial.add_BC(F.nonconductive, 'CB/j',
+            spatial.add_BC('CB/j', F.nonconductive,
                            U('A/cm^2') * mu.zerovec)
-            spatial.add_BC(F.nonconductive, 'VB/j',
+            spatial.add_BC('VB/j', F.nonconductive,
                            U('A/cm^2') * mu.zerovec)
 
             # minority contact
             if P['min_srv'] == 'inf':
-                spatial.add_BC(F.p_contact, 'CB/u',
+                spatial.add_BC('CB/u', F.p_contact,
                                CB.thermal_equilibrium_u)
-                spatial.add_BC(F.n_contact, 'VB/u',
+                spatial.add_BC('VB/u', F.n_contact,
                                VB.thermal_equilibrium_u)
             elif P['min_srv'] == '0':
-                spatial.add_BC(F.p_contact, 'CB/j',
+                spatial.add_BC('CB/j', F.p_contact,
                                U('A/cm^2') * mu.zerovec)
-                spatial.add_BC(F.n_contact, 'VB/j',
+                spatial.add_BC('VB/j', F.n_contact,
                                U('A/cm^2') * mu.zerovec)
 
             # majority contact
-            spatial.add_BC(F.p_contact, 'VB/u',
+            spatial.add_BC('VB/u', F.p_contact,
                            VB.thermal_equilibrium_u)
-            spatial.add_BC(F.n_contact, 'CB/u',
+            spatial.add_BC('CB/u', F.n_contact,
                            CB.thermal_equilibrium_u)
 
             phi0 = pdd.poisson.thermal_equilibrium_phi
-            spatial.add_BC(F.p_contact, 'poisson/phi',
+            spatial.add_BC('poisson/phi', F.p_contact,
                            phi0)
-            spatial.add_BC(F.n_contact, 'poisson/phi',
+            spatial.add_BC('poisson/phi', F.n_contact,
                            phi0 - V_ext)
             zeroE -= (F.p_contact | F.n_contact).both()
 
@@ -294,11 +294,11 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
             # to match old method, use local charge neutrality phi as
             # the phi boundary condition for Poisson-only thermal
             # equilibrium
-            spatial.add_BC(F.p_contact | F.n_contact, 'poisson/phi',
+            spatial.add_BC('poisson/phi', F.p_contact | F.n_contact,
                            phi_cn)
             zeroE -= (F.p_contact | F.n_contact).both()
 
-        spatial.add_BC(zeroE, 'poisson/E',
+        spatial.add_BC('poisson/E', zeroE,
                        U('V/m') * mu.zerovec)
 
         spatial.add_rule('SRH/CB/tau', R.domain, U('1e-9 s'))

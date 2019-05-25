@@ -343,8 +343,12 @@ bcs: defaultdict(SortedList)
 
         return expr
 
-    def add_BC(self, region, key, value, priority=0,
+    def add_BC(self, key, region, value, priority=0,
                require_natural=False, **kwargs):
+        if isinstance(region, str):
+            raise AssertionError(
+                "`region` argument should not be a string, have you "
+                "swapped the first two arguments by mistake?")
         value = constantify_if_literal(value)
         bc = BoundaryCondition(region=region,
                                value=value,

@@ -152,11 +152,11 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
             # to match old method, use local charge neutrality phi as
             # the phi boundary condition for Poisson-only thermal
             # equilibrium
-            spatial.add_BC(F.p_contact | F.n_contact, 'poisson/phi',
+            spatial.add_BC('poisson/phi', F.p_contact | F.n_contact,
                            phi_cn)
             zeroE -= (F.p_contact | F.n_contact).both()
 
-        spatial.add_BC(zeroE, 'poisson/E',
+        spatial.add_BC('poisson/E', zeroE,
                        U('V/m') * mu.zerovec)
 
         return root
