@@ -1,8 +1,8 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C Swap\s`region`\sand\s`key`\sarguments\sin\s`spatial.add_BC`\s(breaking\schange).
-D 2019-05-25T04:49:37.909
+C Add\smissing\sdep,\smake\s`get_data.sh`\sscript\snot\srequire\s`fossil`.
+D 2019-06-02T04:29:21.345
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
 F COPYRIGHT e4da96c2b20f031ebd05c8ef466d29196f5ee6e96cc4d52d4e4378b6d614f35a
 F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
@@ -32,9 +32,9 @@ F doc/source/dev/thoughts-on-initializing.rst 2c796243ee47d369375e6815364fef834d
 F doc/source/index.rst 644fd3df757b12b283d2b87a28682532c4647638b97c194bbc03d9fdaa8f42a7
 F doc/source/user-guide.rst b6cd87e2f7471f3abaf2cc68786b484cbfa14cda2f9b1d1d79fba8c456438fc4
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
-F get_data.sh d7ed4b028cf074d341c7e8b146df28ac1545209307382518064a2bf3911c853b x
+F get_data.sh 04f853166b8f12523f52c330ba7eefbebbce1793d112fefd2ad013000d52216b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py 9fc14fd9db94dba489380c986d8ad7cbc94dc07c2b1f2bff81428784907f14e5
+F setup.py 9331a214c188c8b7cec11b6c7d8012f92bc0e540c5a114d1acdf3bbdbcb94d82
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/pn_benchmark.py e01458f99ce230b9662349483582eefba254ee8245569dbb780a3db9ddf83149
@@ -199,16 +199,16 @@ F simudo/util/string_system.py 2b4315e0271987cbdcf3a2eda010a2da0628c25fcc120eca4
 F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6aea4c7
 F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P 548b1c2e6d961b35aaa7956955f58132a53bf620a7668162e55bb02ba752709c
-R 856b1af10a232f4ea474a8f7980bb3c0
+P f1273d1f10631db791806fadbf6f991df56024b8cd4780b8d4c3e27c837a5c3d
+R 676b0615783cb8d5e9c95895ea692c6a
 U eduard
-Z d779acd25bbd62daeb0451bd5c0a287f
+Z 45bed8c3332aa8969a212c97f9b0fa9b
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXOjJYR4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sANggD+N4dqsXY8XKX8zS+D
-dMbYB4OmnmJwSe9Vt0s43qrlU3kA/1RuNhtRmsCPyf/odNKRcUfKaInnk6StSF+N
-nr8/M5Im
-=pwf0
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXPNQoR4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sBefgD8CxU3Nb9VaJCbyFYG
+FcpQjvTHLuLvgWo9lAo28IeCGT0A/A8wG1dj6Re2xUyd0/9zjFBiUTVqYu1MXDgP
+ADYHCa+n
+=TthH
 -----END PGP SIGNATURE-----

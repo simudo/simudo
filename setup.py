@@ -1,7 +1,7 @@
 # encoding: utf-8
 from setuptools import setup, find_packages
 pkg = "simudo"
-ver = '0.2.0'
+ver = '0.3.0.0'
 
 with open(pkg+'/version.py', 'wt') as h:
     h.write('__version__ = "{}"\n'.format(ver))
@@ -22,7 +22,7 @@ setup(
     install_requires = [
         'numpy', 'scipy', 'pandas',
         'matplotlib', 'mpl_render',
-        'yamlordereddictloader', 'suffix_trees',
+        'yamlordereddictloader', 'suffix_trees', 'generic_escape',
         'sortedcontainers',
         'cached_property',
         'h5py',
