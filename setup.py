@@ -1,7 +1,7 @@
 # encoding: utf-8
 from setuptools import setup, find_packages
 pkg = "simudo"
-ver = '0.3.0.1'
+ver = '0.3.0.2'
 
 with open(pkg+'/version.py', 'wt') as h:
     h.write('__version__ = "{}"\n'.format(ver))
@@ -19,7 +19,7 @@ setup(
     license          = "LGPLv3",
     url              = "https://github.com/simudo/simudo",
     packages         = find_packages(),
-    package_data     = {pkg: ['example/*.ipynb']},
+    package_data     = {pkg: ['physics/*.py1']},
     data_files       = [("", ["LICENSE", "COPYRIGHT", "README.md"])],
     install_requires = [
         'numpy', 'scipy', 'pandas', 'Pint',

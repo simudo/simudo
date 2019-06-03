@@ -1,8 +1,8 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C Clean\sthings\sup\sfor\sdistribution.
-D 2019-06-03T02:23:50.483
+C packaging\sis\shard
+D 2019-06-03T02:31:35.278
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
 F COPYRIGHT 7d8ce17ad51dfe115a0ae3135ad90948bc39e61b18c98a91808f2eb2572f3e13
 F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
@@ -36,7 +36,7 @@ F doc/source/user/simudo_install_ubuntu1904.sh 6d2ab36bf7de8eba1dadbda725919c1cf
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
 F get_data.sh 04f853166b8f12523f52c330ba7eefbebbce1793d112fefd2ad013000d52216b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py f0cb616e819c2c2eb6ba20649d428804b05b9a24f9f01b26397a2a2fb144a991
+F setup.py 9d66deff20e9ebdfb639efac20acf5bc4fb16eab7bb57562b2a9c6d2fce8fd5b
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/pn_benchmark.py e01458f99ce230b9662349483582eefba254ee8245569dbb780a3db9ddf83149
@@ -201,16 +201,16 @@ F simudo/util/string_system.py 2b4315e0271987cbdcf3a2eda010a2da0628c25fcc120eca4
 F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6aea4c7
 F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P 9fb79b053767e4d59d4199d96753de306d1621ce40db2b3d41bb622fead17849
-R 46d7778c59167876ff0412fae951d1f9
+P 084ca5707a8a86fcba2b3767eaeb564471be50c1096b85d57cc61744132f2ff0
+R 63cac7d3686467f06aaabb89f921f4fc
 U eduard
-Z cb736a6f491e8a566238f8f3fa5943d8
+Z 9793f47e03b947a6fab05164fc8f10e8
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXPSEth4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sDcPAD9G9WReu7fpG+PWOt0
-vn2r6FSrt7CaHI5VelM4vi/2EDcA/2QkVMh2RJAM+qmTpwdjyT6R5T2pgwmvr0if
-/AY4NQY+
-=7Xm2
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXPSGhx4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sCpTgD/dnf64JPChkY4mBqX
+aOQ77ik2xTnJatoT5ltMBJfv8rIA/10gtn4fUbiTFnoX+hq+ZOXbqhnXBLxPDsJv
+46uNvNaw
+=e/Mi
 -----END PGP SIGNATURE-----
