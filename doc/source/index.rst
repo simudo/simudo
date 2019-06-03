@@ -11,7 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
-   user-guide
+   user/index
    apidoc/modules
    dev/index
 

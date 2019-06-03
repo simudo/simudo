@@ -1,10 +1,10 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C Add\smissing\sdep,\smake\s`get_data.sh`\sscript\snot\srequire\s`fossil`.
-D 2019-06-02T04:29:21.345
+C Clean\sthings\sup\sfor\sdistribution.
+D 2019-06-03T02:23:50.483
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
-F COPYRIGHT e4da96c2b20f031ebd05c8ef466d29196f5ee6e96cc4d52d4e4378b6d614f35a
+F COPYRIGHT 7d8ce17ad51dfe115a0ae3135ad90948bc39e61b18c98a91808f2eb2572f3e13
 F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
 F README.md 9301e04909cca379fd10a7e6411a258987f54ab10f6b67fe264a5f1891b13f74
 F build_docs.sh 6a4463cc345d1d531b1daad9cff7f7811c6e4d364de8fd1e6180575061f0e366 x
@@ -29,12 +29,14 @@ F doc/source/dev/index.rst 224d1dbf131f011df2c9f21a53dd0d17b9a59cd904aec1b52b148
 F doc/source/dev/physics.rst e90c4e533040ffbb11398e40f82e8fdd3c90158d4c61f1005f175be8d3ae0325
 F doc/source/dev/refactoring_201806.rst 85c753289017831c910a1d1c09b1cd4b36fbcab6b440e4b6765405b7706bf5b1
 F doc/source/dev/thoughts-on-initializing.rst 2c796243ee47d369375e6815364fef834d8222d4a8801643ab440ec27b6c84ee
-F doc/source/index.rst 644fd3df757b12b283d2b87a28682532c4647638b97c194bbc03d9fdaa8f42a7
-F doc/source/user-guide.rst b6cd87e2f7471f3abaf2cc68786b484cbfa14cda2f9b1d1d79fba8c456438fc4
+F doc/source/index.rst 7488b33278f3cc4eb4884b077ee0e413981bd20dfc16beb4461b128068c16557
+F doc/source/user/index.rst dd581ef2ef68eb564ee9a67e2a476e42c28fb665ce194cac73844f1bfa366f0a
+F doc/source/user/install.rst 14b37a1028be1210bf49ac74c0d3bdd74173779d9da8e429d0e366975cfd9245
+F doc/source/user/simudo_install_ubuntu1904.sh 6d2ab36bf7de8eba1dadbda725919c1cfcd4fa5deb8f21d63354774cce1f2d8f
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
 F get_data.sh 04f853166b8f12523f52c330ba7eefbebbce1793d112fefd2ad013000d52216b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py 9331a214c188c8b7cec11b6c7d8012f92bc0e540c5a114d1acdf3bbdbcb94d82
+F setup.py f0cb616e819c2c2eb6ba20649d428804b05b9a24f9f01b26397a2a2fb144a991
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/pn_benchmark.py e01458f99ce230b9662349483582eefba254ee8245569dbb780a3db9ddf83149
@@ -199,16 +201,16 @@ F simudo/util/string_system.py 2b4315e0271987cbdcf3a2eda010a2da0628c25fcc120eca4
 F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6aea4c7
 F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P f1273d1f10631db791806fadbf6f991df56024b8cd4780b8d4c3e27c837a5c3d
-R 676b0615783cb8d5e9c95895ea692c6a
+P 9fb79b053767e4d59d4199d96753de306d1621ce40db2b3d41bb622fead17849
+R 46d7778c59167876ff0412fae951d1f9
 U eduard
-Z 45bed8c3332aa8969a212c97f9b0fa9b
+Z cb736a6f491e8a566238f8f3fa5943d8
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXPNQoR4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sBefgD8CxU3Nb9VaJCbyFYG
-FcpQjvTHLuLvgWo9lAo28IeCGT0A/A8wG1dj6Re2xUyd0/9zjFBiUTVqYu1MXDgP
-ADYHCa+n
-=TthH
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXPSEth4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sDcPAD9G9WReu7fpG+PWOt0
+vn2r6FSrt7CaHI5VelM4vi/2EDcA/2QkVMh2RJAM+qmTpwdjyT6R5T2pgwmvr0if
+/AY4NQY+
+=7Xm2
 -----END PGP SIGNATURE-----
