@@ -8,19 +8,19 @@ import numpy as np
 
 import dolfin
 
-from ..fem import setup_dolfin_parameters
-from ..io import h5yaml
-from ..io.output_writer import (
+from simudo.fem import setup_dolfin_parameters
+from simudo.io import h5yaml
+from simudo.io.output_writer import (
     MetaExtractorBandInfo, MetaExtractorIntegrals, OutputWriter)
-from ..mesh import (
+from simudo.mesh import (
     CellRegions, CInterval, ConstructionHelperLayeredStructure, FacetRegions,
     Interval)
-from ..physics import (
+from simudo.physics import (
     NonOverlappingTopHatBeerLambert, OpticalIntensityAdaptiveStepper,
     PoissonDriftDiffusion, ProblemData, Material,
     SRHRecombination, VoltageStepper,
     MixedDensityNondegenerateBand)
-from ..util import TypicalLoggingSetup, make_unit_registry
+from simudo.util import TypicalLoggingSetup, make_unit_registry
 
 
 def topology_standard_contacts(cell_regions, facet_regions):
@@ -344,7 +344,7 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
                 cells=R[{'pSi', 'nSi'}]))
 
     def sentaurus_debug_test():
-        from ..misc import sentaurus_import as sen
+        from simudo.misc import sentaurus_import as sen
         import lzma
         with lzma.open("/home/user/j/data/sentaurus/"
                        "diode_1d c=1e18 V=0.csv.xz", mode='rb') as handle:
@@ -401,7 +401,7 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
 
     stepper.do_loop()
 
-    # from ..trash.mrs2018_sentaurus_plot import main as plotmain
+    # from simudo.trash.mrs2018_sentaurus_plot import main as plotmain
 
     # for a in ['0.2', '0.4', '0.6', '0.8']:
     #     plotmain(input=PREFIX+"a parameter="+a+" csvplot.csv.0",

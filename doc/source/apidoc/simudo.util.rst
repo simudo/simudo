@@ -102,6 +102,14 @@ simudo.util.string\_system module
     :undoc-members:
     :show-inheritance:
 
+simudo.util.with\_default\_kwargs module
+----------------------------------------
+
+.. automodule:: simudo.util.with_default_kwargs
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 simudo.util.xtimeit module
 --------------------------
 
