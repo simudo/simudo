@@ -1,7 +1,7 @@
 # encoding: utf-8
 from setuptools import setup, find_packages
 pkg = "simudo"
-ver = '0.3.0.4'
+ver = '0.3.0.5'
 
 with open(pkg+'/version.py', 'wt') as h:
     h.write('__version__ = "{}"\n'.format(ver))
@@ -21,7 +21,8 @@ setup(
     packages         = find_packages(),
     package_data     = {pkg: [
         'physics/*.py1',
-        'fem/*.py1']},
+        'fem/*.py1',
+        'util/pint/*.txt']},
     data_files       = [("", ["LICENSE", "COPYRIGHT", "README.md"])],
     install_requires = [
         'numpy', 'scipy', 'pandas', 'Pint',
