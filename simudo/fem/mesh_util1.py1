@@ -80,6 +80,7 @@ classes:
       MinFacetEdgeLength: !c 'dolfin.MinFacetEdgeLength(mesh)*mesh_unit'
       MaxFacetEdgeLength: !c 'dolfin.MaxFacetEdgeLength(mesh)*mesh_unit'
       jump: !c 'lambda x, n=None: dolfin.jump(magnitude(x), n) * units(x)'
+      avg: !c 'lambda x: dolfin.avg(magnitude(x)) * units(x)'
       side: !c 'lambda x, pm: magnitude(x)(pm)*units(x)'
       pside: !c 'lambda x: _.side(x, "+")'
       mside: !c 'lambda x: _.side(x, "-")'

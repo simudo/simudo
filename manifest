@@ -1,8 +1,8 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C add\smissing\spint\sunit\sfiles,\sbump\sversion
-D 2019-06-13T17:28:36.066
+C bump\smajor\sversion\sdue\sto\sbreaking\sAPI\schange\sin\s`fem.mesh_util`
+D 2019-06-17T01:57:10.506
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
 F COPYRIGHT 7d8ce17ad51dfe115a0ae3135ad90948bc39e61b18c98a91808f2eb2572f3e13
 F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
@@ -36,7 +36,7 @@ F doc/source/user/simudo_install_ubuntu1904.sh 6d2ab36bf7de8eba1dadbda725919c1cf
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
 F get_data.sh 04f853166b8f12523f52c330ba7eefbebbce1793d112fefd2ad013000d52216b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py 2fe88e40129490413b301900132051cd0c3b0260610e21349409f18916a196c0
+F setup.py bc12ff06aeb66b4e22cca2d6f8a58048d307f95d5db481e0872b52abb238921c
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/marti2002/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
@@ -60,8 +60,8 @@ F simudo/fem/function_space_cache.py 04164395b8b6238235d6b5de4816baa4ef4ed92baa9
 F simudo/fem/function_subspace_registry.py e7e7863776a657adaba2a9c9a47fcf1a1e9ab7c19091e2b80cb277969bc3a2f6
 F simudo/fem/ipython.py e37e2428348890d4568a1a42041412c5180c4877808014deef5604dc4416e5cc
 F simudo/fem/mesh_data.py 35894809fd9646578d63d8663f0f96d8fde84be90c7d4fac3a663d5ccfcde56b
-F simudo/fem/mesh_util.py 37a31397c5a25d962a652615589f913afa11528445a3a637a61e2e73dddb44ce
-F simudo/fem/mesh_util1.py1 5f0438f3699148098ad1cf125f3c3434f5b2debf7e06adcae9e92e0f94aaf3c5
+F simudo/fem/mesh_util.py 8a4dcb787977719a389a6e09b1fb72336d517c6c1f267ae55353b8b44bd6d30f
+F simudo/fem/mesh_util1.py1 f77fa712c088643342d38498a5609239844bccf1af2c90b3ffc9ac1fb0b4817d
 F simudo/fem/newton_solver.py 426799d971e156f9f15ea95d1e197f5fcf259c62dce6029d2253e1624e0a197f
 F simudo/fem/offset_partitioning.py 651492227f4001a4aaea9d978cc1594ae52c806ae0253650dda577502d1f0e3d
 F simudo/fem/plot.py 133c77e99f5537d91a7d4310b93f231b56eb1ab7666e4bb50b8ce4696619c790
@@ -71,7 +71,7 @@ F simudo/fem/ufl_extra.py de68c54d35365e26b9d9c01361bfa5b28f862abe6a6e475b2b0b35
 F simudo/io/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/io/csv.py 8556e6f8e082b7ebd9c1b69970ff42967405cc97f2d444a61ba2e0c669778984
 F simudo/io/h5yaml.py 109cdf95fc741a916ff692ab337a1ae2ac4b4a152c59f8759c88b10098a623e1
-F simudo/io/output_writer.py 3532f5b2a83a3647f29edfa373234a635c5701e526e69e6e72bda500dff2b0a6
+F simudo/io/output_writer.py bf45ba6b98049ff70ed20df7d486757bf7721d3146d73fde6809bfb9c9d72ba0
 F simudo/io/xdmf.py 9c0ed1958b9bd3dd4324e3d8b1419b1409671af4ce2b7907f4764a8b367d6900
 F simudo/matplotlib_backend.py 20c8a655954d83314338249d8f3841196fefc0b3fec46dd9396ed9985706867d
 F simudo/memoize/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
@@ -207,16 +207,16 @@ F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6
 F simudo/util/with_default_kwargs.py 5fabcf88788eb0fb7c156e66110d10657062facd36d99ddcbdf8d293bde96f5f
 F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P 2448d83f37f16b1b8cbb392fe7a3e117e48df54a8941aefdf302a7ac3d636d4d
-R 6e3ab7852f0f3b2b90695a55ee8d08fa
+P 30b3e3fe86865e5db9fcc9107719679359bb44bf51e01bc854085614c40ce226
+R 3336e421e6a0fc97864f65dc8b01971f
 U eduard
-Z 115b48b69dde5b010604c0b0f2cc655d
+Z d84415cc8758f54e9d60845832728746
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXQKHxB4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sCISwEAkM7ULldkRmTjsU1C
-m+qv2weAZRHn4CjVZJk4JqKf+ZsBAIAzIX9SkDZEYjxkO03hXXe2EJJn3ThhdPMW
-eQCvwhL8
-=AXGn
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXQbzdh4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sDgrwD/WkrF2siSWne0Ak6w
+mavUvgh9/8JmqETvRRiZWSKOQkcBAIl6IqbEbLCL+JNEzstfZfFi5M5NmidNRTxb
+PB7xuFrO
+=ochH
 -----END PGP SIGNATURE-----

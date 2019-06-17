@@ -159,9 +159,10 @@ measure: :py:class:`.expr.DelayedForm`
 
         return dx
 
-    def region_dsS(self, region, internal=True, external=True):
-        '''Return ds/dS (surface) measure corresponding to topological
-:py:class:`~.topology.FacetRegion`.
+    def region_ds_and_dS(self, region):
+        '''Return ds and dS (surface) measures corresponding to
+topological :py:class:`~.topology.FacetRegion`, for internal and
+external facets respectively.
 
 Parameters
 ----------
@@ -170,18 +171,9 @@ region: :py:class:`~.topology.FacetRegion`
 
 Returns
 -------
-measure: :py:class:`.expr.DelayedForm`
-    Facet integration measure.
+measures: tuple of :py:class:`.expr.DelayedForm`
+    Facet integration measures :code:`(ds, dS)`.
 '''
-
-        ds = None
-        if external:
-            ds = self.ds
-        if internal:
-            ds = self.dS if ds is None else ds+self.dS
-        if ds is None:
-            return DelayedForm() # empty measure
-
         # TODO: this could benefit from some caching
         fv_pos = []
         fv_neg = []
@@ -191,18 +183,13 @@ measure: :py:class:`.expr.DelayedForm`
             else:
                 fv_neg.append(fv)
 
-        ds_pos = ds(subdomain_id=tuple(sorted(fv_pos)))
-        ds_neg = ds(subdomain_id=tuple(sorted(fv_neg)))
+        fv_pos = tuple(sorted(fv_pos))
+        fv_neg = tuple(sorted(fv_neg))
 
-        return ds_pos - ds_neg
+        ds, dS = (d(subdomain_id=fv_pos) - d(subdomain_id=fv_neg)
+                  for d in (self.ds, self.dS))
 
-    def region_ds(self, region):
-        '''See :py:meth:`region_dsS`'''
-        return self.region_dsS(region, internal=False, external=True)
-
-    def region_dS(self, region):
-        '''See :py:meth:`region_dsS`'''
-        return self.region_dsS(region, internal=True, external=False)
+        return (ds, dS)
 
     @property
     def facet_function(self):

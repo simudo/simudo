@@ -1,9 +1,11 @@
 import logging
+import warnings
 import operator as OP
 from contextlib import closing
 from functools import reduce
 
 from cached_property import cached_property
+import numpy as np
 
 import dolfin
 
@@ -11,6 +13,8 @@ from ..io import h5yaml
 from ..io.csv import LineCutCsvPlot
 from ..util import SetattrInitMixin
 
+class ZeroAreaWarning(RuntimeWarning):
+    pass
 
 class OutputWriter(SetattrInitMixin):
     '''Write output data extracted from a solution object.
@@ -24,9 +28,6 @@ class OutputWriter(SetattrInitMixin):
     plot_mesh: Save data on the original mesh.
 
     plot_1d: Extract data along a 1D line cut and save to a csv file.
-
-    plot_iv: Save terminal currents and voltages, as well as other
-    data such as generation rates integrated over the mesh volume.
     '''
 
     @cached_property
@@ -58,12 +59,6 @@ class OutputWriter(SetattrInitMixin):
                     plot_prefix + '.csv', None)) as plotter:
                 solution_plot_1d(plotter, solution, 0)
             h5yaml.dump(meta, plot_prefix + '.plot_meta.yaml')
-
-        if self.plot_iv:
-            if self.iv_writer is None:
-                self.iv_writer = WriteIVFile(self.get_iv_prefix(
-                    solution, parameter_value) + '.csv', solution)
-            self.iv_writer.write_row(solution)
 
 def _ensure_dict(d, k):
     v = d.get(k, None)
@@ -98,11 +93,9 @@ meta:
         for k, b in self.pdd.bands.items():
             self.add_surface_flux(
                 'avg_j_{}'.format(k), b.j, average=True,
-                internal=False,
                 units='mA/cm^2')
             self.add_surface_flux(
                 'tot_j_{}'.format(k), b.j, average=False,
-                internal=False,
                 units='mA')
             self.add_volume_total(
                 'avg_g_{}'.format(k), b.g, average=True,
@@ -123,20 +116,29 @@ meta:
         self.meta_integrals[':'.join((name, location_name))] = value
 
     def add_surface_total(
-            self, k, expr, internal=True, external=True,
+            self, k, expr_ds, expr_dS, internal=True, external=True,
             average=False, units=None):
         mu = self.pdd.mesh_util
         for reg_name, reg in self.facets.items():
-            dsS = mu.region_dsS(reg, internal=internal, external=external)
-            value = mu.assemble(dsS*expr)
+            ds, dS = mu.region_ds_and_dS(reg)
+            dsS = ds + dS
+            value = mu.assemble(ds*expr_ds + dS*expr_dS)
             if average:
-                value = value / mu.assemble(dsS.abs()*mu.Constant(1.0))
+                area = mu.assemble(dsS.abs()*mu.Constant(1.0))
+                if area == 0:
+                    value = (value * np.nan) / area.units
+                    warnings.warn(ZeroAreaWarning(
+                        "facet region {!r} has zero area".format(reg_name)))
+                else:
+                    value = value / area
             self.add_quantity(k, reg_name, value.m_as(units))
 
     def add_surface_flux(self, k, expr, **kwargs):
         mu = self.pdd.mesh_util
-        flux = mu.dot(expr, mu.n)
-        self.add_surface_total(k, flux, **kwargs)
+        self.add_surface_total(
+            k,
+            expr_ds=mu.dot(expr, mu.n),
+            expr_dS=mu.dot(mu.avg(expr), mu.pside(mu.n)), **kwargs)
 
     def add_volume_total(self, k, expr, average=False, units=None):
         mu = self.pdd.mesh_util
@@ -231,6 +233,9 @@ def get_contact_currents(solution, contact_name):
     return elec_current, hole_current
 
 
+'''
+# this is broken, don't use
+
 class WriteIVFile(object):
 
     def __init__(self, filename, solution):
@@ -277,3 +282,4 @@ class WriteIVFile(object):
         for r in self.rate_quantities:
             row.append(sl['/pde/assemble'](sl['/pde/dx']*sl['/strbg/' + r]).m_as(1./u.s))
         self.iv_writer.writerow(row)
+'''
