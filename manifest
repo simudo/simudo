@@ -1,8 +1,8 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C bump\smajor\sversion\sdue\sto\sbreaking\sAPI\schange\sin\s`fem.mesh_util`
-D 2019-06-17T01:57:10.506
+C bump\sversion:\sexample\sis\sin\sa\sdecent\sstate
+D 2019-06-17T02:58:22.373
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
 F COPYRIGHT 7d8ce17ad51dfe115a0ae3135ad90948bc39e61b18c98a91808f2eb2572f3e13
 F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
@@ -36,7 +36,7 @@ F doc/source/user/simudo_install_ubuntu1904.sh 6d2ab36bf7de8eba1dadbda725919c1cf
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
 F get_data.sh 04f853166b8f12523f52c330ba7eefbebbce1793d112fefd2ad013000d52216b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py bc12ff06aeb66b4e22cca2d6f8a58048d307f95d5db481e0872b52abb238921c
+F setup.py e8b1087f3258776d321451f24a964deabcac58281f3f4730583b112b6b7048dd
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/marti2002/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
@@ -47,6 +47,8 @@ F simudo/example/pn_benchmark/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff
 F simudo/example/pn_benchmark/pn_benchmark.py 66e6294b78daef7e81a2da0e323d6adcda659ca762de9f5ef4012f22405efd36
 F simudo/example/pn_benchmark/pn_benchmark_create_submitfiles.py 3c667f280372b356d566c48643c427e218dc520bcc1d7bde7dcd65b3d87954b2
 F simudo/example/pn_benchmark/pn_benchmark_plot.py a7e0b23e45120a7086e11b9d6bb2ff7fb3cda57162a2ea6bd22fa51135d46ac1
+F simudo/example/pn_diode/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
+F simudo/example/pn_diode/pn_diode.py 6de6f894e15d519dc7ea74a52ea810023cc00e0536a0326e6f6660e3ba1bac62
 F simudo/fem/__init__.py 77ed63c971578b9d26d9cfb318f48e57bbc3e9658bbfcb38e10599860d291578
 F simudo/fem/adaptive_stepper.py b4cce5cb2f37fec1bd3d0be45b141d3316044254f068bd20451abb0a92b0562e
 F simudo/fem/assign.py 5c6a56add60fe5c937e2913e8362e0db655f1fde2b61c9d7e9d49648ec697da0
@@ -71,7 +73,7 @@ F simudo/fem/ufl_extra.py de68c54d35365e26b9d9c01361bfa5b28f862abe6a6e475b2b0b35
 F simudo/io/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/io/csv.py 8556e6f8e082b7ebd9c1b69970ff42967405cc97f2d444a61ba2e0c669778984
 F simudo/io/h5yaml.py 109cdf95fc741a916ff692ab337a1ae2ac4b4a152c59f8759c88b10098a623e1
-F simudo/io/output_writer.py bf45ba6b98049ff70ed20df7d486757bf7721d3146d73fde6809bfb9c9d72ba0
+F simudo/io/output_writer.py 9e2c0a4d6059e44bcc0691809e6f67d35a47919dd39ea8abbf913ddd28321628
 F simudo/io/xdmf.py 9c0ed1958b9bd3dd4324e3d8b1419b1409671af4ce2b7907f4764a8b367d6900
 F simudo/matplotlib_backend.py 20c8a655954d83314338249d8f3841196fefc0b3fec46dd9396ed9985706867d
 F simudo/memoize/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
@@ -207,16 +209,16 @@ F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6
 F simudo/util/with_default_kwargs.py 5fabcf88788eb0fb7c156e66110d10657062facd36d99ddcbdf8d293bde96f5f
 F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P 30b3e3fe86865e5db9fcc9107719679359bb44bf51e01bc854085614c40ce226
-R 3336e421e6a0fc97864f65dc8b01971f
+P 136ff609eee442e8632bc8bee6570b1968fe380fb9f7c658337781153c0b02a3
+R 10c7a7de2990a28787e7c0b41a5f11f6
 U eduard
-Z d84415cc8758f54e9d60845832728746
+Z 82fd6fe216e53da350b6f7f157c7b2ef
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXQbzdh4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sDgrwD/WkrF2siSWne0Ak6w
-mavUvgh9/8JmqETvRRiZWSKOQkcBAIl6IqbEbLCL+JNEzstfZfFi5M5NmidNRTxb
-PB7xuFrO
-=ochH
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXQcBzh4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sD4kAEAkjzbCVoaGhKB4UUp
+f/slpH0j+OqkSM4eJdpmtNwz8DQA/AuFwP2BDHSuFf4sZ46YSYhagj9ESPeOiZiL
+4bjKU2+Y
+=3ol2
 -----END PGP SIGNATURE-----

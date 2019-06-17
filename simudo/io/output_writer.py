@@ -48,6 +48,7 @@ class OutputWriter(SetattrInitMixin):
     def write_output(self, solution, parameter_value):
         meta = {}
 
+        meta['parameter_value'] = parameter_value
         for extractor in self.meta_extractors:
             extractor(
                 solution=solution, parameter_value=parameter_value,
