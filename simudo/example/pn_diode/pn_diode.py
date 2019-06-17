@@ -202,22 +202,8 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
 
     return locals()
 
-def jv():
-    rows = []
-    for f in glob.glob("output V_stepper*.plot_meta.yaml"):
-        meta = h5yaml.load(f)
-        V = meta['parameter_value']
-        d = meta['integrals'].copy()
-        d['V'] = V
-        rows.append(d)
-    rows.sort(key=lambda d: d['V'])
-
-    df = pd.DataFrame.from_records(rows)
-    print(df)
-    df.to_csv("output JV.csv", index=False)
-
 parser = ArghParser()
-parser.add_commands([run, jv])
+parser.add_commands([run])
 
 if __name__ == '__main__':
     parser.dispatch()

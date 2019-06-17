@@ -1,3 +1,4 @@
+import csv
 import logging
 import warnings
 import operator as OP
@@ -29,6 +30,7 @@ class OutputWriter(SetattrInitMixin):
 
     plot_1d: Extract data along a 1D line cut and save to a csv file.
     '''
+    _meta_csv = None
 
     @cached_property
     def meta_extractors(self):
@@ -48,7 +50,7 @@ class OutputWriter(SetattrInitMixin):
     def write_output(self, solution, parameter_value):
         meta = {}
 
-        meta['parameter_value'] = parameter_value
+        meta['parameter_value'] = dict(value=parameter_value)
         for extractor in self.meta_extractors:
             extractor(
                 solution=solution, parameter_value=parameter_value,
@@ -60,6 +62,33 @@ class OutputWriter(SetattrInitMixin):
                     plot_prefix + '.csv', None)) as plotter:
                 solution_plot_1d(plotter, solution, 0)
             h5yaml.dump(meta, plot_prefix + '.plot_meta.yaml')
+            meta_writer = self.get_meta_csv_file(
+                self.filename_prefix + ' meta.csv', meta)
+            meta_writer.add_row(meta)
+
+    def get_meta_csv_file(self, filename, meta):
+        if self._meta_csv is None:
+            self._meta_csv = MetaCSVWriter(filename, meta)
+        return self._meta_csv
+
+class MetaCSVWriter(SetattrInitMixin):
+    def __init__(self, filename, meta):
+        columns = []
+        for k, d in meta.items():
+            u = d.get('units', '')
+            typ = d.get('type', 'float')
+            columns.append(k)
+
+        self.columns = columns
+        self.iv_file = iv_file = open(filename, 'wt')
+        self.iv_writer = wr = csv.writer(iv_file)
+
+        wr.writerow(columns)
+        wr.writerow([meta[c].get('units', '') for c in columns])
+
+    def add_row(self, meta):
+        self.iv_writer.writerow([meta[c]['value'] for c in self.columns])
+        self.iv_file.flush()
 
 def _ensure_dict(d, k):
     v = d.get(k, None)
@@ -68,16 +97,19 @@ def _ensure_dict(d, k):
     return v
 
 class MetaExtractorBandInfo(SetattrInitMixin):
+    prefix = 'band_info:'
     def call(self):
-        band_info = _ensure_dict(self.meta, 'band_info')
         for k, band in self.solution.pdd.bands.items():
-            bi = _ensure_dict(band_info, k)
-            bi.update(sign=band.sign)
+            pre = "{}{}:".format(self.prefix, band.name)
+            self.meta[pre+"sign"] = dict(
+                value=band.sign)
 
 class MetaExtractorIntegrals(SetattrInitMixin):
     '''
 Attributes
 ----------
+prefix: str
+    String to add to quantites.
 facets: dict
     Facet regions where to extract quantities.
 cells: dict
@@ -89,32 +121,32 @@ parameter_value:
 meta:
     Metadata dictionary to write to.
 '''
+    prefix = ''
+
     def call(self):
         mu = self.pdd.mesh_util
         for k, b in self.pdd.bands.items():
             self.add_surface_flux(
-                'avg_j_{}'.format(k), b.j, average=True,
+                'avg:current_{}'.format(k), b.j, average=True,
                 units='mA/cm^2')
             self.add_surface_flux(
-                'tot_j_{}'.format(k), b.j, average=False,
+                'tot:current_{}'.format(k), b.j, average=False,
                 units='mA')
             self.add_volume_total(
-                'avg_g_{}'.format(k), b.g, average=True,
-                units='cm^-3 / s')
+                'avg:g_{}'.format(k), b.g, average=True,
+                units='cm^-3/s')
             self.add_volume_total(
-                'tot_g_{}'.format(k), b.g, average=False,
-                units='1 / s')
+                'tot:g_{}'.format(k), b.g, average=False,
+                units='1/s')
 
     @cached_property
     def pdd(self):
         return self.solution.pdd
 
-    @cached_property
-    def meta_integrals(self):
-        return _ensure_dict(self.meta, 'integrals')
-
-    def add_quantity(self, name, location_name, value):
-        self.meta_integrals[':'.join((name, location_name))] = value
+    def add_quantity(self, name, location_name, value, units):
+        self.meta[''.join((
+            self.prefix, name, ':', location_name))] = dict(
+                value=value, units=units)
 
     def add_surface_total(
             self, k, expr_ds, expr_dS, internal=True, external=True,
@@ -132,7 +164,7 @@ meta:
                         "facet region {!r} has zero area".format(reg_name)))
                 else:
                     value = value / area
-            self.add_quantity(k, reg_name, value.m_as(units))
+            self.add_quantity(k, reg_name, value.m_as(units), units)
 
     def add_surface_flux(self, k, expr, **kwargs):
         mu = self.pdd.mesh_util
@@ -148,7 +180,7 @@ meta:
             value = mu.assemble(dx*expr)
             if average:
                 value = value / mu.assemble(dx*mu.Constant(1.0))
-            self.add_quantity(k, reg_name, value.m_as(units))
+            self.add_quantity(k, reg_name, value.m_as(units), units)
 
 def solution_plot_1d(plotter, s, timestep, solver=None):
     plotter.new(timestep)
