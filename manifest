@@ -1,8 +1,8 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C doc:\stime\sestimate\sfor\sexample,\spoint\sto\ssetup\sand\stutorial\sfrom\sREADME.
-D 2019-06-17T18:09:18.293
+C bump\sversion
+D 2019-06-17T19:05:50.590
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
 F COPYRIGHT 7d8ce17ad51dfe115a0ae3135ad90948bc39e61b18c98a91808f2eb2572f3e13
 F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
@@ -38,12 +38,12 @@ F doc/source/user/tutorial.rst 68abded1473af712d6cb7a9a1ef9ffd372cee5add13eda133
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
 F get_data.sh 04f853166b8f12523f52c330ba7eefbebbce1793d112fefd2ad013000d52216b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py 85e116dc63314b403ee73a74b9b845ea20734a7f77b706c480ef4efddde61499
+F setup.py 863ea5ba47292b881e818fdc451af0ddb3820c061c9d033e38ebb960670f5c7e
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/marti2002/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/marti2002/colors.py 8389757c7ed9482797bed45e49b0d55162ee9bde6f8a91488bc6e8e7b7c0d258
-F simudo/example/marti2002/marti2002.py 67024694abde4a060efd0cb8f5e67998923df98b72b345393fcb97c068fe8950
+F simudo/example/marti2002/marti2002.py 073b85840a173cac20c0869031893e5c0e27a3221b4a22c1acbfda0292320dab
 F simudo/example/marti2002/marti2002_plot.py 3b935fffdbd28a6ec3f1a97d2ea3c5379b53a2db8d7a8a2f36a549e6b165fe77
 F simudo/example/pn_benchmark/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/pn_benchmark/pn_benchmark.py 66e6294b78daef7e81a2da0e323d6adcda659ca762de9f5ef4012f22405efd36
@@ -69,7 +69,7 @@ F simudo/fem/mesh_util1.py1 f77fa712c088643342d38498a5609239844bccf1af2c90b3ffc9
 F simudo/fem/newton_solver.py 426799d971e156f9f15ea95d1e197f5fcf259c62dce6029d2253e1624e0a197f
 F simudo/fem/offset_partitioning.py 651492227f4001a4aaea9d978cc1594ae52c806ae0253650dda577502d1f0e3d
 F simudo/fem/plot.py 133c77e99f5537d91a7d4310b93f231b56eb1ab7666e4bb50b8ce4696619c790
-F simudo/fem/spatial.py 7b975a02594aa6cca342e0f9905565daad2ed904d748c68fda2b9c75859e4f7b
+F simudo/fem/spatial.py 28b477a6717076a47f10c71daff4d912731fe374d9e2d0f90e614817c3588df5
 F simudo/fem/sympy_dolfin_printer.py 730e2c056a98df6f6b8e343912ccaec6cf909c188503b9ffb8416cdcf7e22327
 F simudo/fem/ufl_extra.py de68c54d35365e26b9d9c01361bfa5b28f862abe6a6e475b2b0b35c0018ed582
 F simudo/io/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
@@ -211,16 +211,16 @@ F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6
 F simudo/util/with_default_kwargs.py 5fabcf88788eb0fb7c156e66110d10657062facd36d99ddcbdf8d293bde96f5f
 F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P b097ae81cdda68955da15599882d9f99277dd7ee08996a879a1e23a4056325c2
-R 58ce691f66064e100bc5c067ab00b32b
+P 311a2e24ab2ea14149b7ac48ce6b17f1b51dadea2251a09275b60d3495598f37
+R 365bda0cff2b512e6fe9c612bfd249be
 U eduard
-Z 1ba8750c64a7b71db0da9ba5e028ad9b
+Z f03f5eef6b4b60cd6db208d3d0d7f681
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXQfXTh4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sAatQD9GrTORQC5TaIWkL0g
-K4ex6RQWLY7tpdfqO3SRs+x/PLEBAI+gdCZ6aLrEf9nTAtDSVW+5ESJNvvqA4AqZ
-wrPdoEup
-=r6WD
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXQfkjh4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sCW2AD+PZlXjSKsuQLLzcr2
+mVEw+/OZUSCxNysvSBeoiheDbKQA/jDqPca72emzqSJ2Xg+qXEfhFiXgRDEw6zBN
+UB7gZAkY
+=sWfw
 -----END PGP SIGNATURE-----

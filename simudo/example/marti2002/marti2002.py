@@ -275,17 +275,17 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
         # material to region mapping
         spatial = pdd.spatial
 
-        spatial.add_value_rule(
-            R.domain, 'temperature', U('300 K'))
+        spatial.add_rule(
+            'temperature', R.domain, U('300 K'))
 
-        spatial.add_value_rule(
-            R.p, 'poisson/static_rho', U('-1e17 elementary_charge/cm^3'))
-        spatial.add_value_rule(
-            R.n, 'poisson/static_rho', U('+1e17 elementary_charge/cm^3'))
-        spatial.add_value_rule(
-            R.pfsf, 'poisson/static_rho', U('-1e19 elementary_charge/cm^3'))
-        spatial.add_value_rule(
-            R.I, 'poisson/static_rho', U('+0.5e17 elementary_charge/cm^3'))
+        spatial.add_rule(
+            'poisson/static_rho', R.p   , U('-1e17   elementary_charge/cm^3'))
+        spatial.add_rule(
+            'poisson/static_rho', R.n   , U('+1e17   elementary_charge/cm^3'))
+        spatial.add_rule(
+            'poisson/static_rho', R.pfsf, U('-1e19   elementary_charge/cm^3'))
+        spatial.add_rule(
+            'poisson/static_rho', R.I   , U('+0.5e17 elementary_charge/cm^3'))
 
         ib_material = IBSemiconductor(problem_data=root)
         ib_material.dict['IB/mobility'] = (

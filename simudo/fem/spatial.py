@@ -1,5 +1,6 @@
 
 from collections import defaultdict
+import warnings
 
 import numpy as np
 from cached_property import cached_property
@@ -380,9 +381,9 @@ priority:
 
     def add_value_rule(self, region, key, value, priority=0):
         '''Deprecated. Use :py:meth:`add_rule`.'''
-        raise FutureWarning(
+        warnings.warn(FutureWarning(
             "`Spatial.add_value_rule` will be removed soon. Replace it "
-            "with `Spatial.add_rule`. Note the different argument order!")
+            "with `Spatial.add_rule`. Note the different argument order!"))
         return self.add_rule(
             region=region, key=key, value=value, priority=priority)
 
