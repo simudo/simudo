@@ -1,8 +1,8 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C output\smeta\scsv\sas\swe\sgo\salong
-D 2019-06-17T04:55:42.388
+C bump\sver
+D 2019-06-17T05:37:45.335
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
 F COPYRIGHT 7d8ce17ad51dfe115a0ae3135ad90948bc39e61b18c98a91808f2eb2572f3e13
 F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
@@ -15,6 +15,7 @@ F doc/advection_diffusion_test.lyx a7b97007358f5976eedaa7ec2c37bbe86b0b7ab53cba1
 F doc/cell_size.lyx f9fc787018fd34115b23b7786a02a8fec095fa18323d8da753c7ebe9c56399e3
 F doc/ib.lyx 543d5f274d158b5bc20d66f49d443b6ab61ce201f473485911416191e564885f
 F doc/optics.lyx 399ad3069212c779faaa41a586a5c4ca6df145ccf0b11cb7f8ee5ae9cb29772e
+F doc/source/_static/tutorial-pn-diode-JV.svg 288612214a690052f4868c921bd92ead4c79a4ebd7e92f52e71c154d44b44e37
 F doc/source/apidoc/modules.rst 54fa9420461641643aa537452f575a595d2689ac8a6c41ac31b569a98cfa5a98
 F doc/source/apidoc/simudo.fem.rst 3deee45ea862115bade68023405902d60868688562276ddea61ce6e5aad687a0
 F doc/source/apidoc/simudo.io.rst 8fa38b8e5802985152c611644981fa872c23e244d2d1225d940bd043ee1e7439
@@ -24,19 +25,20 @@ F doc/source/apidoc/simudo.plot.rst 43543a6d229f16a300b5acb84ab66745ab92df4d2e57
 F doc/source/apidoc/simudo.pyaml.rst f338d6f8b07138d2fc54c8c119eceb0f5b12ab3d0fc91968fe0bd98cd53f09b6
 F doc/source/apidoc/simudo.rst 8dd1bf2c7bc8c1d0b7381e720489a868cbc6d3e623690a57fdf406b8d3fe7ddb
 F doc/source/apidoc/simudo.util.rst fb633e8926a6d0dde6eed99c63510a5d98a738fb1f08aa7e32bf75c43877744f
-F doc/source/conf.py 0bcfe4133ecf97d36928baf9b37807223f5ba6cfb1656d5eb33502a8122d2d2c
+F doc/source/conf.py 33cb0a83e14733735db514a07888a68c30e1aa419d41c611461dbf66528a48ef
 F doc/source/dev/index.rst 224d1dbf131f011df2c9f21a53dd0d17b9a59cd904aec1b52b148d1af439845f
 F doc/source/dev/physics.rst e90c4e533040ffbb11398e40f82e8fdd3c90158d4c61f1005f175be8d3ae0325
 F doc/source/dev/refactoring_201806.rst 85c753289017831c910a1d1c09b1cd4b36fbcab6b440e4b6765405b7706bf5b1
 F doc/source/dev/thoughts-on-initializing.rst 2c796243ee47d369375e6815364fef834d8222d4a8801643ab440ec27b6c84ee
 F doc/source/index.rst 7488b33278f3cc4eb4884b077ee0e413981bd20dfc16beb4461b128068c16557
-F doc/source/user/index.rst dd581ef2ef68eb564ee9a67e2a476e42c28fb665ce194cac73844f1bfa366f0a
+F doc/source/user/index.rst aa46e77d07256d8e84ef090d09feb236a8d245c57ba24b32497cdc3447aefe47
 F doc/source/user/install.rst 14b37a1028be1210bf49ac74c0d3bdd74173779d9da8e429d0e366975cfd9245
 F doc/source/user/simudo_install_ubuntu1904.sh 6d2ab36bf7de8eba1dadbda725919c1cfcd4fa5deb8f21d63354774cce1f2d8f
+F doc/source/user/tutorial.rst 4fbef286326ac072beb1c7c8e71d68245580d423bd5b4eca7b64d9ee08a83fd8
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
 F get_data.sh 04f853166b8f12523f52c330ba7eefbebbce1793d112fefd2ad013000d52216b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py 754b80a0cbdab6e3cc7d851f08e5bb6e2ce92171d3d8bfe57b55b26fab6fbaab
+F setup.py 9ef28f0a03d63b6fa428cb16a2004e2f1d99b46b32ded1383cbf3a902de1d021
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/marti2002/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
@@ -209,16 +211,16 @@ F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6
 F simudo/util/with_default_kwargs.py 5fabcf88788eb0fb7c156e66110d10657062facd36d99ddcbdf8d293bde96f5f
 F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P 19007b9f0df6f94ca743347caf61f58c8af6235759df4dc6def49fb6a0b81843
-R 3b93a46dc3cde6d82af7713cd8eb7be3
+P cab4834dcbf7ad4963381376a7cda33336b1ec0a5535b9c22eaf62cacdf333f2
+R 2685a2033ba05d74e97e3f81a57af263
 U eduard
-Z fdae423b9d41e7dd04fb9c113fe569d9
+Z e03f433d431915ebcf3699259479da58
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXQcdTh4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sD/swD9H8aFhNoRWtoIWkZF
-P6wUYCk4PeivBvMDtWthsoljsgQA/0iaO+gS9l6SG3GduiBUxqqx9VpaXwm/W5Lw
-1k1sor2v
-=doKO
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXQcnKR4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sBOnAD/ZEvdKh+e6gRqofVI
+DNtPSgcTfDuLi+Xs7A0z6iL4Z+UA/R1RHQuxfA88KEVliEwdtPX+sgW0hQIgyncA
+OgMS9D2D
+=+FOQ
 -----END PGP SIGNATURE-----
