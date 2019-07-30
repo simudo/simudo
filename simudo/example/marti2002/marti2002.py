@@ -1,6 +1,4 @@
 
-# simudo version a04dde44ef34d2843e624b99aee80dd02100ff51
-
 from simudo.physics import (
     Material,
     ProblemData,
@@ -213,14 +211,14 @@ def run(submitfile):
     # -layer means relative to left endpoint of layer
     # +layer means relative to right endpoint of layer
     simple_overmesh_regions = [
-        dict(x0=('-pfsf', -0.15), x1=('-pfsf', +0.15), edge_length=0.001 ),
-        dict(x0=('+p'   , -0.05), x1=('+p'   , +0.05), edge_length=0.0005),
-        dict(x0=('+I'   , -0.05), x1=('+I'   , +0.05), edge_length=0.0005),
-        dict(x0=('+n'   , -0.1 ), x1=('+n'   , +0.1 ), edge_length=0.001 ),
+        dict(x0=('-pfsf', -0.04), x1=('-pfsf', +0.04), edge_length=0.02),
+        dict(x0=('+p'   , -0.04), x1=('+p'   , +0.04), edge_length=0.02),
+        dict(x0=('+I'   , -0.04), x1=('+I'   , +0.04), edge_length=0.02),
+        dict(x0=('+n'   , -0.04), x1=('+n'   , +0.04), edge_length=0.02),
     ]
 
     ls = ConstructionHelperLayeredStructure()
-    ls.params = dict(edge_length=0.01, # default edge length
+    ls.params = dict(edge_length=0.05, # default edge length
                      layers=layers,
                      simple_overmesh_regions=simple_overmesh_regions,
                      mesh_unit=U.um)

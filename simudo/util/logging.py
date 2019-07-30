@@ -1,3 +1,6 @@
+# copyright 2019 Eduard Christian Dumitrescu
+# license: CC0 / https://creativecommons.org/publicdomain/zero/1.0/
+
 import logging
 import os
 

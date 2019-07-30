@@ -28,7 +28,42 @@ from collections import OrderedDict
 import shutil
 import tqdm
 
-from .colors import COLOR, BANDS, ABSORPTIONS
+'''
+how2use
+
+# extract JV data
+python3 marti2002_plot.py extract-jv out/ out/marti02\ */
+
+# copy data and JV points at maximum power point on each JV curve
+python3 marti2002_plot.py copy-mpp --out out.mpp/ --jv out/JV.csv
+
+# plot spatial components of current
+python3 marti2002_plot.py plot-detail-j --usetex --out out.plot/ --jv-mpp out.mpp/JV_mpp.csv --spatial-input-dir out.mpp/
+
+# plot bands (spatially)
+python3 marti2002_plot.py plot-bands --usetex --out out.plot/ --jv-mpp out.mpp/JV_mpp.csv --spatial-input-dir out.mpp/
+
+# plot IB fill factors (spatially)
+python3 marti2002_plot.py plot-fs --usetex --out out.plot/ --jv-mpp out.mpp/JV_mpp.csv --spatial-input-dir out.mpp/
+
+# plot JV curves
+python3 marti2002_plot.py plot-jv --usetex --out out.plot/ --jv out/JV.csv
+'''
+
+COLOR = { # thanks to emily for color scheme
+    'blue' : '#817aab',
+    'red'  : '#d33d3c',
+    'green': '#78c583'}
+
+BANDS = OrderedDict([
+    ('CB', dict(color=COLOR['blue' ], sym='C')),
+    ('IB', dict(color=COLOR['red'  ], sym='I')),
+    ('VB', dict(color=COLOR['green'], sym='V'))])
+
+ABSORPTIONS = OrderedDict([
+    ('cv', dict(color='blue')),
+    ('ci', dict(color='red')),
+    ('iv', dict(color='orange'))])
 
 def plot_current(
         df, x_unit):
