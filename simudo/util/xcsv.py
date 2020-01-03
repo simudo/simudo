@@ -1,3 +1,5 @@
+# copyright 2019 Eduard Christian Dumitrescu
+# license: CC0 / https://creativecommons.org/publicdomain/zero/1.0/
 '''
 This (standalone) module implements a Pandas CSV reader-writer pair
 that allows data types to survive a round-trip (where they wouldn't
@@ -95,8 +97,11 @@ class XCSVWriter(XCSVBase):
                 series = series.map(string_func)
             dfc[k] = series
 
+        to_csv_kwargs = self.to_csv_kwargs.copy()
+        to_csv_kwargs.setdefault('encoding', 'utf-8-sig')
+
         self.write_json_meta()
-        dfc.to_csv(self.path, **self.to_csv_kwargs)
+        dfc.to_csv(self.path, **to_csv_kwargs)
 
     def write_json_meta(self):
         with open(self.json_path, 'wt') as h:
@@ -131,9 +136,19 @@ class XCSVReader(XCSVBase):
             raise ValueError("unexpected xcsv_version {!r} (expected {!r})"
                              .format(xcsv_ver, self._XCSV_VERSION))
 
+        read_csv_kwargs = self.read_csv_kwargs.copy()
+        read_csv_kwargs.setdefault('encoding', 'utf-8-sig')
+
+        dt = self.dtypes_dict
+        datetime_cols = []
+        for k, v in dt.items():
+            if v.startswith("datetime"):
+                dt[k] = 'object'
+                datetime_cols.append(k)
         df = pd.read_csv(
-            self.path, dtype=self.dtypes_dict,
-            **self.read_csv_kwargs)
+            self.path, dtype=dt,
+            parse_dates=datetime_cols,
+            **read_csv_kwargs)
 
         dfc = pd.DataFrame(index=df.index)
         for k in df.columns:
@@ -217,6 +232,8 @@ class TestMe(unittest.TestCase):
                 'strings': "goodbye cruel world xoxo".split(),
                 'strings_and_nan': [np.nan, "NaN", "2", "4"],
                 'bool': [True, False, False, True],
+                'datetime': pd.to_datetime(
+                    ["2016-01-01", "2019-05-03 00:30", "2019-05-06 00:00+04:00", np.nan]),
                 # 'bool_and_nan': [True, np.nan, False, True], # not supported
                 # 'mixed': [True, 'True', 2, 4.5] # not supported
             })
@@ -242,7 +259,11 @@ class TestMe(unittest.TestCase):
                 for i in range(N):
                     va, vb = a[col].iloc[i], b[col].iloc[i]
                     try:
-                        np.testing.assert_array_equal(va, vb)
+                        if col in ['datetime']:
+                            if va is not vb: # handle NaT
+                                self.assertEqual(va, vb)
+                        else: # handle NaN
+                            np.testing.assert_array_equal(va, vb)
                     except:
                         print("col={!r} i={} {!r} {!r}".format(col, i, va, vb))
                         raise

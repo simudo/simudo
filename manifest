@@ -1,10 +1,10 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C relicense\slogging.py\sunder\sCC0\sso\si\scan\suse\sit\selsewhere\sbecause\si'm\s2lazy2live
-D 2019-07-30T18:52:14.015
+C bugfix:\spyaml\scache\sdirectory\sname\sshould\scontain\suser\sID,\sotherwise\spermission\serrors\soccur\swith\smultiple\susers\son\sa\sshared\ssystem
+D 2020-01-03T22:07:57.293
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
-F COPYRIGHT f61168c83188e4c39b439651becac11fda0991430ad80e6cd8ff27aa005667ae
+F COPYRIGHT ac40da4d09269f7a4da34470e1e89b015814d1e6b0e92c727416f049346c2f79
 F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
 F README.md c7c37034a99ccff1d3f59cee4cd382e88243e8cb47d14f9cdf9ebbd74691decc
 F build_docs.sh 6a4463cc345d1d531b1daad9cff7f7811c6e4d364de8fd1e6180575061f0e366 x
@@ -38,7 +38,7 @@ F doc/source/user/tutorial.rst 68abded1473af712d6cb7a9a1ef9ffd372cee5add13eda133
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
 F get_data.sh 04f853166b8f12523f52c330ba7eefbebbce1793d112fefd2ad013000d52216b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py 638302562ace4add27ce58a4e161bda8ff378c8463ee1f15125f9d7635867ab6
+F setup.py b16a501a4670d5a59a39328e6caa0e1644948c7d256122d69188dcd85d083951
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/marti2002/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
@@ -117,7 +117,7 @@ F simudo/plot/postprocessing.py 6fd0c99b78b39def2ba08081799810dea8db1dd189abd315
 F simudo/pyaml/__init__.py 117a7917e301a35cf5a9c722cf4bc36ecb413af4afc6a0d3dde65ca9e408669c
 F simudo/pyaml/astglobals.py f4792dae1f5f6d892709b3844c34d4e3a717735b81414d5e8610db193cc98814
 F simudo/pyaml/helper.py 63fa36b39f55dfd200618025d6438882d2ee22fdc4b2480739ea92470ac15a99
-F simudo/pyaml/load.py aec6456989278728c8b55368ee373d1affe64077232bed9333975a86c86260a2
+F simudo/pyaml/load.py fa998f24b87ba57cf2680b5787a948de00904e7f7a07f17bbc29f9e9b84ddc47
 F simudo/pyaml/multidict.py 3b450716c99c046185835a318e41eef282ec14fb38f07d508c3b6ee3e44b080f
 F simudo/pyaml/pyaml1.py d3d6f17a7237597cb2f1904e3191ac3995c6cb8195890718c91cedc12818cf89
 F simudo/test/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
@@ -209,18 +209,18 @@ F simudo/util/setattr_init_mixin.py 6b26fda966484fdc97a35b23778aa1fe07333a60c886
 F simudo/util/string_system.py 2b4315e0271987cbdcf3a2eda010a2da0628c25fcc120eca4f14029a3fccd944
 F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6aea4c7
 F simudo/util/with_default_kwargs.py 5fabcf88788eb0fb7c156e66110d10657062facd36d99ddcbdf8d293bde96f5f
-F simudo/util/xcsv.py 04a4911eeeb0e41713fdf2f826d66da8cbaf7efe8c4164e3abfcb2f58cdb68f0
+F simudo/util/xcsv.py 1a5a046b26a2a1b0fa59244a2393a4156dcdeab5cd6fc20f062527c222d34b1e
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P d1ad3fafa40e1dce9c1b8fded2fa2f447798f6dc23f8dceb14d4604377971cfb
-R 3dc56e110788ea7a9967a722c6581d3a
+P 9c9b93029d5044f6fefc72793455c89241b3f9cec660ba783d562dfaaaa114ce
+R dc482c902581fb2135c1e6c80b812c5a
 U eduard
-Z 0240f166de561f4efc987c00681d77d5
+Z cb662eed07b30c13b90e50cc0796ff52
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXUCR3h4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sCmFAD9GhQeSBebg2FeROwF
-YNIACC88Avq2idl2pQL3ytgD4r0A/jYojK8cskCKUaAiBiv+nDLkZgrsW62fsV1i
-RLrG383u
-=HKzk
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXg+7PR4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sAJqAD+O+OakjZCTAZdR1sT
+j8iZsySzhzg+rTqSYUrSDY4KqaoA/iYYtWQIm7NXC837sY9j1ZoEAMUiej+G+4ou
+jwOTKJWn
+=Yo3+
 -----END PGP SIGNATURE-----

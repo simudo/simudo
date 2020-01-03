@@ -2,6 +2,7 @@ Copyright 2016-2019 Eduard C. Dumitrescu, Matthew M. Wilkins, Jacob J. Krich
 
 Some files may be under different licenses:
 - simudo/util/logging.py (CC0)
+- simudo/util/xcsv.py (CC0)
 
 All other files are distributed under the license described below.
 

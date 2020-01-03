@@ -38,7 +38,8 @@ class BaseSourceTranslator(object):
     def get_cache_path(self):
         return os.environ.get(
             'PYAML_CACHE_PATH',
-            osp.join(tempfile.gettempdir(), 'pyaml_cache'))
+            osp.join(
+                tempfile.gettempdir(), 'pyaml_cache.{}'.format(os.getuid())))
 
     NICENAME_BADCHAR_RE = re.compile(r'[^a-zA-Z0-9_-]')
     NICENAME_LEN = 60
