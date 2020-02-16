@@ -47,27 +47,30 @@ def run():
     U = make_unit_registry(("mesh_unit = 1 micrometer",))
 
     length = 0.500 # micrometers
-    layers = [dict(name='pSi', material='Si' , thickness=length/2),
-              dict(name='nSi', material='Si' , thickness=length/2)]
+    layers = [
+        dict(name='pSi', material='Si' , thickness=length/2,
+             mesh=dict(type="geometric", start=0.001, factor=1.2)),
+        dict(name='nSi', material='Si' , thickness=length/2,
+             mesh=dict(type="geometric", start=0.001, factor=1.2)),
+    ]
 
     # -layer means relative to left endpoint of layer
     # +layer means relative to right endpoint of layer
-    simple_overmesh_regions = [
-        # extra meshing near contacts
-        dict(edge_length=length/100, x0=('-pSi',  0   ), x1=('-pSi', +0.05)),
-        dict(edge_length=length/100, x0=('+nSi', -0.05), x1=('+nSi', +0   )),
-
-        # extra meshing near junction
-        dict(edge_length=length/100, x0=('+pSi', -0.05), x1=('+pSi', +0.05)),
+    extra_regions = [
+        # dict(x0=('-pSi',  0), x1=('-pSi', +0.05), type="constant", edge_length=0.01)
     ]
 
     ls = ConstructionHelperLayeredStructure()
-    ls.params = dict(edge_length=length/200, # default edge_length
+    ls.params = dict(edge_length=length/20, # default edge_length
                      layers=layers,
-                     simple_overmesh_regions=simple_overmesh_regions,
+                     extra_regions=extra_regions,
                      mesh_unit=U.mesh_unit)
     ls.run()
     mesh_data = ls.mesh_data
+
+    pd.DataFrame(
+        {"X": ls.interval_1d_tag.coordinates['coordinates']}
+    ).to_csv("output mesh.csv", index=False)
 
     logging.getLogger('main').info("NUM_MESH_POINTS: {}".format(
         len(ls.interval_1d_tag.coordinates['coordinates'])))

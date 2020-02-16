@@ -5,6 +5,7 @@ from builtins import bytes, dict, int, range, str, super
 from collections import defaultdict
 from functools import partial
 from os import path as osp
+import warnings
 
 import numpy as np
 from cached_property import cached_property
@@ -17,7 +18,9 @@ from ..io.h5yaml import XLoader
 from ..util import DictAttrProxy
 from .facet import (
     FacetsManager, facet2d_angle, mark_boundary_facets, mesh_function_map)
-from .interval1dtag import CInterval, Interval, Interval1DTag, clip_intervals
+from .interval1dtag import (
+    CInterval, GeometricallyExpandingMeshInterval, Interval,
+    Interval1DTag, clip_intervals)
 from .mesh_entity_predicate import (
     DimensionAdapterPredicate, SubdomainCellPredicate)
 from .product2d import Product2DMesh
@@ -440,7 +443,6 @@ class ConstructionHelperIntervalProduct2DMesh(BaseConstructionHelper):
         self.cell_regions = o.subdomains['tag_to_cell_values']
         self.used_cell_values = set(o.subdomains['used_cell_values'])
 
-
 class ConstructionHelperLayeredStructure(
         ConstructionHelperIntervalProduct2DMesh):
     '''
@@ -454,8 +456,16 @@ material_to_region: dict
         return self.p.layers
 
     @cached_property
-    def simple_overmesh_regions(self):
-        return self.p.simple_overmesh_regions
+    def extra_regions(self):
+        if 'extra_regions' in self.params:
+            return self.p.extra_regions
+        else:
+            warnings.warn(
+                "`simple_overmesh_regions` has been renamed to `extra_regions`, and "
+                "will be removed eventually. Modify your code accordingly.",
+                DeprecationWarning,
+            )
+            return self.p.simple_overmesh_regions
 
     @cached_property
     def material_to_region(self):
@@ -480,11 +490,25 @@ material_to_region: dict
             -np.inf, np.inf,
             edge_length=self.p.edge_length))
 
-        def mkinterval(*args, edge_length=None, **kwargs):
-            if edge_length is None:
-                return Interval(*args, **kwargs)
+        def mkinterval(meshing):
+            meshing_type = meshing.pop("type", None)
+            kw = {k: meshing[k] for k in ["x0", "x1", "tags"]}
+            if meshing_type == "geometric":
+                interval = GeometricallyExpandingMeshInterval(
+                    edge_length_start=meshing["start"],
+                    edge_length_expansion_factor=meshing["factor"],
+                    **kw,
+                )
+            elif meshing_type == "constant":
+                interval = CInterval(
+                    edge_length=meshing["edge_length"],
+                    **kw,
+                )
+            elif meshing_type == None:
+                interval = Interval(**meshing)
             else:
-                return CInterval(*args, edge_length=edge_length, **kwargs)
+                raise ValueError("bad meshing strategy {!r}".format(meshing_type))
+            return interval
 
         name_interval = {}
 
@@ -495,14 +519,29 @@ material_to_region: dict
             x0, x1 = x1, x1+w
             name = layer['name']
             material = layer['material']
-            edge_length = layer.get('edge_length', None)
-            interval = mkinterval(x0, x1, (name, material),
-                                  edge_length=edge_length)
+            if 'mesh' not in layer:
+                meshing = {}
+                if 'edge_length' in layer:
+                    warnings.warn(
+                        "`edge_length` should be in a sub-dictionary under the layer "
+                        "dictionary key `mesh`. See `example/pn_diode/pn_diode.py`.",
+                        DeprecationWarning,
+                    )
+                    meshing['edge_length'] = layer['edge_length']
+                    meshing['type'] = 'constant'
+                else:
+                    meshing['type'] = None
+            else:
+                meshing = layer['mesh'].copy()
+            meshing["x0"] = x0
+            meshing["x1"] = x1
+            meshing["tags"] = (name, material)
+            interval = mkinterval(meshing)
             intervals.append(interval)
             name_interval[name] = interval
         domain_extent = (x00, x1)
 
-        def locate_overmesh_label(label):
+        def locate_extra_region_position(label):
             name, offset = label
             c = name[0]
             if   c == '-':
@@ -512,16 +551,28 @@ material_to_region: dict
             else:
                 raise ValueError("must start with +/-")
 
-        for sreg in self.simple_overmesh_regions:
-            x0 = locate_overmesh_label(sreg['x0'])
-            x1 = locate_overmesh_label(sreg['x1'])
+        for meshing in self.extra_regions:
+            meshing = meshing.copy()
+            for k in ("x0", "x1"):
+                meshing[k] = locate_extra_region_position(meshing[k])
+            if "tags" not in meshing:
+                meshing["tags"] = ()
+            if "edge_length" in meshing and "type" not in meshing:
+                warnings.warn(
+                    "You must add explicit type=\"constant\" to `extra_regions` entry.",
+                    DeprecationWarning,
+                )
+                meshing['type'] = "constant"
             # TODO: extend to support sreg['callback'] that generates
             # some number of intervals
-            intervals.append(mkinterval(x0, x1,
-                                        edge_length=sreg['edge_length']))
+            intervals.append(mkinterval(meshing))
 
         self.user_layer_extra_intervals(intervals, name_interval)
 
-        intervals.append(mkinterval(domain_extent[0],
-                                    domain_extent[1], ('domain',)))
+        intervals.append(mkinterval(dict(
+            x0=domain_extent[0],
+            x1=domain_extent[1],
+            tags=('domain',),
+            type=None,
+        )))
         return (domain_extent, intervals)

@@ -10,7 +10,7 @@ from .product2d import Product2DMesh
 
 __all__ = [
     'clip_intervals',
-    'Interval', 'CInterval',
+    'Interval', 'CInterval', 'GeometricallyExpandingMeshInterval',
     'Product2DMeshMixin', 'MinimumCoordinateDistanceMixin',
     'BaseInterval1DTag', 'Interval1DTag']
 
@@ -63,6 +63,49 @@ class CInterval(Interval):
     def _supplementary_repr(self):
         return '{}, edge_length={!r}'.format(
             super()._supplementary_repr(), self.edge_length)
+
+class GeometricallyExpandingMeshInterval(Interval):
+    """
+    Interval of 1D mesh where the edge lengths start at ``start`` and
+    increase geometrically away from the region bounds.
+
+    See ``doc/mesh.lyx`` for more information.
+
+    (Local edge length: minimum distance between two mesh vertices.)
+
+    Parameters
+    ----------
+    bounds: tuple
+        Tuple defining the region.
+    edge_length_start: float or tuple
+        The initial edge length at the bounds. To have different
+        initial edge lengths at the two ends of the region, pass in a
+        tuple.
+    edge_length_expansion_factor: float or tuple
+        Geometric expansion factor. Pass in a tuple to use different
+        factors on the two ends of the region.
+    """
+    def __init__(self, *, edge_length_start, edge_length_expansion_factor, **kw):
+        ones = np.ones(2)
+        self.edge_length_start = edge_length_start * ones
+        self.edge_length_expansion_factor = edge_length_expansion_factor * ones
+        super().__init__(**kw)
+
+    def local_edge_length(self, x):
+        start  = self.edge_length_start
+        factor = self.edge_length_expansion_factor
+        # see doc/mesh.lyx
+        # mesh_density = x * (factor - 1) + start
+        x0 = x - self.x0
+        x1 = self.x1 - x
+        return np.where(
+            (x0 >= 0) & (x1 >= 0),
+            np.minimum(
+                x0 * (factor[0] - 1) + start[0],
+                x1 * (factor[1] - 1) + start[1],
+            ),
+            np.inf,
+        )
 
 class BaseInterval1DTag(object):
     ''' Class that turns a bunch of arbitrary overlapping intervals

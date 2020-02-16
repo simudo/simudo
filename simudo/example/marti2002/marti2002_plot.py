@@ -41,7 +41,7 @@ python3 marti2002_plot.py copy-mpp --out out.mpp/ --jv out/JV.csv
 python3 marti2002_plot.py plot-detail-j --usetex --out out.plot/ --jv-mpp out.mpp/JV_mpp.csv --spatial-input-dir out.mpp/
 
 # plot bands (spatially)
-python3 marti2002_plot.py plot-bands --usetex --out out.plot/ --jv-mpp out.mpp/JV_mpp.csv --spatial-input-dir out.mpp/
+python3 marti2002_plot.py plot-bands --usetex --out out.plot/ --jv out/JV.csv --spatial-input-dir out.mpp/
 
 # plot IB fill factors (spatially)
 python3 marti2002_plot.py plot-fs --usetex --out out.plot/ --jv-mpp out.mpp/JV_mpp.csv --spatial-input-dir out.mpp/
@@ -375,8 +375,7 @@ def extract_jv(args):
 
             filename = os.path.join(input_dir, f)
             tree = h5yaml.load(filename)
-
-            integrals = tree['integrals']
+     #       integrals = tree['integrals']
 
             d = dict(
                 IB_mobility=float(spar['IB_mobility']),
@@ -386,10 +385,11 @@ def extract_jv(args):
                 concentration_factor=float(spar['concentration_factor']),
                 V=float(V_ext),
                 j_tot_nc=(
-                    integrals['avg_j_CB:n_contact'] +
-                    integrals['avg_j_VB:n_contact']))
+                    tree['avg:current_CB:n_contact']['value'] +
+                    tree['avg:current_VB:n_contact']['value']
+                    ))
 
-            for k, v in integrals.items():
+            for k, v in tree.items():
                 d["integrals:"+k] = v
 
             d['filename'] = filename
