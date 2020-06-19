@@ -1,10 +1,14 @@
 # encoding: utf-8
 from setuptools import setup, find_packages
 pkg = "simudo"
-ver = '0.5.1.0'
+ver = '0.5.1.1'
 
 with open(pkg+'/version.py', 'wt') as h:
     h.write('__version__ = "{}"\n'.format(ver))
+
+# For Debian Buster:
+# apt install python3-{numpy,scipy,pint,matplotlib,meshio,yamlordereddictloader,sortedcontainers,cached-property,h5py,petsc4py}
+# Still need to install: mpl_reader, suffix_trees, generic_escape
 
 setup(
     name             = pkg,

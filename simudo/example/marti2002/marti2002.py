@@ -200,21 +200,25 @@ def run(submitfile):
 
     layers = [
         dict(name='pfsf', material='pfsf'         ,
+             mesh=dict(type="geometric", start=0.0002, factor=1.2),
              thickness=0.05),
         dict(name='p'   , material='semiconductor',
+             mesh=dict(type="geometric", start=0.0003, factor=1.2),
              thickness=1.0),
         dict(name='I'   , material='IB'           ,
+             mesh=dict(type="geometric", start=0.0003, factor=1.2),
              thickness=float(P['IB_thickness'])),
         dict(name='n'   , material='semiconductor',
+             mesh=dict(type="geometric", start=0.0005, factor=1.2),
              thickness=1.0)]
 
     # -layer means relative to left endpoint of layer
     # +layer means relative to right endpoint of layer
     simple_overmesh_regions = [
-        dict(x0=('-pfsf', -0.04), x1=('-pfsf', +0.04), edge_length=0.02),
-        dict(x0=('+p'   , -0.04), x1=('+p'   , +0.04), edge_length=0.02),
-        dict(x0=('+I'   , -0.04), x1=('+I'   , +0.04), edge_length=0.02),
-        dict(x0=('+n'   , -0.04), x1=('+n'   , +0.04), edge_length=0.02),
+        # dict(x0=('-pfsf', -0.15), x1=('-pfsf', +0.15), edge_length=0.001 ),
+        # dict(x0=('+p'   , -0.05), x1=('+p'   , +0.05), edge_length=0.0005),
+        # dict(x0=('+I'   , -0.05), x1=('+I'   , +0.05), edge_length=0.0005),
+        # dict(x0=('+n'   , -0.1 ), x1=('+n'   , +0.1 ), edge_length=0.001 ),
     ]
 
     ls = ConstructionHelperLayeredStructure()

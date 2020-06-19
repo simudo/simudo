@@ -68,7 +68,7 @@ output_writer: :py:class:`~.output_writer.OutputWriter`
                 o.update_input()
 
         # exercise caution when there's no solution to backtrack to
-        be_extra_careful = bool(self.get_last_successful(1))
+        be_extra_careful = not self.get_last_successful(1)
 
         def omega_cb(self):
             if not be_extra_careful:
