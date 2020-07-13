@@ -34,7 +34,19 @@ pdd: PoissonDriftDiffusion
     Instance of :class:`.PoissonDriftDiffusion`.
 optical: Optical
     Instance of :class:`.Optical`.
+pre_iteration_hook: callable
+    Implement this method in order to run code before each PDD Newton
+    iteration. Useful for processes that need procedural code (cannot
+    be expressed as UFL form).
+pre_first_iteration_hook: callable
+    This method is called before the *first* PDD Newton iteration.
+post_iteration_hook: callable
+    This method is called after each PDD Newton iteration.
 '''
+    pre_iteration_hook = None
+    pre_first_iteration_hook = None
+    post_iteration_hook = None
+
     @property
     def unit_registry(self):
         return self.mesh_util.unit_registry

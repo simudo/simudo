@@ -1,7 +1,7 @@
 
 import dolfin
 from dolfin import Vertex, Cell, MPI
-from ..util.expr import tuple_to_point
+from ..fem.expr import tuple_to_point
 import numpy as np
 from numpy import infty
 from cached_property import cached_property

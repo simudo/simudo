@@ -22,12 +22,12 @@ from .xdmf import PlotAddMixin, magnitude
 
 class LineCutCsvPlot(PlotAddMixin):
     timestamp = 0.0
-    resolution = 5001
     _empty = True
 
-    def __init__(self, filename, function_subspace_registry=None):
+    def __init__(self, filename, function_subspace_registry=None, resolution=5001):
         self.base_filename = filename
         self.function_subspace_registry = function_subspace_registry
+        self.resolution = resolution
 
     def new(self, timestamp):
         self.close()

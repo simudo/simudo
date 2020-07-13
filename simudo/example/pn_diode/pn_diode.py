@@ -56,9 +56,7 @@ def run():
 
     # -layer means relative to left endpoint of layer
     # +layer means relative to right endpoint of layer
-    extra_regions = [
-        # dict(x0=('-pSi',  0), x1=('-pSi', +0.05), type="constant", edge_length=0.01)
-    ]
+    extra_regions = [   ]
 
     ls = ConstructionHelperLayeredStructure()
     ls.params = dict(edge_length=length/20, # default edge_length

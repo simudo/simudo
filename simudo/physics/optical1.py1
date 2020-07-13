@@ -48,6 +48,7 @@ classes:
           [dict(element=p.element("CG", self.method_degree),
                 trial_key   = "Phi",
                 trial_units = u("1 / second / mesh_unit^2"),
+                trial_tolerance = 1e-10,
                 test_key    = "v",
                 test_units  = u("mesh_unit * u.second"))]
 

@@ -194,6 +194,29 @@ subspace_descriptors_for_solution_space: sequence of dict
             subspace_descriptors=descs,
             function_space_cache=self.function_space_cache)
 
+    def make_tolerance_function(self):
+        """
+        Collect "trial_tolerance" from each of the subspaces and
+        assign it as a constant in each subspace. This function is
+        generally used in the Newton solver to determine if the
+        iterative updates are less than an absolute tolerance.
+
+        Returns
+        -------
+        function: MixedFunction
+            The function. Use the ``.function`` attribute to get the
+            dolfin Function.
+        """
+        space = self.solution_mixed_space
+        mixedfunction = space.make_function()
+        for k, subfunction in mixedfunction.split().items():
+            tol = space.subspace_descriptors_dict[k]['trial_tolerance']
+            # units = space.subspace_descriptors_dict[k]['trial_units']
+            self.mesh_util.function_subspace_registry.assign_scalar(
+                subfunction.magnitude, tol
+            )
+        return mixedfunction
+
 
 class WithSubfunctionsMixin(SetattrInitMixin):
     '''Utility mixin for objects that need subfunctions

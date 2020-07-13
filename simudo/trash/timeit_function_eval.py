@@ -2,7 +2,7 @@
 import dolfin
 from ..util.xtimeit import xtimeit
 from .probe_slow import Probes as ProbesSlow
-from ..util.extra_bindings import Function_eval_many
+from ..fem.extra_bindings import Function_eval_many
 import numpy as np
 
 mesh = dolfin.UnitSquareMesh(200, 200)

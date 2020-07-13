@@ -59,9 +59,9 @@ class NewtonSolution(object):
     def A(self):
         A = dolfin.PETScMatrix()
         self.solver.assembler.assemble(A)
-        q = self.q
-        if q is not None:
-            A.mat().diagonalScale(None, q)
+#        q = self.q
+#        if q is not None:
+#            A.mat().diagonalScale(None, q)
         return A
 
     @cached_property
@@ -100,6 +100,18 @@ class NewtonSolution(object):
             r[ok], ord=2)
 
     @cached_property
+    def combined_du_norm(self):
+        du = self.du.vector().get_local()
+        u = self.u_.vector().get_local()
+        rel_tol = self.solver.parameters['relative_tolerance']
+        abs_tol = self.solver.parameters['absolute_tolerance'] # user adjustable weight
+        abs_tol_vec = self.solver.parameters['absolute_tolerance_vector']
+        
+        with numpy.errstate(divide='ignore', invalid='ignore'):
+            r = numpy.abs(du)/(numpy.abs(u)*rel_tol + abs_tol * abs_tol_vec)
+        return numpy.linalg.norm(r, ord=numpy.Inf)
+
+    @cached_property
     def b_norm(self):
         return numpy.linalg.norm(
             self.b.get_local(), ord=numpy.Inf)
@@ -108,9 +120,29 @@ class NewtonSolution(object):
         A, Qdu, b = self.A, self.Qdu, self.b
         q = self.q
 
-        solver = dolfin.PETScLUSolver("umfpack")
-        solver.solve(A, Qdu, b)
+        # Output diagnostic info and stats from MUMPS.
+        # dolfin.PETScOptions.set('mat_mumps_icntl_2', 6)
+        # dolfin.PETScOptions.set('mat_mumps_icntl_4', 3)
 
+        # print mumps error analysis, i.e. condition number
+        # dolfin.PETScOptions.set('mat_mumps_icntl_11', 1)
+
+        # settings for automatic scaling and pre-processing of the A matrix.
+        # dolfin.PETScOptions.set('ksp_view')
+        # dolfin.PETScOptions.set('-info', 'out/petsc_log.txt')
+        # dolfin.PETScOptions.set('log_trace', 'out/petsc_trace.txt')
+        # dolfin.PETScOptions.set('pc_factor_mat_ordering_type', 'natural')
+        dolfin.PETScOptions.set('mat_mumps_icntl_6', 7)
+        dolfin.PETScOptions.set('mat_mumps_icntl_7', 7)
+        dolfin.PETScOptions.set('mat_mumps_icntl_8', 77)
+
+        # 1=sequential mode (no MPI). Still uses multithreading.
+        
+        dolfin.PETScOptions.set('mat_mumps_icntl_28', 1)
+#        dolfin.PETScOptions.set('mat_mumps_icntl_29', 1)
+
+        solver = dolfin.PETScLUSolver("mumps")
+        solver.solve(A, Qdu, b)
 
         ### trash not working code ###
 
@@ -141,10 +173,10 @@ class NewtonSolution(object):
 
     def str_error(self):
         abserr = getattr(self, 'b_norm', -1)
-        relerr = getattr(self, 'du_norm', -1)
-        relrelerr = getattr(self, 'rel_du_norm', -1)
-        return "|b| {:.6e}, |du| {:.6e}, |du/u| {:.6e}".format(
-            abserr, relerr, relrelerr)
+        relerr = getattr(self, 'rel_du_norm', -1)
+        comberr = getattr(self, 'combined_du_norm', -1)
+        return "|b| {:.6e}, |du/u| {:.6e}, |du/(a*u+c)| {:.6e}".format(
+            abserr, relerr, comberr)
 
     _no_copy = frozenset(('solver','A','b','q','size'))
 
@@ -164,7 +196,7 @@ class NewtonSolution(object):
         return other
 
     _cached_property_attrs = frozenset(
-        ('rel_du_norm', 'du_norm', 'b_norm', 'A', 'b', 'q', 'size',
+        ('rel_du_norm', 'du_norm', 'combined_du_norm', 'b_norm', 'A', 'b', 'q', 'size',
          'has_nans'))
 
     def do_invalidate_cache(self, check=False):
@@ -247,7 +279,7 @@ form in the iterative Newton process for nonlinear problems.
                                relaxation_parameter=1.0,
                                absolute_tolerance=1e-5,
                                relative_tolerance=1e-6,
-                               extra_iterations=5)
+                               extra_iterations=3)
 
     def do_init_assembler(self):
         try:
@@ -330,7 +362,7 @@ form in the iterative Newton process for nonlinear problems.
     def has_converged(self):
         sltn = self.solution
         return ((not self.solution.has_nans) and
-                (sltn.du_norm <= self.parameters['relative_tolerance']))
+                (sltn.combined_du_norm <= 1.))
 
     def should_stop_real(self):
         extra = self.extra_iterations

@@ -329,6 +329,8 @@ class ConstructionHelperManualCellTagging(BaseConstructionHelper):
         self.cell_regions = d['tag_to_cell_values']
 
 class ConstructionHelperPygmsh(BaseConstructionHelper):
+    mesh_filename = None
+
     def user_define_pygmsh_geo(self):
         '''override me
 
@@ -359,38 +361,36 @@ geo:
         generate_mesh_kwargs.setdefault('prune_z_0', (dim == 2))
         generate_mesh_kwargs.setdefault('dim', dim)
 
-        points, cells, point_data, cell_data, field_data = pygmsh.generate_mesh(
+        mesh = pygmsh.generate_mesh(
             geo,
             extra_gmsh_arguments=extra_gmsh_arguments,
             **generate_mesh_kwargs)
-        return dict(points=points,
-                    cells=cells,
-                    point_data=point_data,
-                    cell_data=cell_data,
-                    field_data=field_data,
-                    dim=dim)
+        return mesh, dim
 
     def generate_mesh(self):
         import meshio
 
         geo = self.user_define_pygmsh_geo()
-        r = self.pygmsh_generate_mesh(geo)
+        pymesh, dim = self.pygmsh_generate_mesh(geo)
 
         d = PygmshMakeRegions().process(
-            cells=r['cells'],
-            cell_data=r['cell_data'],
-            field_data=r['field_data'],
-            dim=r['dim'])
+            cells=pymesh.cells,
+            cell_data=pymesh.cell_data,
+            field_data=pymesh.field_data,
+            dim=dim)
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            mesh_file = osp.join(str(tmpdir), 'mesh.xdmf')
-            meshio.write_points_cells(
-                mesh_file, r['points'], r['cells'], cell_data=r['cell_data'])
+            if self.mesh_filename is not None:
+                mesh_file = self.mesh_filename
+            else:
+                mesh_file = osp.join(str(tmpdir), 'mesh.xdmf')
+            meshio.write(
+                mesh_file, pymesh)
 
             with dolfin.XDMFFile(mesh_file) as file:
                 mesh = dolfin.Mesh()
                 file.read(mesh)
-                cf = dolfin.MeshFunction('size_t', mesh, r['dim'], 0)
+                cf = dolfin.MeshFunction('size_t', mesh, dim, 0)
                 file.read(cf)
 
         self.mesh = mesh

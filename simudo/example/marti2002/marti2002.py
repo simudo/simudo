@@ -51,23 +51,16 @@ class Semiconductor(Material):
 
             'CB/effective_density_of_states': U('5e18 1/cm^3'),
             'VB/effective_density_of_states': U('5e18 1/cm^3'),
-            'IB/number_of_states': U('1e4 cm^-3'),
 
             # electrical properties
             'CB/mobility': U('2000 cm^2/V/s'),
             'VB/mobility': U('2000 cm^2/V/s'),
-            'IB/mobility': U('62 cm^2/V/s'),
-
-            # meaningless
-            'opt_ci/sigma_opt': U('1e-17 cm^2'),
-            'opt_iv/sigma_opt': U('1e-17 cm^2'),
+            'IB/mobility': U('100 cm^2/V/s'),
 
             'opt_cv/alpha': U('1e4 cm^-1'),
 
-            # 'nr_top/v_th': U('2.042e7 cm/s'),
-            # 'nr_bottom/v_th': U('1.562e7 cm/s'),
-            # 'nr_top/sigma_th': U('1e-18 cm^2'),
-            # 'nr_bottom/sigma_th': U('1e-18 cm^2'),
+            'opt_ci/sigma_opt': U('2e-13 cm^2'),
+            'opt_iv/sigma_opt': U('2e-13 cm^2'),
 
             # poisson
             'poisson/permittivity': U('13 vacuum_permittivity'),
@@ -86,8 +79,9 @@ class IBSemiconductor(Semiconductor):
             # `1e4 / (1e17/2.)`
             'opt_ci/sigma_opt': U('2e-13 cm^2'),
             'opt_iv/sigma_opt': U('2e-13 cm^2'),
-
-            'IB/number_of_states': U('1e17 cm^-3')
+            'IB/number_of_states': U('1e17 cm^-3'),
+            'IB/degeneracy': 1,
+            'IB/empty_band_mobility': U('50 cm^2/V/s')
         })
 
         return d
@@ -271,7 +265,7 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
         pdd = root.pdd
 
         CB = pdd.easy_add_band('CB')
-        IB = pdd.easy_add_band('IB')
+        IB = pdd.easy_add_band('IB', subdomain=R.I)
         VB = pdd.easy_add_band('VB')
 
         # material to region mapping
@@ -290,7 +284,7 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
             'poisson/static_rho', R.I   , U('+0.5e17 elementary_charge/cm^3'))
 
         ib_material = IBSemiconductor(problem_data=root)
-        ib_material.dict['IB/mobility'] = (
+        ib_material.dict['IB/empty_band_mobility'] = (
             float(P['IB_mobility'])*U('cm^2/V/s'))
         for k in ['ci', 'iv']:
             ib_material.dict['opt_{}/sigma_opt'.format(k)] = (
@@ -371,6 +365,9 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
                            U('A/cm^2') * mu.zerovec)
             spatial.add_BC('IB/j', F.exterior,
                            U('A/cm^2') * mu.zerovec)
+            spatial.add_BC('IB/j', F.IB_junctions.both(),
+                           U('A/cm^2') * mu.zerovec)
+
 
             # majority contact
             spatial.add_BC('VB/u', F.p_contact,

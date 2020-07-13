@@ -138,17 +138,22 @@ solution if the solver call failed.'''
         if not last.success:
             logging.getLogger('stepper').info(
                 '** Newton solver failed, trying smaller step size')
-        self.step_size *= (self.update_parameter_success_factor
-                           if last.success else
-                           self.update_parameter_failure_factor)
-        self.step_size = min(self.step_size,
+        if not last.success:
+            self.step_size *= self.update_parameter_failure_factor
+
+        self.actual_step = min(self.step_size,
                              abs(self.parameter_target_value - last_ok.parameter))
+
+        # don't change step_size if we're just taking a small step
+        # to hit a target parameter value
+        if (self.actual_step == self.step_size) and last.success:
+            self.step_size *= self.update_parameter_success_factor
 
         if not last.success:
             self.user_solution_add(
                 self.solution, 0.0, last_ok.saved_solution, 1.0)
 
-        self.parameter = last_ok.parameter + self.step_sign*self.step_size
+        self.parameter = last_ok.parameter + self.step_sign*self.actual_step
 
     def user_solver(self, solution, parameter):
         '''
@@ -236,6 +241,7 @@ to_save_objects: dict
         self.user_apply_parameter_to_solution(solution, parameter)
         solver = self.user_make_solver(solution)
         solver.solve()
+        self.du = solver.solution.du
         return solver.has_converged()
 
     def user_apply_parameter_to_solution(self, solution, parameter):

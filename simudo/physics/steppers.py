@@ -8,7 +8,7 @@ from ..fem import (
 from ..util import SetattrInitMixin
 
 
-#from ..io.output_writer import OutputWriter # FIXME
+from ..io.output_writer import OutputWriter # FIXME
 
 class NewtonBailoutException(Exception):
     pass
@@ -42,6 +42,7 @@ output_writer: :py:class:`~.output_writer.OutputWriter`
         if output_writer is not None:
             if isinstance(output_writer, str):
                 output_writer = OutputWriter(output_writer, plot_iv=True)
+            output_writer.stepper = self
             kwargs['output_writer'] = output_writer
         super().__init__(**kwargs)
 
@@ -75,24 +76,17 @@ output_writer: :py:class:`~.output_writer.OutputWriter`
                 return 1.0
             du = self.solution.du_norm
             return 1.0
-            # if self.iteration < 20:
-            #     return 0.1
-            # elif du < 1e-5:
-            #     return 0.9
-            # elif du < 1e-2:
-            #     return 0.5
-            # else:
-            #     return 0.1
+
 
         # PDD solver
         solver =  NewtonSolver.from_nice_obj(pdd)
         solver.parameters.update(
             maximum_iterations=200 if be_extra_careful else 25,
             omega_cb=omega_cb,
-            extra_iterations=5 if be_extra_careful else 3,
+            extra_iterations=3 if be_extra_careful else 0,
             minimum_iterations=3,
             relative_tolerance=1e-4,
-            absolute_tolerance=1e-4)
+            absolute_tolerance=1)
 
         def _assign_scalar(subfunc, value):
             fsr.assign_scalar(
@@ -101,21 +95,26 @@ output_writer: :py:class:`~.output_writer.OutputWriter`
         fsr = pdd.mesh_util.function_subspace_registry
         U = sl.unit_registry
         space = pdd.mixed_function_helper.solution_mixed_space
-        du_clip_mf = space.make_function()
-        du_clip = du_clip_mf.function
-        du_clip_split = du_clip_mf.split()
-
-        du_clip.vector()[:] = np.inf
+        # du_clip_mf = space.make_function()
+        # du_clip = du_clip_mf.function
+        # du_clip_split = du_clip_mf.split()
+        #
+        # du_clip.vector()[:] = np.inf
 
         # FIXME: this should probably be elsewhere
-        for k, v in du_clip_split.items():
-            if k.endswith("/delta_w"):
-                _assign_scalar(v, 0.005*U.eV)
-            if k == 'poisson/phi':
-                _assign_scalar(v, 0.005*U.volt)
+        # for k, v in du_clip_split.items():
+        #     if k.endswith("/delta_w"):
+        #         _assign_scalar(v, 0.005*U.eV)
+        #     if k == 'poisson/phi':
+        #         _assign_scalar(v, 0.005*U.volt)
 
+        # solver.parameters.update(
+        #     maximum_du=du_clip.vector()[:],
+        # )
+
+        tol_func = pdd.mixed_function_helper.make_tolerance_function()
         solver.parameters.update(
-            maximum_du=du_clip.vector()[:],
+             absolute_tolerance_vector=tol_func.function.vector()[:]
         )
 
         def run_optical_subsolvers(slv):
@@ -125,9 +124,13 @@ output_writer: :py:class:`~.output_writer.OutputWriter`
                 # FIXME: these parameters are disgraceful
                 s.parameters.update(
                     maximum_iterations=2,
-                    extra_iterations=
-                    (10 if slv.extra_iterations is not None else 2),
-                    omega_cb=lambda self: 0.9 if self.iteration < 2 else 1.0)
+                    extra_iterations=2,
+                    omega_cb=lambda self: 1.0)
+
+                tol_func = o.mixed_function_helper.make_tolerance_function()
+                s.parameters.update(
+                     absolute_tolerance_vector=tol_func.function.vector()[:]
+                )
                 s.logger = logging.getLogger('newton.optical')
                 s.solve()
                 o.update_output()
@@ -141,9 +144,20 @@ output_writer: :py:class:`~.output_writer.OutputWriter`
                 if hasattr(b, 'mixedqfl_do_rebase_w'):
                     b.mixedqfl_do_rebase_w()
 
+        # these optical hooks could be handled with code below.
         if self.selfconsistent_optics:
             solver.user_before_first_iteration_hooks.append(run_optical_subsolvers)
             solver.user_post_iteration_hooks.append(run_optical_subsolvers)
+
+        def _append_not_None(lst, x):
+            if x is not None:
+                lst.append(x)
+
+        # register calculations to be done for each process.
+        for proc in self.solution.pdd.electro_optical_processes:
+            _append_not_None(solver.user_pre_iteration_hooks, proc.pre_iteration_hook)
+            _append_not_None(solver.user_before_first_iteration_hooks, proc.pre_first_iteration_hook)
+            _append_not_None(solver.user_post_iteration_hooks, proc.post_iteration_hook)
 
         solver.user_before_first_iteration_hooks.append(bailout_if_error_too_large)
 
@@ -168,7 +182,7 @@ class VoltageStepper(NonequilibriumCoupledConstantStepper):
 equilibrium or with previously applied bias of illumination, ramp the
 bias at one or more contacts.'''
 
-    update_parameter_success_factor = 1.3
+    update_parameter_success_factor = 1.5
     update_parameter_failure_factor = 0.5
     step_size = 0.1
 

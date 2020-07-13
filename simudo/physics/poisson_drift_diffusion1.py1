@@ -58,12 +58,14 @@ classes:
           [dict(element=p.element("DG", _.degree-1),
                 trial_key   = "phi",
                 trial_units = u.volt,
+                trial_tolerance = 1e-6,
                 test_key    = "w",
                 test_units  = u("1/mesh_unit/volt")),
 
            dict(element     = p.element("BDM", _.degree),
                 trial_key   = "E",
                 trial_units = u("volt/mesh_unit"),
+                trial_tolerance = 1e-4,
                 test_key    = "psi",
                 test_units=u("1/volt/mesh_unit**2"))]
 
@@ -102,6 +104,7 @@ classes:
           [dict(element=p.element("DG", _.degree),
                 trial_key   = "phi",
                 trial_units = u.volt,
+                trial_tolerance = 1e-6,
                 test_key    = "w",
                 test_units  = u("1/mesh_unit/volt"))]
 
@@ -121,6 +124,15 @@ classes:
     eval:
       spatial_prefix: !c |
         _.name + '/'
+
+      subdomain_id: !c |
+        tuple(sorted(md.evaluate_topology(_.subdomain)))
+
+      subdomain_inv_id: !c |
+        tuple(sorted(md.evaluate_topology(_.subdomain_inv)))
+
+      extent: !c |
+        _.spatial.get(_.spatial_prefix + "extent")
 
       u: !c |
         _.qfl_to_u(_.qfl)
@@ -146,10 +158,18 @@ classes:
       mobility: !c |
         _.spatial.get(_.spatial_prefix + "mobility")
 
+      tunnel_offset_energy: !c |
+        _.spatial.get(_.spatial_prefix + "tunnel_offset_energy")
+
+      eff_mass_tunnel: !c |
+          _.spatial.get(_.spatial_prefix + "eff_mass_tunnel")
+
+
     env:
       default_:
         u: !c self.unit_registry
         p: !c self.mesh_util
+        md: !c self.pdd.mesh_data
         po: !c self.pdd.poisson
 
   NondegenerateBand:
@@ -187,6 +207,15 @@ classes:
 
       energy_level: !c |
         _.spatial.get(_.spatial_prefix + "energy_level")
+
+      fill: !c |
+        band.u / band.number_of_states
+
+      empty_band_mobility: !c |
+        _.spatial.get(_.spatial_prefix + "empty_band_mobility")
+
+      mobility: !c |
+        band.empty_band_mobility *((1 - band.fill) - 0.5*(band.fill**0.33)*(1-band.fill)**1.33)
 
       u_to_phiqfl: !c |
         lambda u: p.fermidirac_f_inv(
@@ -234,6 +263,12 @@ classes:
         drift_diffusion_qfl_term: !c |
           + _.dx*p.div(_.xi)*_.delta_w
 
+        external_qfl_term: !c |
+          + _.dx_inv * _.delta_w * _.v * p.Constant(u("1 A*mesh_unit^-3/(electron_volt)"))
+
+        external_j_term: !c |
+          + _.dx_inv * p.dot(_.j, _.xi) *  p.Constant(u("1 V*s*cm"))
+
         weak_form: !c |
           + _.continuity_j_term
           + _.continuity_g_term
@@ -242,6 +277,10 @@ classes:
           + _.drift_diffusion_j_term
           + _.drift_diffusion_qfl_term
           + _.drift_diffusion_base_w_jump_term
+
+          # terms forcing band variables to zero outside of subdomain
+          + _.external_qfl_term
+          + _.external_j_term
 
         delta_w_bc_ds: !c "_.bcpair[1].get_natural_bc()"
 
@@ -258,8 +297,8 @@ classes:
         u2_to_w: !c |
           lambda u: (_.u_to_w(u)).to('eV')
 
-        dx: !c 'p.dx'
-        # dx: !c _.dx_super
+        dx: !c 'p.dx(subdomain_id=self.subdomain_id)'
+        dx_inv: !c 'p.dx(subdomain_id=self.subdomain_inv_id)'
 
         dx_super: !c "_.dx(metadata={'quadrature_degree': _.debug_quad_degree_super})"
         dx_g: !c "_.dx(metadata={'quadrature_degree': _.debug_quad_degree_g})"
@@ -351,12 +390,14 @@ classes:
           [dict(element=p.element("DG", _.degree-1),
                 trial_key   = "delta_w",
                 trial_units = u.electron_volt,
+                trial_tolerance = 1e-6,
                 test_key    = "v",
                 test_units  = u("1 / A")),
 
            dict(element     = p.element("BDM", _.degree),
                 trial_key   = "j",
                 trial_units = u("A / mesh_unit^2"),
+                trial_tolerance = 1e-10,
                 test_key    = "xi",
                 test_units  = u("1 / mesh_unit^2 / electron_volt"))]
 
@@ -378,8 +419,6 @@ classes:
         p: !c self.mesh_util
         band: !c self
         mix: !c AttrPrefixProxy(self, 'mixedqfl_')
-
-
 
   MixedDensityBand:
     inherit: [PyamlBase]
@@ -464,12 +503,14 @@ classes:
           [dict(element=p.element("DG", _.degree-1),
                 trial_key   = "u",
                 trial_units = u("1 / mesh_unit^3"),
+                trial_tolerance = 1e-2,
                 test_key    = "v",
                 test_units  = u("1 / A")),
 
            dict(element     = p.element("BDM", _.degree),
                 trial_key   = "j",
                 trial_units = u("A / mesh_unit^2"),
+                trial_tolerance = 1e-6,
                 test_key    = "xi",
                 test_units  = u("mesh_unit / elementary_charge"))]
 
@@ -491,5 +532,3 @@ classes:
         p: !c self.mesh_util
         band: !c self
         mix: !c AttrPrefixProxy(self, 'mixed_')
-
-

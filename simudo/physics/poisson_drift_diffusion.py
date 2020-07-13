@@ -14,6 +14,7 @@ from ..fem import (
     opportunistic_assign)
 from ..util import NameDict, SetattrInitMixin
 from .problem_data_child import DefaultProblemDataChildMixin
+from ..mesh import CellRegions
 
 pyaml_pdd = pyaml.load_res(__name__, 'poisson_drift_diffusion1.py1')
 
@@ -27,7 +28,10 @@ __all__ = [
     'IntermediateBand',
     'MixedQflNondegenerateBand',
     'MixedQflIntermediateBand',
-    'MixedDensityNondegenerateBand']
+    'MixedDensityNondegenerateBand',
+    'InitializeFromByAttributesMixin',
+    'MixedQflBandMixin',
+    ]
 
 class SaveItem(SetattrInitMixin):
     name = None
@@ -126,7 +130,7 @@ Boltzmann constant, and :math:`T` is the temperature
         '''Temperature as taken from :py:attr:`spatial`.'''
         return self.spatial.get("temperature")
 
-    def easy_add_band(self, name, band_type=None, sign="auto"):
+    def easy_add_band(self, name, band_type=None, sign="auto", subdomain=None):
         '''Shortcut for instantiating and adding a band.
 
 Parameters
@@ -156,6 +160,9 @@ sign: +1, -1, None, or "auto"
     - If "auto", the sign will be deduced from the name of the band.
     - If `None`, the `sign` keyword argument will not be passed to be
       band object constructor.
+
+subdomain: :py:class:`.topology.CellRegion`
+    Subset of the domain where the band exists.
 
 Returns
 -------
@@ -194,7 +201,7 @@ band: :py:class:`Band`
 
         if not issubclass(cls, Band): raise TypeError()
 
-        kwargs = dict(key=name)
+        kwargs = dict(key=name, subdomain=subdomain)
         if sign is not None:
             kwargs['sign'] = sign
 
@@ -211,6 +218,14 @@ band: :py:class:`Band`
             cls = cls._base_band_class
 
         band = cls(**kwargs)
+        R = CellRegions()
+        if band.subdomain is None:
+            band.subdomain = R.domain
+        band.subdomain_inv = R.domain - band.subdomain
+
+        # This rule is used to blank output data outside the subdomain
+        self.spatial.add_rule(f'{band.name}/extent', band.subdomain, 1)
+        self.spatial.add_rule(f'{band.name}/extent', band.subdomain_inv, float('nan'))
         self.bands.add(band)
         return band
 
@@ -259,10 +274,18 @@ band: :py:class:`Band`
 
         return cls.from_nice_obj(self)
 
-    def easy_auto_pre_solve(self):
+    def easy_auto_pre_solve(self, parameters=None):
         solver = self.easy_create_newton_solver()
+        if parameters is not None:
+            solver.parameters.update(parameters)
         name = self.problem_data.goal_abbreviated
         solver.logger = logging.getLogger("newton." + name)
+
+        tol_func = self.mixed_function_helper.make_tolerance_function()
+        solver.parameters.update(
+             absolute_tolerance_vector=tol_func.function.vector()[:]
+        )
+
         solver.solve()
 
     def initialize_from(self, other_pdd):
@@ -297,7 +320,7 @@ class LocalChargeNeutralitySolver(
             maximum_iterations=2000, # WOW
             extra_iterations=5,
             relative_tolerance=1e-10,
-            absolute_tolerance=1e-5,
+            absolute_tolerance=0.1,
             maximum_du=0.02,
             omega_cb=lambda self: 0.2 if self.iteration < 100 else 0.5,
         )
@@ -311,7 +334,7 @@ class ThermalEquilibriumSolver(
             relaxation_parameter=0.5,
             maximum_iterations=500,
             relative_tolerance=1e-5,
-            absolute_tolerance=1e-5,
+            absolute_tolerance=0.1,
             extra_iterations=15,
             omega_cb=lambda self: 0.4 if self.iteration < 30 else 0.9,
         )
@@ -475,6 +498,8 @@ sign:
     Sign of the charge carriers; ``-1`` for electrons, and ``+1`` for holes.
 mobility:
     Band mobility. By default taken from ``.spatial``.
+subdomain:
+    Region name on which the band exists.
 '''
     @property
     def name(self):
@@ -734,4 +759,3 @@ class MixedDensityNondegenerateBand(
         InitializeFromByAttributesMixin,
         MixedDensityBandMixin, NondegenerateBand):
     _base_band_class = NondegenerateBand
-
