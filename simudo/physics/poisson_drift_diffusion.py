@@ -668,7 +668,12 @@ number_of_states:
 energy_level:
     Band energy level. By default inherited from
     :py:attr:`DegeneracyMixin.energy_level`.
+use_constant_mobility: bool
+    Use spatial variable ``"${band_name}/mobility0"`` as a constant
+    mobility in the IB, neglecting the influence of filling fraction
+    on the mobility. (default: False)
 '''
+    use_constant_mobility = False
 
 class MixedQflBandMixin(pyaml_pdd.MixedQflBand):
     '''Mixed method for the drift-diffusion and continuity equations

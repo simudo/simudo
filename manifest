@@ -1,8 +1,8 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-C Merge\sMatt\sWilkins'\snew-heterojunction\sbranch.\sPlease\sdirect\sall\spraise\sto\shim\sfor\sauthoring\sit\sand\sall\scursing\sto\sme\sfor\snot\sdoing\ssufficient\sQA\son\sit.\sRelease\s0.6.0.0.
-D 2020-07-13T11:25:48.259
+C Add\sattribute\s`IntermediateBand.use_constant_mobility`.\sDeprecate\sspatial\skey\s`IB/empty_band_mobility`\sin\sfavor\sof\s`IB/mobility0`.
+D 2020-07-14T20:52:37.827
 F .fossil-settings/ignore-glob 42433d988997a244cf43bd2513d42a4e39d7c2ed38576eb71dbaa85894fb2095
 F COPYRIGHT ac40da4d09269f7a4da34470e1e89b015814d1e6b0e92c727416f049346c2f79
 F LICENSE 6819e5a5187c9ee5b69c6475404dda9c319b5365c7edd1444b194c31923c554c
@@ -40,7 +40,7 @@ F doc/source/user/tutorial.rst 68abded1473af712d6cb7a9a1ef9ffd372cee5add13eda133
 F doc/structure.md 1f6bc6c29a779cb218f70e0c5468dabcafcd3935f3f54c16379803513d8f2b2f
 F get_data.sh 04f853166b8f12523f52c330ba7eefbebbce1793d112fefd2ad013000d52216b x
 F notebooks/IB.ipynb 84f0d04573f31c75443394fc6277dd6b90c97e9525f7798003ed35ac2d781ab3
-F setup.py ae13588f176fbd5aca9959584503f9b3acf803973f55ef78d39a1811d68239ca
+F setup.py f780caa2dca6988f3f42ccd8ba0622638283cd028ba57dd36f83b7fb9e8e3704
 F simudo/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F simudo/example/marti2002/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
@@ -67,7 +67,7 @@ F simudo/fem/function_subspace_registry.py e7e7863776a657adaba2a9c9a47fcf1a1e9ab
 F simudo/fem/ipython.py e37e2428348890d4568a1a42041412c5180c4877808014deef5604dc4416e5cc
 F simudo/fem/mesh_data.py 35894809fd9646578d63d8663f0f96d8fde84be90c7d4fac3a663d5ccfcde56b
 F simudo/fem/mesh_util.py 8a4dcb787977719a389a6e09b1fb72336d517c6c1f267ae55353b8b44bd6d30f
-F simudo/fem/mesh_util1.py1 f77fa712c088643342d38498a5609239844bccf1af2c90b3ffc9ac1fb0b4817d
+F simudo/fem/mesh_util1.py1 6dfbc6751f392f49cffb9d6c741afd2848357d06af4b8a6221d5cdfa099aba54
 F simudo/fem/newton_solver.py 375a4550432763c4e95bffe350b572741b80891f434cfeb5c0705a4a68f510d8
 F simudo/fem/offset_partitioning.py 651492227f4001a4aaea9d978cc1594ae52c806ae0253650dda577502d1f0e3d
 F simudo/fem/plot.py 133c77e99f5537d91a7d4310b93f231b56eb1ab7666e4bb50b8ce4696619c790
@@ -106,8 +106,8 @@ F simudo/physics/electro_optical_process.py 635cb3b2351b5724fefc97d44b72afb38fc3
 F simudo/physics/material.py 7f644164dfd99cf9873e2bcc2dee066201c4a519737ed2a4af8ebd48d3c4fc43
 F simudo/physics/optical.py 913e8413939bb7c3a9a11af5a027753e6ad36811b65eb680aa347f2c73d682af
 F simudo/physics/optical1.py1 caef8e5aa39fe805d32f3e795501e0da2ccc9e448b0f7419df7039e25d4414d3
-F simudo/physics/poisson_drift_diffusion.py 2fce55aadbeb7a190d8a96c249b302938c24c17caa9da0bb9de3be1cc38c95cc
-F simudo/physics/poisson_drift_diffusion1.py1 8982691b7ab938a240358a310f360b9fdc60abd05be170c4730c2893ce410baf
+F simudo/physics/poisson_drift_diffusion.py eda3804fb9e9289cfa79ab1205a287812efdbbc0379b8b5c9fa7043959bf3fc3
+F simudo/physics/poisson_drift_diffusion1.py1 0535f96e5918bb05b51380505c6b4bca396cbfa3cf02c5c64879ae7f87b06198
 F simudo/physics/problem_data.py 7a4959e914dcb3be0e5beb8012d6e984498f99d0790299048d8e7d558ccfb0f4
 F simudo/physics/problem_data_child.py f39cdb05acb479915ebd2e8641ba8fc4bdff4525e1d2bbfc91c4506854d0cd0f
 F simudo/physics/steppers.py 3fee4c1de739f856a44b4bf104deab4188227240e3dbce81fc88253dfee6019e
@@ -213,16 +213,16 @@ F simudo/util/todo.py 803636d2df9442d25598fe3cce6bd8e25e8ad8beba62e0a251659a56d6
 F simudo/util/with_default_kwargs.py 5fabcf88788eb0fb7c156e66110d10657062facd36d99ddcbdf8d293bde96f5f
 F simudo/util/xcsv.py 1a5a046b26a2a1b0fa59244a2393a4156dcdeab5cd6fc20f062527c222d34b1e
 F simudo/util/xtimeit.py 74047a2d6ffd4ce6127112fa508f46efcea3d8a947476ea13c94a7035b979c9f
-P 4387f85d7c2384d66bea1972a4e48dd21b716958c1d30748e9d0edfb4c5332dd b6b5fef6942a9efc7689acb7c9951351f715140880cd630c93d7531c159e9f8a
-R 133738614e214312f6583e675e953114
+P b241c8c8f14cdd6c81e482393967ad52dbf4ae845e43063aed63ba049b9179e0 1c5a1d6d07467291deb870c278fafed863d6536c7581b0c21cb46f5284f0f041
+R 55b59ab01a42d8e1367220e3bd8b5d0a
 U eduard
-Z 1b357e093bf1a52f2bd9fdd4040e2e9e
+Z c09ed0558e7b96172019670387280f1b
 # Remove this line to create a well-formed manifest.
 -----BEGIN PGP SIGNATURE-----
 
-iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXwxEvB4cZWR1YXJkLmMu
-ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sBkqAD/aymd3xbbpxLqZFcY
-6pUb6mtl6yr1l9R7tFtn4Xvo7dUA/imeM/Y+K1eD2iylDkj1Z4EvPGT8s/RnX9q1
-GLYRXKaQ
-=pOQQ
+iJQEAREKADwWIQQkoCJskbt0izIGs+MhJ+W7/tvuwAUCXw4bFR4cZWR1YXJkLmMu
+ZHVtaXRyZXNjdUBnbWFpbC5jb20ACgkQISflu/7b7sCucgEAlQ3TUS/eB/rziG0M
+wlzsaNy7xiINo36mj+CTogS6594BAIlStXr9xR8k29lAywzYpLy4clcHFiHGG+X7
+sez9+nBq
+=k5Y1
 -----END PGP SIGNATURE-----

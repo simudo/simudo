@@ -54,6 +54,26 @@ classes:
                     dolfin.gt(z*z, 1e-40), # prevent 0/0
                     z/ufle.expm1(z), 1.0)
 
+      max: !c |
+        %def max(a, b):
+          b = (b * u.dimensionless).m_as(a)
+          return u.Quantity(dolfin.conditional(
+            dolfin.gt(magnitude(a), magnitude(b)),
+            magnitude(a),
+            magnitude(b),
+          ), units(a))
+        return max
+
+      min: !c |
+        %def min(a, b):
+          b = (b * u.dimensionless).m_as(a)
+          return u.Quantity(dolfin.conditional(
+            dolfin.lt(magnitude(a), magnitude(b)),
+            magnitude(a),
+            magnitude(b),
+          ), units(a))
+        return min
+
       sqrt: !c |
         lambda f: u.Quantity(dolfin.sqrt(magnitude(f)), units(f)**0.5)
       abs: !c |

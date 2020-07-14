@@ -3,6 +3,8 @@
 preamble: |
   from ${helper} import AttrPrefixProxy, PyamlBase
 
+  import warnings
+
   import dolfin
   import sympy
 
@@ -211,11 +213,25 @@ classes:
       fill: !c |
         band.u / band.number_of_states
 
-      empty_band_mobility: !c |
-        _.spatial.get(_.spatial_prefix + "empty_band_mobility")
+      # use `empty_band_mobility` if `mobility0` is not set
+      mobility0 : !c |
+        %
+        key = _.spatial_prefix + "mobility0"
+        if key in _.spatial.value_rules:
+          return _.spatial.get(key)
+
+        key = _.spatial_prefix + "empty_band_mobility"
+        warnings.warn(
+          "`empty_band_mobility` (used for spatial value rule {!r}) is "
+          "deprecated; use `mobility0` instead".format(key),
+          FutureWarning
+        )
+        return _.spatial.get(key)
 
       mobility: !c |
-        band.empty_band_mobility *((1 - band.fill) - 0.5*(band.fill**0.33)*(1-band.fill)**1.33)
+        band.mobility0 if band.use_constant_mobility
+        else band.mobility0
+        *((1 - band.fill) - 0.5*(band.fill**0.33)*(1-band.fill)**1.33)
 
       u_to_phiqfl: !c |
         lambda u: p.fermidirac_f_inv(
