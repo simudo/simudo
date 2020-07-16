@@ -518,6 +518,10 @@ subdomain:
     def u_to_qfl(self, u):
         return self.u_to_phiqfl(u) - self.e_phi
 
+    @property
+    def phiqfl(self):
+        return self.e_phi + self.qfl
+
     subfunctions_info = ()
 
     def get_weak_form(self):

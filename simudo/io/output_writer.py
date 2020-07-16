@@ -66,7 +66,7 @@ class OutputWriter(SetattrInitMixin):
         return self.filename_prefix
 
     def write_output(self, solution, parameter_value):
-        if os.path.dirname(self.filename_prefix) is not '':
+        if os.path.dirname(self.filename_prefix) != '':
             os.makedirs(os.path.dirname(self.filename_prefix), exist_ok=True)
 
         meta = {}
@@ -97,7 +97,7 @@ class OutputWriter(SetattrInitMixin):
                     plot_prefix + '.csv', None,
                     resolution=self.line_cut_resolution,
             )) as plotter:
-                solution_plot(plotter, solution, 0)
+                solution_plot(plotter, solution, 0, stepper=self.stepper)
             h5yaml.dump(meta, plot_prefix + '.plot_meta.yaml')
 
         if self.plot_iv:

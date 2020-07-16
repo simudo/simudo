@@ -210,9 +210,6 @@ classes:
       energy_level: !c |
         _.spatial.get(_.spatial_prefix + "energy_level")
 
-      fill: !c |
-        band.u / band.number_of_states
-
       # use `empty_band_mobility` if `mobility0` is not set
       mobility0 : !c |
         %
@@ -231,7 +228,13 @@ classes:
       mobility: !c |
         band.mobility0 if band.use_constant_mobility
         else band.mobility0
-        *((1 - band.fill) - 0.5*(band.fill**0.33)*(1-band.fill)**1.33)
+        *(band.one_minus_fill - 0.5*(band.fill**0.33)*band.one_minus_fill**1.33)
+
+      fill: !c |
+        p.fermidirac_f(_.sign*(_.phiqfl - _.energy_level)/_.kT)
+
+      one_minus_fill: !c |
+        p.fermidirac_f(-_.sign*(_.phiqfl - _.energy_level)/_.kT)
 
       u_to_phiqfl: !c |
         lambda u: p.fermidirac_f_inv(
