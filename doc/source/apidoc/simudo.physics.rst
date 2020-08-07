@@ -6,14 +6,6 @@ simudo.physics package
 Submodules
 ----------
 
-simudo.physics.blackbody module
--------------------------------
-
-.. automodule:: simudo.physics.blackbody
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 simudo.physics.electro\_optical\_process module
 -----------------------------------------------
 

@@ -81,7 +81,10 @@ class NewtonSolution(object):
 
     @cached_property
     def has_nans(self):
-        return numpy.isnan(self.u_.vector().get_local()).any()
+        return (
+            numpy.isnan(self.u_.vector().get_local()).any()
+            or numpy.isnan(self.b_norm)
+        )
 
     @cached_property
     def rel_du_norm(self):
@@ -106,7 +109,7 @@ class NewtonSolution(object):
         rel_tol = self.solver.parameters['relative_tolerance']
         abs_tol = self.solver.parameters['absolute_tolerance'] # user adjustable weight
         abs_tol_vec = self.solver.parameters['absolute_tolerance_vector']
-        
+
         with numpy.errstate(divide='ignore', invalid='ignore'):
             r = numpy.abs(du)/(numpy.abs(u)*rel_tol + abs_tol * abs_tol_vec)
         return numpy.linalg.norm(r, ord=numpy.Inf)
@@ -132,12 +135,12 @@ class NewtonSolution(object):
         # dolfin.PETScOptions.set('-info', 'out/petsc_log.txt')
         # dolfin.PETScOptions.set('log_trace', 'out/petsc_trace.txt')
         # dolfin.PETScOptions.set('pc_factor_mat_ordering_type', 'natural')
-        dolfin.PETScOptions.set('mat_mumps_icntl_6', 7)
-        dolfin.PETScOptions.set('mat_mumps_icntl_7', 7)
+        dolfin.PETScOptions.set('mat_mumps_icntl_6', 5)
+        dolfin.PETScOptions.set('mat_mumps_icntl_7', 6)
         dolfin.PETScOptions.set('mat_mumps_icntl_8', 77)
 
         # 1=sequential mode (no MPI). Still uses multithreading.
-        
+
         dolfin.PETScOptions.set('mat_mumps_icntl_28', 1)
 #        dolfin.PETScOptions.set('mat_mumps_icntl_29', 1)
 

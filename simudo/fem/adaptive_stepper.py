@@ -8,11 +8,16 @@ from ..util import SetattrInitMixin
 __all__ = [
     'BaseAdaptiveStepper',
     'AdaptiveStepper',
-    'ConstantStepperMixin']
+    'ConstantStepperMixin',
+    'StepperError']
 
 AdaptiveLogEntry = namedtuple(
     'AdaptiveLogEntry',
     ['parameter', 'success', 'saved_solution'])
+
+
+class StepperError(Exception):
+    pass
 
 class BaseAdaptiveStepper(SetattrInitMixin):
     '''Adaptive solution base class.
@@ -52,6 +57,10 @@ update_parameter_success_factor: float
 update_parameter_failure_factor: float
     If the solver fails, multiply :py:attr:`step_size` by this
     factor.
+stepper_rel_tol: float
+    If :py:attr:`step_size ` drops below
+    :py:attr:`stepper_rel_tol`*max(:py:attr:`parameter`, initial_step_size),
+    the stepper will stop and raise a StepperError.
 
 Notes
 -----
@@ -66,6 +75,7 @@ methods.
     parameter_start_value = 0.0
     parameter_target_values = [1.0]
     step_size = 1e-2
+    stepper_rel_tol = 1e-5  # tolerance for bailing out of stepper
 
     update_parameter_success_factor = 2.
     update_parameter_failure_factor = 0.5
@@ -199,20 +209,40 @@ erased (careful with NaNs!).
     def do_loop(self):
         ''' This method must be called to actually perform the adaptive
         stepping procedure'''
-
+        sufficient_progress = True
+        initial_step_size = self.step_size
         for val in self.parameter_target_values:
             self.reset_parameter_to_last_successful()
             self.step_sign = -1. if self.parameter > val else 1.
             self.parameter_target_value = val
             while True:
                 last_successful = self.get_last_successful(1)
+                failed_prev_step = (
+                    self.prior_solutions and
+                    not self.prior_solutions[-1].success
+                )
                 if (last_successful and
                     last_successful[0].parameter == val):
                     break
+                if (failed_prev_step and
+                    abs(self.step_size)/max(abs(self.parameter),
+                        initial_step_size) < self.stepper_rel_tol):
+                    sufficient_progress = False
+                    break
                 self.do_iteration()
-            if self.output_writer is not None:
+
+            if self.output_writer is not None and self.get_last_successful(1):
                 logging.getLogger('stepper').info('Writing output')
                 self.output_writer.write_output(self.solution, self.parameter)
+
+            if not sufficient_progress:
+                logging.getLogger('stepper').error('Insufficient progress, stopping.')
+                msg=("Solver unable to progress. Among many possible causes of this "
+                    "error are: poorly formed problem, incorrect boundary conditions,"
+                    "inappropriate material parameters, or insufficient meshing. If "
+                    "none of these is the case, it is possible that changing "
+                    "preconditioning settings in simudo.fem.newton_solver.do_linear_solve could help.")
+                raise StepperError(msg)
 
             if self.break_criteria_cb is not None:
                 if self.break_criteria_cb(self.solution):

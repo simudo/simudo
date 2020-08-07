@@ -5,13 +5,16 @@ from builtins import bytes, dict, int, range, str, super
 import numpy as np
 
 import dolfin
-import mshr
+try:
+    import mshr
+except ImportError:
+    mshr = None
 
 from . import mesh_entity_predicate as mep
-from .construction_helper import ConstructionHelper, LinearTransform
+from .construction_helper import ConstructionHelperMshr, LinearTransform
 
 
-class Bob(ConstructionHelper):
+class Bob(ConstructionHelperMshr):
     def user_define_mshr_regions(self):
         '''must return `{region_name: mshr_domain}`
         `regions['domain']` is overall domain'''
@@ -60,18 +63,22 @@ class Bob(ConstructionHelper):
         self.refine_subdomains((R['D'] - (R['F'] | R['E'])), pred2)
         trans.untransform(self.mesh)
 
-dolfin.parameters["refinement_algorithm"] = 'plaza_with_parent_facets'
-h = Bob()
-h.run()
-h.save("out/poop")
+def main():
+    dolfin.parameters["refinement_algorithm"] = 'plaza_with_parent_facets'
+    h = Bob()
+    h.run()
+    h.save("out/poop")
 
-ro = h.robjs
+    ro = h.robjs
 
-for k, v in h.facet_regions.items():
-    dolfin.plot(h.debug_fvs_to_mf(v, signed=False))
+    for k, v in h.facet_regions.items():
+        dolfin.plot(h.debug_fvs_to_mf(v, signed=False))
 
-dolfin.plot(ro['cf'])
+    dolfin.plot(ro['cf'])
 
-dolfin.plot(h.debug_cvs_to_mf(h.cell_regions['Z']))
+    dolfin.plot(h.debug_cvs_to_mf(h.cell_regions['Z']))
 
-dolfin.interactive()
+    dolfin.interactive()
+
+if __name__ == '__main__':
+    main()

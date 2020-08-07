@@ -22,6 +22,14 @@ simudo.util.base32\_token module
     :undoc-members:
     :show-inheritance:
 
+simudo.util.blackbody module
+----------------------------
+
+.. automodule:: simudo.util.blackbody
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 simudo.util.cartesian\_product module
 -------------------------------------
 
@@ -102,6 +110,14 @@ simudo.util.string\_system module
     :undoc-members:
     :show-inheritance:
 
+simudo.util.todo module
+-----------------------
+
+.. automodule:: simudo.util.todo
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 simudo.util.with\_default\_kwargs module
 ----------------------------------------
 
@@ -110,18 +126,18 @@ simudo.util.with\_default\_kwargs module
     :undoc-members:
     :show-inheritance:
 
-simudo.util.xtimeit module
---------------------------
-
-.. automodule:: simudo.util.xtimeit
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 simudo.util.xcsv module
 -----------------------
 
 .. automodule:: simudo.util.xcsv
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+simudo.util.xtimeit module
+--------------------------
+
+.. automodule:: simudo.util.xtimeit
     :members:
     :undoc-members:
     :show-inheritance:

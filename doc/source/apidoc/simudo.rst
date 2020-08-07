@@ -34,6 +34,7 @@ Subpackages
 
     simudo.physics
     simudo.mesh
+    simudo.example
     simudo.io
     simudo.plot
     simudo.fem

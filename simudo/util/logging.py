@@ -28,7 +28,24 @@ class NameLevelFilter(logging.Filter):
         return False
 
 class TypicalLoggingSetup(SetattrInitMixin):
+    """Class that sets up logging and filtering in a typical way for Simudo.
+
+Parameters
+----------
+dolfin: bool, optional
+    Configure the dolfin log level as well. Note that this imports
+    ``dolfin``, which takes a while. Only use it if you're okay with
+    that. (default: True)
+truncate: bool, optional
+    Truncate (delete) the log file contents before starting to write
+    to it. (default: False)
+"""
     dolfin = True
+    truncate = True
+
+    @property
+    def _mode(self):
+        return "w" if self.truncate else "a"
 
     def ensure_parent_dir(self, filename):
         try:
@@ -59,16 +76,14 @@ class TypicalLoggingSetup(SetattrInitMixin):
     @cached_property
     def stream_debug(self):
         self.ensure_parent_dir(self.debug_filename)
-        h = logging.FileHandler(
-            filename=self.debug_filename, mode='w')
+        h = logging.FileHandler(filename=self.debug_filename, mode=self._mode)
         h.setFormatter(self.logfile_formatter)
         return h
 
     @cached_property
     def stream_info(self):
         self.ensure_parent_dir(self.info_filename)
-        h = logging.FileHandler(
-            filename=self.info_filename, mode='w')
+        h = logging.FileHandler(filename=self.info_filename, mode=self._mode)
         h.setFormatter(self.logfile_formatter)
         return h
 
