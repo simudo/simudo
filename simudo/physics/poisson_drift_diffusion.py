@@ -10,11 +10,16 @@ import dolfin
 
 from .. import pyaml
 from ..fem import (
-    MixedFunctionHelper, NewtonSolverMaxDu, Spatial, WithSubfunctionsMixin,
-    opportunistic_assign)
+    DelayedForm,
+    MixedFunctionHelper,
+    NewtonSolverMaxDu,
+    Spatial,
+    WithSubfunctionsMixin,
+    opportunistic_assign,
+)
 from ..util import NameDict, SetattrInitMixin
 from .problem_data_child import DefaultProblemDataChildMixin
-from ..mesh import CellRegions
+from ..mesh import CellRegions, CellRegion, FacetRegion
 
 pyaml_pdd = pyaml.load_res(__name__, 'poisson_drift_diffusion1.py1')
 
@@ -693,6 +698,20 @@ variables.
     mixedqfl_debug_use_bchack = False
     mixedqfl_debug_quad_degree_super = 20
     mixedqfl_debug_quad_degree_g = 8
+
+    @cached_property
+    def mixedqfl_drift_diffusion_heterojunction_bc_term(self):
+        return DelayedForm()
+
+    @cached_property
+    def mixedqfl_drift_diffusion_heterojunction_facet_region(self):
+        return FacetRegion.null()
+
+    @property
+    def mixedqfl_drift_diffusion_jump_dS(self):
+        interior = self.subdomain.internal_facets()
+        het = self.mixedqfl_drift_diffusion_heterojunction_facet_region
+        return self.mesh_util.region_oriented_dS(interior - het, orient=False)[1]
 
     @cached_property
     def mixedqfl_base_w(self):

@@ -4,6 +4,7 @@
 # Source: http://physics.nist.gov/cuu/Constants/Table/allascii.txt
 # :copyright: 2013 by Pint Authors, see AUTHORS for more details.
 
+pi     = 3.1415926535897932384626433832795028841971693993751 = π  # pi
 speed_of_light = 299792458 * meter / second = c
 standard_gravity = 9.806650 * meter / second ** 2 = g_0 = g_n = gravity
 vacuum_permeability = 4 * pi * 1e-7 * newton / ampere ** 2 = mu_0 = magnetic_constant

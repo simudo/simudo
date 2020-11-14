@@ -159,6 +159,13 @@ solution if the solver call failed.'''
         if (self.actual_step == self.step_size) and last.success:
             self.step_size *= self.update_parameter_success_factor
 
+        # If we just failed and actual_step<step_size, reduce step_size to 
+        # actual_step * failure_factor
+        if (self.actual_step < self.step_size) and not last.success:
+            logging.getLogger('stepper').debug(
+                '** actual_step < step_size; reducing step_size further')
+            self.step_size = self.actual_step * self.update_parameter_failure_factor
+
         if not last.success:
             self.user_solution_add(
                 self.solution, 0.0, last_ok.saved_solution, 1.0)
@@ -202,7 +209,12 @@ erased (careful with NaNs!).
         self.update_parameter()
         solution = self.solution
         parameter = self.parameter
-        success = self.user_solver(solution, parameter)
+        try:
+            success = self.user_solver(solution, parameter)
+        except RuntimeError:
+            success = False
+            if len(self.prior_solutions) == 0:
+                raise
         saved = self.user_solution_save(solution) if success else None
         self.add_prior_solution(parameter, success, saved)
 

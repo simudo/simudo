@@ -1,10 +1,13 @@
 # encoding: utf-8
 from setuptools import setup, find_packages
+import os
 pkg = "simudo"
-ver = '0.6.3.0'
 
-with open(pkg+'/version.py', 'wt') as h:
-    h.write('__version__ = "{}"\n'.format(ver))
+version_path = os.path.abspath(pkg + '/version.py')
+version_info = {"__file__": version_path}
+with open(version_path, 'rt', encoding="utf-8") as h:
+    exec(compile(h.read(), version_path, 'exec'), version_info)
+ver = version_info["__version__"].partition("~")[0]
 
 # For Debian Buster / Ubuntu 20.04:
 # apt install python3-{numpy,scipy,pint,matplotlib,meshio,yamlordereddictloader,sortedcontainers,cached-property,h5py,petsc4py}

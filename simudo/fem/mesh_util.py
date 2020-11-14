@@ -191,6 +191,37 @@ measures: tuple of :py:class:`.expr.DelayedForm`
 
         return (ds, dS)
 
+    def region_oriented_dS(self, region, orient=True):
+        '''Return the internal dS measures corresponding to
+topological :py:class:`~.topology.FacetRegion`, for "minus" and "plus"
+sides respectively.
+
+Parameters
+----------
+region: :py:class:`~.topology.FacetRegion`
+    Facet region.
+orient: bool, optional
+    Actually orient the measures. If ``False``, then all dS's are
+    added to ``dS_plus`` (second element of returned tuple).
+
+Returns
+-------
+measures: tuple of :py:class:`.expr.DelayedForm`
+    Facet integration measures :code:`(dS_minus, dS_plus)`.
+'''
+        fv_pos = []
+        fv_neg = [] if orient else fv_pos
+        for fv, sign in self.mesh_data.evaluate_topology(region):
+            if sign > 0:
+                fv_pos.append(fv)
+            else:
+                fv_neg.append(fv)
+
+        fv_pos = tuple(sorted(fv_pos))
+        fv_neg = tuple(sorted(fv_neg)) if orient else ()
+
+        return (self.dS(fv_neg), self.dS(fv_pos))
+
     @property
     def facet_function(self):
         return self.mesh_data.facet_function

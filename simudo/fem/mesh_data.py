@@ -62,7 +62,9 @@ geometrical_values: set
     def cell_to_cells_adjacency_via_facet(self):
         mesh = self.mesh
         D = mesh.topology().dim()
+        # Initialize adjacency graph between facets and cells
         mesh.init(D-1, D)
+        # Initialize adjacency graph between cells and cells
         mesh.init(D, D)
         cell_neighbors = [[] for i in range(mesh.num_cells())]
         for facet in dolfin.facets(mesh):

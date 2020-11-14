@@ -131,6 +131,8 @@ classes:
 
       ln: !c |
         lambda z: dolfin.ln(dless(z))
+      ln1p: !c |
+        lambda z: ufle.ln1p(dless(z))
       exp: !c |
         lambda z: dolfin.exp(dless(z))
 

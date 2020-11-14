@@ -133,6 +133,18 @@ argument.
         values (subdomains). '''
         return CellRegionSubdomainInternalFacetRegion((self,))
 
+    @staticmethod
+    def null():
+        '''Get null cell region that matches nothing.'''
+        return NullCellRegion()
+
+class NullCellRegion(CellRegion):
+    def __repr__(self):
+        return "null"
+
+    def evaluate(self, context):
+        return set()
+
 class CellRegionByName(CellRegion):
     kwarg_names = ('name',)
 
@@ -241,6 +253,18 @@ argument.
 :code:`sign = 1` for every :code:`(facet_value, sign)` pair.
 '''
         return FacetRegionUnsigned((self,))
+
+    @staticmethod
+    def null():
+        '''Get null facet region that matches nothing.'''
+        return NullFacetRegion()
+
+class NullFacetRegion(FacetRegion):
+    def __repr__(self):
+        return "null"
+
+    def evaluate(self, context):
+        return set()
 
 class FacetRegionByName(FacetRegion):
     kwarg_names = ('name',)

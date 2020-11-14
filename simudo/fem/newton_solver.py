@@ -35,6 +35,8 @@ def petsc_diag(vec):
 
 
 class NewtonSolution(object):
+    mumps_icntl = ()  # Iterable of (inctl, val) pairs to set mumps values
+
     def __init__(self, solver, u_=None):
         self.solver = solver
         W = solver.W
@@ -142,7 +144,11 @@ class NewtonSolution(object):
         # 1=sequential mode (no MPI). Still uses multithreading.
 
         dolfin.PETScOptions.set('mat_mumps_icntl_28', 1)
-#        dolfin.PETScOptions.set('mat_mumps_icntl_29', 1)
+        # dolfin.PETScOptions.set('mat_mumps_icntl_29', 1)
+
+        # After setting the above defaults, go through the mumps_icntl to (re)set parameters
+        for opt in self.mumps_icntl:  # ((28,7), (29,3), (30, 1))
+            dolfin.PETScOptions.set('mat_mumps_icntl_' + str(opt[0]), int(opt[1]))
 
         solver = dolfin.PETScLUSolver("mumps")
         solver.solve(A, Qdu, b)

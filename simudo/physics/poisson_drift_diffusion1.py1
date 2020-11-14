@@ -268,12 +268,12 @@ classes:
           - band.sign * _.dx_g * _.v * u.elementary_charge * _.g
 
         drift_diffusion_bc_term: !c |
-          - _.delta_w_bc_ds * p.dot(_.xi, p.n)
+          - _.delta_w_bc_ds_ext * p.dot(_.xi, p.n)
 
         drift_diffusion_base_w_jump_term: !c |
           %
           w0 = _.base_w
-          return - p.dS*((p.mside(w0) - p.pside(w0))
+          return - _.drift_diffusion_jump_dS*((p.mside(w0) - p.pside(w0))
                        * p.dot(p.pside(_.xi), p.pside(p.n)))
 
         drift_diffusion_j_term: !c |
@@ -293,6 +293,7 @@ classes:
           + _.continuity_g_term
 
           + _.drift_diffusion_bc_term
+          + _.drift_diffusion_heterojunction_bc_term
           + _.drift_diffusion_j_term
           + _.drift_diffusion_qfl_term
           + _.drift_diffusion_base_w_jump_term
@@ -301,7 +302,10 @@ classes:
           + _.external_qfl_term
           + _.external_j_term
 
-        delta_w_bc_ds: !c "_.bcpair[1].get_natural_bc()"
+        delta_w_bc_ds_ext: !c "_.bcpair[1].get_natural_bc(bc_type='external')"
+
+        # unused right now
+        # delta_w_bc_ds_int: !c "_.bcpair[1].get_natural_bc(bc_type='internal')"
 
         g: !c 'band.g'
 

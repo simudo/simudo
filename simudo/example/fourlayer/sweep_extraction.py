@@ -105,7 +105,8 @@ Example
                     v = data["sweep_parameter:V"]["value"]
             except:
                 # old version of names
-                v = data["parameter_value"]["value"]
+                # v = data["parameter_value"]["value"]
+                v = data["sweep_parameter:parameter"]["value"]
             j = (
                 data["avg:current_CB:n_contact"]["value"]
                 + data["avg:current_VB:n_contact"]["value"]

@@ -2,7 +2,6 @@
 *__pycache__*
 out/*
 data/sentaurus/
-*/version.py
 *~
 *.h5
 *.xdmf

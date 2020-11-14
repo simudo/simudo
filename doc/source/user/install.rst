@@ -78,3 +78,20 @@ the above :command:`docker run` command to::
   docker run -ti --name simudo -p 127.0.0.1:8888:8888 \
     -v $(pwd):/home/user/simudo/ ecdee/simudo:latest
 
+
+Setting up for developing/modifying Simudo
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Simudo is developed using `fossil <https://fossil-scm.org>`_. If you would like to 
+install a development version of simudo, after installing 
+fossil on your system, you can clone the repository using::
+
+  fossil clone https://secure.hydra.ecd.space/eduard/simudo/ simudo.fossil
+
+  fossil open simudo.fossil
+
+You can then enter the simudo directory and install the local version 
+for development with::
+
+  python3 setup.py develop --user
+

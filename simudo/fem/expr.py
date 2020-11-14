@@ -22,6 +22,7 @@ __all__ = [
     'dofs_coordinates',
     'mesh_bbox',
     'bbox_vecs',
+    'dolfin_interp1d',
 ]
 
 def tuple_to_point(xs):
@@ -214,6 +215,69 @@ ufl expressions.
     u.vector()[:] = result.array()
 
     return u
+
+
+def _make_binary_search_tree_for_interpolation(expr, mapping):
+    mapping = tuple(sorted(mapping))
+    max_key = mapping[-1][0]
+    N = len(mapping)
+    k = (N - 1).bit_length()
+
+    def _tree(base, length):
+        if base >= N:
+            return 0.0
+        if length == 1:
+            return mapping[base][1]
+        elif length > 1:
+            l2 = length // 2
+            if base + l2 >= N:  # no right side
+                return _tree(base, l2)
+            cut = mapping[base + l2 - 1][0]
+            return dolfin.conditional(
+                dolfin.lt(expr, cut), _tree(base, l2), _tree(base + l2, l2)
+            )
+        else:
+            raise AssertionError()
+
+    return _tree(0, 2 ** k)
+
+
+def dolfin_interp1d(variable, X, Y, fill_value):
+    """
+    Create 1D interpolator.
+
+    Parameters
+    ----------
+    variable:
+        UFL "x" variable or expression that will be evaluated.
+    X:
+        X values. Must be Python floats.
+    Y:
+        Y values. Can be numerical constants or dolfin expressions.
+    fill_value:
+        Like in :py:func:`scipy.interpolate.interp1d`.
+    """
+    mapping = list(zip(X, Y))
+    mapping.sort()
+
+    if not mapping:
+        raise AssertionError("mapping must have at least one expression")
+
+    new = []
+    new.append((mapping[0][0], fill_value[0]))
+
+    for i in range(len(mapping) - 1):
+        x0, v0 = mapping[i]
+        x1, v1 = mapping[i + 1]
+        x0 = float(x0)
+        x1 = float(x1)
+        t = (variable - x0) / (x1 - x0)
+        new.append((x1, v0 + t * (v1 - v0)))
+
+    new.append((float("inf"), fill_value[1]))
+
+    return _make_binary_search_tree_for_interpolation(variable, new)
+
 
 class TestThisModule(unittest.TestCase):
     def maxdiff(self, u, v):

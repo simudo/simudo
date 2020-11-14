@@ -11,7 +11,7 @@ from ufl.constantvalue import (
 from ufl.core.ufl_type import ufl_type
 from ufl.mathfunctions import MathFunction
 
-__all__ = ['ExpM1', 'expm1']
+__all__ = ['ExpM1', 'expm1', 'Ln1P', 'ln1p']
 
 '''
 note: MathFunction.derivative() is an undocumented attribute which can
@@ -44,8 +44,28 @@ class ExpM1(MathFunction):
         f, = self.ufl_operands
         return ufl.exp(f)
 
+@ufl_type()
+class Ln1P(MathFunction):
+    __slots__ = ()
+
+    def __new__(cls, argument):
+        if isinstance(argument, (ScalarValue, Zero)):
+            return FloatValue(math.log1p(float(argument)))
+        return MathFunction.__new__(cls)
+
+    def __init__(self, argument):
+        MathFunction.__init__(self, "log1p", argument)
+
+    def derivative(self):
+        x, = self.ufl_operands
+        return 1 / (x + 1)
+
 def expm1(x):
     return ufl_mathfunction(x, ExpM1)
+
+def ln1p(x):
+    # TODO: unit test
+    return ufl_mathfunction(x, Ln1P)
 
 class Test(unittest.TestCase):
     def setUp(self):

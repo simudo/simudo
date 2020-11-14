@@ -1,5 +1,6 @@
 
 from collections import defaultdict
+import logging
 import warnings
 
 import numpy as np
@@ -13,15 +14,8 @@ from .delayed_form import DelayedForm
 from .expr import constantify_if_literal
 
 
-class IdentityEq(object):
-    def __init__(self, object):
-        self.object = object
+logger = logging.getLogger(__name__)
 
-    def __hash__(self):
-        return hash(id(self.object))
-
-    def __eq__(self, other):
-        return isinstance(other, IdentityEq) and self.object is other.object
 
 class BoundaryCondition(SetattrInitMixin):
     '''Boundary condition class, used both for essential and natural BCs.
@@ -38,8 +32,17 @@ value: :py:class:`ufl.core.expr.Expr`
 require_natural: bool, optional
     Does this BC require natural (as opposed to inflexible essential)
     application? By default false.
+internal: bool
+    Apply this BC to internal facets? (default: False)
+external: bool
+    Apply this BC to external facets? (default: True)
+should_extract: bool
+    Whether to automatically apply extractor to this BC.
 '''
     require_natural = False
+    internal = False
+    external = True
+    should_extract = True
 
 class ValueRule(SetattrInitMixin):
     '''Rule for spatially-dependent value.
@@ -52,6 +55,18 @@ region: :py:class:`.topology.CellRegion`
     Cell region where this value applies.
 value: :py:class:`ufl.core.expr.Expr`
     Value.
+'''
+
+class ExtractedBoundaryCondition(SetattrInitMixin):
+    '''Boundary condition for which the value has been "extracted" by
+:py:attr:`CombinedBoundaryCondition.value_extractor`.
+
+Parameters
+----------
+value:
+    Extracted value.
+bc:
+    Original :py:class:`BoundaryCondition` that this BC came from.
 '''
 
 class CombinedBoundaryCondition(SetattrInitMixin):
@@ -75,9 +90,9 @@ natural_ignore_sign: bool, optional
 Attributes
 ----------
 map: dict
-    Mapping :code:`{(facet_value, sign): value_extractor(bc)}`.
+    Mapping :code:`{(facet_value, sign): extracted_bc}`.
 reverse_map: dict
-    Mapping :code:`{bc_value: {(facet_value, sign), ...}}`.
+    Mapping :code:`{extracted_bc: {(facet_value, sign), ...}}`.
 fv_set: set
     Set of referenced facet values. Useful to check that BCs don't
     overlap.
@@ -102,14 +117,18 @@ fv_set: set
             for fvs in fvss:
                 flipped = (fvs[0], -fvs[1])
                 if flipped not in mapping:
-                    mapping.setdefault(fvs, func(bc))
+                    extracted_bc = ExtractedBoundaryCondition(
+                        value=func(bc) if bc.should_extract else bc.value,
+                        bc=bc,
+                    )
+                    mapping.setdefault(fvs, extracted_bc)
         return mapping
 
     @cached_property
     def reverse_map(self):
         r = defaultdict(set)
         for k, v in self.map.items():
-            r[IdentityEq(v)].add(k)
+            r[v].add(k)
         return r
 
     @cached_property
@@ -189,7 +208,13 @@ fv_adjacent_cells_function: :py:class:`dolfin.Function`
 
         form = DelayedForm()
         for expr, fvss in bcdata.items():
-            expr = dless * expr.object
+            if not expr.bc.external:
+                logger.warning("skipping internal BC {!r}".format(expr.bc))
+                assert not (expr.bc.internal and expr.bc.should_extract), (
+                    "we don't support default BC value-setting for internal BCs yet"
+                )
+                continue
+            expr = dless * expr.value
             if target_unit is None:
                 target_unit = expr.units
             expr_ = expr.m_as(target_unit)
@@ -209,7 +234,7 @@ fv_adjacent_cells_function: :py:class:`dolfin.Function`
 
         return target_unit*u
 
-    def get_natural_bc(self, ignore_sign=None, bc_reverse_map=None):
+    def get_natural_bc(self, ignore_sign=None, bc_reverse_map=None, bc_type='external'):
         mu = self.mesh_util
 
         if ignore_sign is None:
@@ -218,11 +243,17 @@ fv_adjacent_cells_function: :py:class:`dolfin.Function`
         if bc_reverse_map is None:
             bc_reverse_map = self.reverse_map
 
-        nbc_expr = 0
-        nbc_ds = mu.ds # + mu.dS('+') # <--- *
-        # *FIXME: should this include internal facets?
-        for value, fvss in bc_reverse_map.items():
-            value = value.object
+        nbc_expr = DelayedForm()
+        for extracted_bc, fvss in bc_reverse_map.items():
+            nbc_ds = None
+
+            if bc_type=='internal' and extracted_bc.bc.internal:
+                nbc_ds = mu.dS
+            elif bc_type=='external' and extracted_bc.bc.external:
+                nbc_ds = mu.ds
+            else:
+                continue
+
             plus_fvs = set()
             minus_fvs = set()
             for fv, sign in fvss:
@@ -237,7 +268,7 @@ fv_adjacent_cells_function: :py:class:`dolfin.Function`
                 expr = (nbc_ds(tuple(sorted(plus_fvs))) -
                         nbc_ds(tuple(sorted(minus_fvs))))
 
-            nbc_expr += expr * value
+            nbc_expr += expr * extracted_bc.value
 
         return nbc_expr
 
@@ -263,7 +294,7 @@ fv_adjacent_cells_function: :py:class:`dolfin.Function`
 
         essential_bcs = []
         for value, fvss in bc_reverse_map.items():
-            value = value.object
+            value = value.value
             value_ = dolfin.project(value.m_as(var_units),
                                     ebc_collapsed_space)
 
@@ -345,7 +376,7 @@ bcs: defaultdict(SortedList)
         return expr
 
     def add_BC(self, key, region, value, priority=0,
-               require_natural=False, **kwargs):
+               require_natural=False, internal=False, external=True, **kwargs):
         if isinstance(region, str):
             raise AssertionError(
                 "`region` argument should not be a string, have you "
@@ -354,7 +385,10 @@ bcs: defaultdict(SortedList)
         bc = BoundaryCondition(region=region,
                                value=value,
                                priority=priority,
-                               require_natural=require_natural, **kwargs)
+                               require_natural=require_natural,
+                               internal=internal,
+                               external=external,
+                               **kwargs)
         self.bcs[key].add(bc)
         return bc
 

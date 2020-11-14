@@ -105,7 +105,7 @@ truncate: bool, optional
             ('UFL', logging.INFO),
             # ('assign', logging.DEBUG),
             ('matplotlib', logging.INFO),
-            ('', logging.DEBUG)]))
+            ('', logging.INFO)]))
         self.stream_info.addFilter(NameLevelFilter([
             ('FFC', logging.ERROR),
             ('UFL', logging.ERROR),
