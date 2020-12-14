@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.6.4.1] - 2020-12-14
+### Changed
+- Use absolute imports in `fourlayer_example` to help out users who
+  just want to modify the geometry without messing with the material
+  parameters much.
+
 ## [0.6.4.0] - 2020-11-13
 ### Added
 - Physics: Thermionic heterojunction boundary condition.

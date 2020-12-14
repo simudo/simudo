@@ -1,4 +1,4 @@
-__version__ = "0.6.4.0"
+__version__ = "0.6.4.1"
 
 # get fossil version
 try:

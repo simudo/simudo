@@ -64,7 +64,7 @@ def main():
         dict(name="barrier", material="Silicon", thickness=0.1, mesh=std_mesh),
         dict(
             name="base",
-            material="SiliconGermanium",  # changed from SiliconGermanium, to make just one interface
+            material="SiliconGermanium",  # change to Silicon to make just one interface
             thickness=length,
             mesh=std_mesh,
         ),
@@ -115,9 +115,9 @@ def main():
             "poisson/static_rho", R.base, U("1e18 elementary_charge/cm^3")
         )
 
-        # spatial.add_rule(
-        #     "poisson/static_rho", R.barrier, U("1e18 elementary_charge/cm^3")
-        # )
+        spatial.add_rule(
+            "poisson/static_rho", R.barrier, U("1e18 elementary_charge/cm^3")
+        )
 
         SiliconMaterial(problem_data=root).register()
         SiliconGermaniumAlloy(problem_data=root).register()

@@ -25,7 +25,7 @@ Parameters described in source below and in ``fourlayer.py``
 
 """
 
-from .fourlayer import multiplex_setup, run
+from simudo.example.fourlayer.fourlayer import multiplex_setup, run
 from scipy.optimize import fminbound
 import shutil
 from datetime import datetime, date
@@ -35,7 +35,7 @@ import os
 import matplotlib
 
 matplotlib.use("Agg")  # don't display output. Only save plots.
-from . import sweep_extraction as se
+from simudo.example.fourlayer import sweep_extraction as se
 import logging
 from simudo.util import blackbody
 from simudo.util import make_unit_registry
@@ -328,7 +328,7 @@ def simudo_multiplexer(params):
 
 def efficiency_analysis(submitfile):
     # Efficiency analysis.
-    from .IV_Analysis import IV_params
+    from simudo.example.fourlayer.IV_Analysis import IV_params
 
     U = make_unit_registry()
     curparams = h5yaml.load(str(submitfile))["parameters"]

@@ -53,7 +53,13 @@ Open a Terminal and navigate to a directory where you would like to run Simudo
 
   docker pull ecdee/simudo:latest
 
-  docker run -ti --name simudo -v $(pwd):/home/user/simudo/ ecdee/simudo:latest
+  docker run -e UPDATE_SIMUDO_FROM_PIP=y -ti --name simudo -v $(pwd):/home/user/simudo/ ecdee/simudo:latest
+
+.. note:: The ``-e UPDATE_SIMUDO_FROM_PIP=y`` argument will
+   automatically run ``pip3 install --upgrade simudo`` as soon as you
+   start the container in order to update Simudo to the newest version
+   available on PyPI. If you don't want that, remove the
+   ``-e UPDATE...=y`` part.
 
 You should find yourself inside the docker, running Ubuntu 20.04, with Simudo
 installed and ready to use. Everything in the directory in which you executed
@@ -75,7 +81,8 @@ For example, if you would like to run Jupyter notebooks that execute
 inside the docker, you can arrange the required port forwarding by changing
 the above :command:`docker run` command to::
 
-  docker run -ti --name simudo -p 127.0.0.1:8888:8888 \
+  docker run -e UPDATE_SIMUDO_FROM_PIP=y -ti --name simudo \
+    -p 127.0.0.1:8888:8888 \
     -v $(pwd):/home/user/simudo/ ecdee/simudo:latest
 
 

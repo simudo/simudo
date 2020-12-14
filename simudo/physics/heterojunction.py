@@ -11,7 +11,7 @@ from ..mesh.topology import FacetRegion
 @attr.s
 class ThermionicHeterojunction:
     """
-    Thermionic emission heterojunction BC valid with parabolic bands in the 
+    Thermionic emission heterojunction BC valid with parabolic bands in the
     Boltzmann approximation.
 
     Parameters
@@ -25,17 +25,17 @@ class ThermionicHeterojunction:
     Notes
     -----
 
-    See V. Palankovski (2004),   eq. 3.72 and
+    See V. Palankovski (2004), eq. 3.72 and
     K. Yang, J. R. East, G. I. Haddad, Solid State Electronics v.36 (3) p.321-330 (1993)
     K. Horio, H. Yanai, IEEE Trans. Elec. Devices v.37(4) p.1093-1098 (1990)
 
-    For a conduction band BC, band.spatial must have attribute 
+    For a conduction band BC, band.spatial must have attribute
     "CB/vth" in the barrier region. Similarly for other bands.
 
     Unlimited carrier flow from low to barrier region can be resolved, but due
-    to precision issues, cannot resolve Delta_w producing carrier flows from 
-    barrier to low region with Delta_w larger than 
-    |ln(1e-16)| * kT in double precision
+    to precision issues, cannot resolve Delta_w producing carrier flows from
+    barrier to low region with Delta_w larger than
+    ``|ln(1e-16)| * kT`` in double precision
 
     TODO: Add warning/comment that only works for nondegenerate bands
     """
@@ -111,8 +111,7 @@ class ThermionicHeterojunction:
         small_target = mu.asinh((argument - eps) / eps) + np.log(eps)
         # Target for Delta_w
         Delta_w_BC = (
-            kT
-            / sign
+            kT / sign
             * dolfin.conditional(
                 dolfin.gt(argument, eps), large_target, small_target
             )

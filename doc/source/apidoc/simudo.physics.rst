@@ -14,6 +14,14 @@ simudo.physics.electro\_optical\_process module
     :undoc-members:
     :show-inheritance:
 
+simudo.physics.heterojunction module
+------------------------------------
+
+.. automodule:: simudo.physics.heterojunction
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 simudo.physics.material module
 ------------------------------
 
