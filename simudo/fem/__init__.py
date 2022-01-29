@@ -1,6 +1,7 @@
 
 from .adaptive_stepper import *
 from .assign import *
+from .debug_probe import *
 from .delayed_form import *
 from .dolfin_parameters import *
 from .expr import *

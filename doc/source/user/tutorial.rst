@@ -45,7 +45,8 @@ The most useful method in :file:`fourlayer.py` is :command:`run`, which takes in
 a dict of parameters and runs Simudo as requested in that file. You can set up a 
 submitfile using :command:`fourlayer.multiplex_setup`. 
 
-Look at fourlayer_example_ for an example of using :file:`fourlayer`. It is not chosen to be a particularly good IBSC! Download all of the files in the :file:`example/fourlayer` directory, and you can run::
+Look at fourlayer_example_ for an example of using :file:`fourlayer`. It is not chosen to be a particularly good IBSC! 
+You can move fourlayer_example_ to a location of your choosing and then run::
 
   python3 -u fourlayer_example.py | tee -a out.txt
 
@@ -68,3 +69,8 @@ a single Simudo calculation and output both a JV curve and a band diagram at sho
 There are several helpful features in :file:`fourlayer_example`, which you can find
 in that file. For example, you can modify it to find the value of `IB_thickness` that optimizes device efficiency by setting :code:`params['optimize_key'] = 'IB_thickness'`. Please `contact us <mailto:jkrich@uottawa.ca>`_ if you have any questions.
 
+Jupyter notebook
+################
+
+There is a Jupyter notebook form of the pn-diode_ example to walk through the pieces of setting up a Simudo problem more slowly. 
+You can find it in :file:`simudo/example/jupyter/SimudoTutorial.ipynb`.

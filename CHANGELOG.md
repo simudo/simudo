@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.6.5.0] - 2022-01-29
+### Added
+- `fem.debug_probe` and `MeshUtil.get_debug_probe` to probe physical
+  quantities albeit inefficiently.
+- Add jupyter notebook with examples.
+- Update user docs with instructions for Docker on Windows and
+  Podman on GNU+Linux.
+
 ## [0.6.4.1] - 2020-12-14
 ### Changed
 - Use absolute imports in `fourlayer_example` to help out users who

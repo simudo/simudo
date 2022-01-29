@@ -3,7 +3,7 @@ set -e
 
 #rm -r doc/source/apidoc/
 pushd simudo
-python3 -m sphinx.apidoc -o ../doc/source/apidoc/ . memoize misc problemdata solution test trash
+python3 -m sphinx.ext.apidoc -o ../doc/source/apidoc/ . memoize misc problemdata solution test trash
 popd
 
 make -C doc html

@@ -1,0 +1,5 @@
+.. note:: The ``-e UPDATE_SIMUDO_FROM_PIP=y`` argument will
+   automatically run ``pip3 install --upgrade simudo`` as soon as you
+   start the container in order to update Simudo to the newest version
+   available on PyPI. If you don't want that, remove the
+   ``-e UPDATE...=y`` part.
