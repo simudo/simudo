@@ -104,12 +104,12 @@ class XCSVWriter(XCSVBase):
         dfc.to_csv(self.path, **to_csv_kwargs)
 
     def write_json_meta(self):
-        with open(self.json_path, 'wt') as h:
+        with open(self.json_path, 'wt', encoding='utf-8') as h:
             json.dump(self.meta, h, sort_keys=True, indent=2)
 
 class XCSVReader(XCSVBase):
     def load_json_meta(self):
-        with open(self.json_path, 'rt') as h:
+        with open(self.json_path, 'rt', encoding='utf-8') as h:
             return json.load(h)
 
     @cached_property

@@ -17,6 +17,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import datetime
+import importlib as _importlib
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
@@ -37,8 +38,30 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
+    'myst_parser',   # Markdown sources; pip install myst-parser
 #    'numpydoc',
 ]
+
+autodoc_mock_imports = []
+for name in ["panel", "param", "bokeh", "tornado"]:
+    try:
+        _importlib.import_module(name)
+    except Exception:
+        autodoc_mock_imports.append(name)
+
+# Generate anchors for headings up to level 3, so in-page links written as
+# Markdown (e.g. [Layers](#layers-panel)) resolve.
+myst_heading_anchors = 3
+
+# $...$ and $$...$$ maths in Markdown pages.
+myst_enable_extensions = ['dollarmath']
+
+# Render napoleon "Attributes" sections as :ivar: fields inside the class
+# description rather than as separate py:attribute objects.  Several classes
+# both describe an attribute in the docstring and define it on the class, and
+# autodoc then registers it twice -- which produced ~44 "duplicate object
+# description" warnings.
+napoleon_use_ivar = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -46,8 +69,7 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = {'.rst': 'restructuredtext', '.md': 'markdown'}
 
 # The encoding of source files.
 #
@@ -79,7 +101,7 @@ release = simudo_version + "~" + datetime.date.today().strftime("%Y-%m-%d")
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

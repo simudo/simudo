@@ -12,3 +12,5 @@ doc/build/
 build/
 dist/
 *.egg-info/
+temp/*
+simudo/gui/out/

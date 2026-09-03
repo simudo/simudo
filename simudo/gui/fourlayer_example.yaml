@@ -1,0 +1,270 @@
+layers:
+- name: fsf
+  thickness:
+    value: 0.05
+    unit: um
+  mesh:
+    start: 0.005
+    factor: 1.2
+  properties:
+    poisson/static_rho:
+      value: -1.0e+19
+      unit: elementary_charge/cm^3
+    opt_cv/alpha:
+      value: 0.0
+      unit: cm^-1
+- name: p
+  thickness:
+    value: 1.0
+    unit: um
+  mesh:
+    start: 0.005
+    factor: 1.2
+  properties:
+    poisson/static_rho:
+      value: -1.0e+17
+      unit: elementary_charge/cm^3
+- name: I
+  thickness:
+    value: 3.0
+    unit: um
+  mesh:
+    start: 0.005
+    factor: 1.2
+  properties:
+    poisson/static_rho:
+      value: 1.25e17
+      unit: elementary_charge/cm^3
+    nr_top/sigma_th:
+      value: 5.0e-18
+      unit: cm^2
+    nr_bottom/sigma_th:
+      value: 5.0e-18
+      unit: cm^2
+    opt_ci/sigma_opt:
+      value: 3.0e-14
+      unit: cm^2
+    opt_iv/sigma_opt:
+      value: 3.0e-14
+      unit: cm^2
+    IB/number_of_states:
+      value: 2.5e17
+      unit: cm^-3
+    IB/mobility0:
+      value: 500.0
+      unit: cm^2/V/s
+    IB/simple_mobility_model:
+      value: true
+      unit: ''
+    ib_cb_relax/IB/tau:
+      value: 1.0e-09
+      unit: s
+- name: n
+  thickness:
+    value: 1.0
+    unit: um
+  mesh:
+    start: 0.005
+    factor: 1.2
+  properties:
+    poisson/static_rho:
+      value: 1.0e17
+      unit: elementary_charge/cm^3
+regions:
+- name: domain
+  properties:
+    temperature:
+      value: 300.0
+      unit: K
+    CB/energy_level:
+      value: 2.0
+      unit: eV
+    VB/energy_level:
+      value: 0.0
+      unit: eV
+    IB/energy_level:
+      value: 1.2
+      unit: eV
+    CB/effective_density_of_states:
+      value: 2.0e19
+      unit: cm^-3
+    VB/effective_density_of_states:
+      value: 2.0e19
+      unit: cm^-3
+    CB/mobility:
+      value: 500.0
+      unit: cm^2/V/s
+    VB/mobility:
+      value: 500.0
+      unit: cm^2/V/s
+    poisson/permittivity:
+      value: 13.0
+      unit: vacuum_permittivity
+    IB/degeneracy:
+      value: 1
+      unit: ''
+    opt_cv/alpha:
+      value: 1.0e4
+      unit: cm^-1
+    CB/vth:
+      value: 2.0e7
+      unit: cm/s
+    VB/vth:
+      value: 2.0e7
+      unit: cm/s
+bands:
+- name: CB
+  type: nondegenerate
+  sign: -1
+  extent: all
+- name: IB
+  type: intermediate
+  sign: -1
+  extent:
+  - I
+- name: VB
+  type: nondegenerate
+  sign: 1
+  extent: all
+processes:
+- class: NonOverlappingTopHatBeerLambertIB
+  name: opt_ci
+  dst_band: CB
+  src_band: IB
+  trap_band: IB
+  radiative_recombination: true
+- class: NonOverlappingTopHatBeerLambertIB
+  name: opt_iv
+  dst_band: IB
+  src_band: VB
+  trap_band: IB
+  radiative_recombination: true
+- class: NonOverlappingTopHatBeerLambert
+  name: opt_cv
+  dst_band: CB
+  src_band: VB
+  radiative_recombination: true
+- class: NonRadiativeTrap
+  name: nr_top
+  dst_band: CB
+  src_band: IB
+  trap_band: IB
+- class: NonRadiativeTrap
+  name: nr_bottom
+  dst_band: IB
+  src_band: VB
+  trap_band: IB
+optical_fields:
+- name: forward_ci
+  direction: +x
+  photon_energy:
+    value: 0.8001
+    unit: eV
+  intensity:
+    mode: blackbody_band
+    T_source:
+      value: 6000.0
+      unit: K
+    concentration: 100
+    E_min:
+      value: 0.8
+      unit: eV
+    E_max:
+      value: 1.2
+      unit: eV
+- name: forward_iv
+  direction: +x
+  photon_energy:
+    value: 1.2001
+    unit: eV
+  intensity:
+    mode: blackbody_band
+    T_source:
+      value: 6000.0
+      unit: K
+    concentration: 100
+    E_min:
+      value: 1.2
+      unit: eV
+    E_max:
+      value: 2.0
+      unit: eV
+- name: forward_cv
+  direction: +x
+  photon_energy:
+    value: 2.0001
+    unit: eV
+  intensity:
+    mode: blackbody_band
+    T_source:
+      value: 6000.0
+      unit: K
+    concentration: 100
+    E_min:
+      value: 2.0
+      unit: eV
+    E_max: infinity
+contacts:
+  left:
+    role: swept
+    bands:
+      CB: zero_current
+      IB: ohmic
+      VB: ohmic
+  right:
+    role: reference
+    bands:
+      CB: ohmic
+      IB: ohmic
+      VB: zero_current
+simulation:
+  intensity_ramp:
+    enabled: true
+    selfconsistent_optics: true
+    step_size: 1.0e-25
+  voltage_sweep:
+    enabled: true
+    values:
+    - 0.0
+    - 0.068
+    - 0.136
+    - 0.204
+    - 0.272
+    - 0.34
+    - 0.408
+    - 0.476
+    - 0.544
+    - 0.612
+    - 0.68
+    - 0.748
+    - 0.816
+    - 0.884
+    - 0.952
+    - 1.02
+    - 1.088
+    - 1.156
+    - 1.224
+    - 1.292
+    - 1.36
+    - 1.428
+    - 1.496
+    - 1.564
+    - 1.632
+    - 1.7
+    selfconsistent_optics: true
+    step_size: 0.0001
+  output:
+    spatial_profiles: true
+    xdmf_mesh: true
+  checkpoints:
+    intensity_ramp:
+      checkpoint_at_end: true
+      at_values: []
+    voltage_sweep:
+      checkpoint_at_end: true
+      at_values: []
+    directory: checkpoints
+output:
+  folder: out/2026May12/a
+mesh:
+  max_edge_length: 0.02

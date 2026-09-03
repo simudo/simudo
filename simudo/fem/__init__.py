@@ -1,6 +1,6 @@
-
 from .adaptive_stepper import *
 from .assign import *
+from .compat import *
 from .debug_probe import *
 from .delayed_form import *
 from .dolfin_parameters import *
@@ -17,4 +17,3 @@ from .plot import *
 from .spatial import *
 from .sympy_dolfin_printer import *
 from .ufl_extra import *
-

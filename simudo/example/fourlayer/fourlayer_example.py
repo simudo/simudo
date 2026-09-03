@@ -40,6 +40,7 @@ import logging
 from simudo.util import blackbody
 from simudo.util import make_unit_registry
 from simudo.io import h5yaml
+import yaml
 import warnings
 import multiprocessing
 import traceback
@@ -107,6 +108,12 @@ simudoparams = {
     "mesh_factor"       : 1.2,      # geometric growth factor
     "mesh_max"          : 0.02,     # largest mesh segment, in um
     "V_exts"            : V_exts,   # list of voltages at which to calculate
+    "mumps_icntl"       : (),       # Tuple of ((key1,val1),(key2,val2),...) to set MUMPS control parameters        
+    # "opt_success_factor": 3,        # Factor for increasing step size on successful Newton iteration in optical stepper (3)
+    # "opt_fail_factor"   : 0.2,      # Factor for decreasing step size on failed Newton iteration in optical stepper (0.2)
+    # "V_success_factor"  : 1.5,      # Factor for increasing step size on successful Newton iteration in V stepper (1.5)
+    # "V_fail_factor"     : 0.5,      # Factor for decreasing step size on failed Newton iteration in V stepper (0.5)
+    "find_unconverged"  : False     # Extra output in logs at failed Newton steps about which parameters failed to converge
 }
 
 analysisparams = {
@@ -162,12 +169,7 @@ def optimizer(submitfile):
     # Run one more time, since the last val run by the optimizer may not have been at the optimal point
     tobeoptimized(val_opt, curparams)
 
-    # Save output. Doing this for each run so data is saved even if not all runs complete
-    single_run_output = {curparams["optimize_key"]: val_opt, "eff": -eff}
-    h5yaml.dump(
-        single_run_output,
-        str(curparams["experiment_folder"] / "optimizer_summary.yaml"),
-    )
+    logging_shutdown()
     return val_opt, -eff
 
 
@@ -182,6 +184,28 @@ def tobeoptimized(val, params):
     logging.getLogger("main").info(
         (params["optimize_key"] + ": {} , eff: {}").format(val, eff)
     )
+
+    # Save output for each iteration to make reconstruction possible.
+    # single_run_output = {curparams["optimize_key"]: val_opt, "eff": -eff}
+    optimizer_filename = curparams["experiment_folder"] / "optimizer_summary.yaml"
+    #Read in any previous results so we can append the new results to them
+    try:
+        with open(optimizer_filename,'rt') as stream:
+            optimizer_summary = yaml.safe_load(stream)
+        optimizer_summary[curparams["optimize_key"]].append(val)
+        optimizer_summary["eff"].append(-eff)
+        optimizer_summary["time"].append(datetime.now())
+    except FileNotFoundError:
+        optimizer_summary = {
+            curparams["optimize_key"]: [val],
+            "eff": [-eff],
+            "time": [datetime.now()],
+            }
+    with open(optimizer_filename,'wt') as stream:
+        h5yaml.dump(
+            optimizer_summary,
+            stream,
+        )
 
     return -eff
 
@@ -270,12 +294,12 @@ def simudo_multiplexer(params):
                     continue  # We already did this run, so don't run it again. Just do postprocessing
                 if params["multiprocess"]:
                     pool.apply_async(
-                        run,
+                        run_and_shutdown_logging,
                         (submitfile,),
                         error_callback=multiprocess_error_callback,
                     )
                 else:
-                    run(submitfile)
+                    run_and_shutdown_logging(submitfile)                    
                 print(str(datetime.now()) + ": finished " + str(submitfile))
 
     if params["multiprocess"]:
@@ -325,6 +349,25 @@ def simudo_multiplexer(params):
 
     return
 
+
+def logging_shutdown():
+    #When multiprocessing, each process only starts its own log if there is 
+    # no log already set up. To make the info.log appear in the proper places, 
+    # need to shut down logging after each run finishes. 
+    print("Shutting down logs")
+    log = logging.getLogger()
+    #Need to remove the handlers twice to get them really removed.
+    for h in log.handlers:
+        log.removeHandler(h)
+        h.close()
+    for h in log.handlers:
+        log.removeHandler(h)
+        h.close()
+    logging.shutdown()
+    
+def run_and_shutdown_logging(submitfile):
+    run(submitfile)
+    logging_shutdown()
 
 def efficiency_analysis(submitfile):
     # Efficiency analysis.

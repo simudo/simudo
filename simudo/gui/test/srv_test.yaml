@@ -1,0 +1,107 @@
+# Minimal test for surface_recombination (Robin) boundary condition.
+# Uses a simple pn junction with inline GaAs-like material properties
+# (no library dependency).  Applies SRV on one band at each contact
+# instead of zero_current, to exercise the new code path.
+# Runs thermal equilibrium + a single V=0 step only.
+layers:
+- name: p
+  thickness:
+    value: 0.25
+    unit: um
+  mesh:
+    start: 0.005
+    factor: 1.2
+  properties:
+    poisson/static_rho:
+      value: -1.0e+17
+      unit: cm^-3
+- name: n
+  thickness:
+    value: 0.25
+    unit: um
+  mesh:
+    start: 0.005
+    factor: 1.2
+  properties:
+    poisson/static_rho:
+      value: 1.0e+17
+      unit: cm^-3
+regions:
+- name: domain
+  properties:
+    temperature:
+      value: 300.0
+      unit: K
+    CB/energy_level:
+      value: 1.12
+      unit: eV
+    VB/energy_level:
+      value: 0.0
+      unit: eV
+    CB/effective_density_of_states:
+      value: 4.7e17
+      unit: cm^-3
+    VB/effective_density_of_states:
+      value: 7.0e18
+      unit: cm^-3
+    CB/mobility:
+      value: 8500.0
+      unit: cm^2/V/s
+    VB/mobility:
+      value: 400.0
+      unit: cm^2/V/s
+    poisson/permittivity:
+      value: 12.9
+      unit: vacuum_permittivity
+bands:
+- name: CB
+  type: nondegenerate
+  sign: -1
+  extent: all
+- name: VB
+  type: nondegenerate
+  sign: 1
+  extent: all
+contacts:
+  left:
+    role: swept
+    bands:
+      CB:
+        type: surface_recombination
+        srv:
+          value: 1.0e4
+          unit: cm/s
+      VB: ohmic
+  right:
+    role: reference
+    bands:
+      CB: ohmic
+      VB:
+        type: surface_recombination
+        srv:
+          value: 1.0e4
+          unit: cm/s
+simulation:
+  intensity_ramp:
+    enabled: false
+    selfconsistent_optics: false
+  voltage_sweep:
+    enabled: true
+    values:
+    - 0.0
+    selfconsistent_optics: false
+  output:
+    spatial_profiles: false
+    xdmf_mesh: false
+  checkpoints:
+    intensity_ramp:
+      checkpoint_at_end: false
+      at_values: []
+    voltage_sweep:
+      checkpoint_at_end: false
+      at_values: []
+    directory: checkpoints
+output:
+  folder: out/srv_test
+mesh:
+  max_edge_length: 0.05

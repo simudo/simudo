@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Overlay Region UI Options</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 6px; font-size: 18px; color: #aaa; }
+  .subtitle { text-align: center; margin-bottom: 24px; font-size: 13px; color: #666; }
+
+  .options { display: flex; gap: 20px; align-items: flex-start; }
+  .option { flex: 1; }
+  .option-label { text-align: center; font-size: 13px; font-weight: 600;
+                  color: #7eb8f7; margin-bottom: 8px; letter-spacing: 0.5px; }
+  .option-desc { text-align: center; font-size: 11px; color: #666;
+                 margin-top: 6px; line-height: 1.5; }
+
+  /* ── shared chrome ── */
+  .app { border: 1px solid #444; border-radius: 6px; overflow: hidden;
+         background: #1e1e2e; }
+  .header { background: #16213e; padding: 7px 12px; display: flex;
+            align-items: center; gap: 10px; border-bottom: 1px solid #333; }
+  .header .logo { font-size: 12px; font-weight: 700; color: #7eb8f7; }
+  .header .project-path { font-size: 11px; color: #888; flex: 1; }
+  .header .btn { font-size: 11px; background: #2a2a4a; border: 1px solid #555;
+                 color: #ccc; padding: 3px 8px; border-radius: 3px; }
+  .header .btn.primary { background: #2d5a8e; border-color: #4a8fcc; color: #fff; }
+
+  .body { display: flex; height: 420px; }
+
+  /* sidebar */
+  .sidebar { width: 120px; background: #16213e; border-right: 1px solid #333;
+             padding: 6px 0; flex-shrink: 0; }
+  .nav-item { padding: 6px 12px; font-size: 11px; color: #aaa; cursor: pointer;
+              border-left: 3px solid transparent; }
+  .nav-item:hover { background: #1e2d4a; color: #ddd; }
+  .nav-item.active { background: #1e2d4a; color: #7eb8f7; border-left-color: #7eb8f7; }
+  .nav-item.overlay-nav { color: #f0c060; }
+  .nav-item.overlay-nav.active { color: #f0c060; border-left-color: #f0c060; }
+  .nav-divider { border-top: 1px solid #333; margin: 4px 0; }
+
+  /* main panel */
+  .main { flex: 1; overflow-y: auto; padding: 12px; }
+  .panel-title { font-size: 12px; color: #888; text-transform: uppercase;
+                 letter-spacing: 0.8px; margin-bottom: 10px; }
+
+  /* schematic */
+  .schematic { display: flex; align-items: stretch; height: 36px;
+               margin-bottom: 10px; gap: 0; }
+  .contact-marker { width: 18px; background: #2a2a2a; border: 2px solid #7eb8f7;
+                    border-radius: 3px; display: flex; align-items: center;
+                    justify-content: center; font-size: 8px; color: #7eb8f7;
+                    cursor: pointer; flex-shrink: 0; }
+  .contact-marker:hover { background: #1e2d4a; }
+  .layer-block { flex: 1; display: flex; align-items: center; justify-content: center;
+                 font-size: 9px; font-weight: 600; position: relative; }
+  .layer-block.fsf { background: #5a3d2d; border: 1px solid #aa6a4a; color: #f0b89a; flex: 0.2; }
+  .layer-block.p   { background: #2d3f6e; border: 1px solid #4a6aaa; color: #9ab8f0; flex: 1; }
+  .layer-block.I   { background: #3d2d6e; border: 1px solid #7a4aaa; color: #b89af0; flex: 3; }
+  .layer-block.n   { background: #2d5a3d; border: 1px solid #4aaa6a; color: #9af0b8; flex: 1; }
+  .interface { width: 6px; background: transparent; cursor: pointer;
+               display: flex; align-items: center; justify-content: center;
+               flex-shrink: 0; position: relative; z-index: 2; }
+  .interface::after { content: ''; display: block; width: 2px; height: 100%;
+                      background: #555; transition: background 0.15s; }
+  .interface:hover::after { background: #f0c060; }
+  .interface.clickable-hint::after { background: #f0c060; }
+
+  /* overlay highlight on schematic */
+  .overlay-span { position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+                  background: rgba(240,192,96,0.18); border: 2px dashed #f0c060;
+                  border-radius: 2px; pointer-events: none; }
+
+  /* layer table */
+  .layer-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  .layer-table th { font-size: 10px; color: #666; text-align: left;
+                    padding: 3px 6px; border-bottom: 1px solid #333; }
+  .layer-table td { font-size: 11px; padding: 4px 6px; border-bottom: 1px solid #2a2a3a; }
+  .layer-table tr:hover td { background: #222238; }
+  .drag-handle { color: #555; cursor: grab; margin-right: 4px; }
+  .color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+               margin-right: 5px; vertical-align: middle; }
+  .dot-fsf { background: #aa6a4a; }
+  .dot-p   { background: #4a6aaa; }
+  .dot-I   { background: #7a4aaa; }
+  .dot-n   { background: #4aaa6a; }
+  .add-layer-btn { font-size: 11px; color: #7eb8f7; background: none; border: 1px dashed #3a5a7a;
+                   border-radius: 3px; padding: 4px 10px; cursor: pointer; width: 100%;
+                   margin-bottom: 10px; }
+  .add-layer-btn:hover { background: #1e2d4a; }
+
+  /* overlay section (options A and B) */
+  .section-header { display: flex; justify-content: space-between; align-items: center;
+                    margin-bottom: 6px; }
+  .section-title { font-size: 11px; color: #888; text-transform: uppercase;
+                   letter-spacing: 0.7px; }
+  .add-btn { font-size: 10px; color: #f0c060; background: none;
+             border: 1px solid #7a6030; border-radius: 3px; padding: 2px 7px; cursor: pointer; }
+  .add-btn:hover { background: #3a2a10; }
+
+  .overlay-item { background: #252530; border: 1px solid #3a3a50; border-radius: 4px;
+                  padding: 7px 9px; margin-bottom: 5px; }
+  .overlay-item .ov-header { display: flex; justify-content: space-between;
+                              align-items: center; margin-bottom: 4px; }
+  .overlay-item .ov-name { font-size: 12px; color: #f0c060; font-weight: 600; }
+  .overlay-item .ov-extent { font-size: 10px; color: #888; }
+  .overlay-item .ov-prop { font-size: 10px; color: #aaa; margin-top: 2px; }
+  .overlay-item .ov-prop span { color: #7eb8f7; }
+  .delete-btn { font-size: 10px; color: #666; cursor: pointer; }
+  .delete-btn:hover { color: #e06060; }
+
+  .divider-line { border-top: 1px solid #333; margin: 10px 0; }
+
+  /* Option C: schematic-click tooltip */
+  .schematic-wrapper { position: relative; }
+  .click-tooltip { position: absolute; top: -28px; left: 30%; transform: translateX(-50%);
+                   background: #f0c060; color: #1a1a00; font-size: 10px; font-weight: 600;
+                   padding: 3px 8px; border-radius: 3px; white-space: nowrap; }
+  .click-tooltip::after { content: '▼'; position: absolute; bottom: -10px; left: 50%;
+                          transform: translateX(-50%); font-size: 8px; color: #f0c060; }
+  .popup { background: #252540; border: 1px solid #f0c060; border-radius: 4px;
+           padding: 8px; margin-top: 8px; font-size: 11px; }
+  .popup-title { font-size: 11px; color: #f0c060; font-weight: 600; margin-bottom: 6px; }
+  .popup-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .popup-label { font-size: 10px; color: #888; width: 60px; flex-shrink: 0; }
+  .popup-val { font-size: 11px; color: #ccc; background: #1e1e2e; border: 1px solid #444;
+               border-radius: 3px; padding: 2px 6px; flex: 1; }
+  .popup-actions { display: flex; gap: 5px; margin-top: 6px; justify-content: flex-end; }
+  .popup-btn { font-size: 10px; padding: 3px 8px; border-radius: 3px; cursor: pointer; }
+  .popup-btn.ok { background: #2d5a8e; border: 1px solid #4a8fcc; color: #fff; }
+  .popup-btn.cancel { background: #2a2a4a; border: 1px solid #555; color: #ccc; }
+
+  /* collapsed section */
+  .collapsible { cursor: pointer; }
+  .collapsible::before { content: '▶ '; font-size: 9px; color: #666; }
+  .collapsible.open::before { content: '▼ '; }
+</style>
+</head>
+<body>
+
+<h1>Overlay Regions — Three Placement Options</h1>
+<p class="subtitle">Where and how the user accesses overlay region definition.</p>
+
+<div class="options">
+
+  <!-- ═══════════════════════════════════════════════════════ OPTION A -->
+  <div class="option">
+    <div class="option-label">A — Separate sidebar section</div>
+    <div class="app">
+      <div class="header">
+        <span class="logo">Simudo</span>
+        <span class="project-path">fourlayer_example.yaml</span>
+        <button class="btn primary">Save</button>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-item active">Layers</div>
+          <div class="nav-item">Materials</div>
+          <div class="nav-item">Bands</div>
+          <div class="nav-item">Processes</div>
+          <div class="nav-item">Opt. Fields</div>
+          <div class="nav-item">Contacts</div>
+          <div class="nav-divider"></div>
+          <div class="nav-item overlay-nav">Overlays</div>
+          <div class="nav-divider"></div>
+          <div class="nav-item">Simulation</div>
+          <div class="nav-item">Output</div>
+        </div>
+        <div class="main">
+          <div class="panel-title">Layer Stack</div>
+          <div class="schematic">
+            <div class="contact-marker" title="Left contact">●</div>
+            <div class="layer-block fsf">FSF</div>
+            <div class="interface"></div>
+            <div class="layer-block p">p</div>
+            <div class="interface"></div>
+            <div class="layer-block I">I (IB)</div>
+            <div class="interface"></div>
+            <div class="layer-block n">n</div>
+            <div class="contact-marker" title="Right contact">●</div>
+          </div>
+          <table class="layer-table">
+            <tr><th></th><th>Name</th><th>Thickness</th><th>Material</th><th></th></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-fsf"></span>fsf</td><td>0.05 µm</td><td>fsf</td><td class="delete-btn">✕</td></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-p"></span>p</td><td>1.0 µm</td><td>semiconductor</td><td class="delete-btn">✕</td></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-I"></span>I</td><td>3.0 µm</td><td>IB_semiconductor</td><td class="delete-btn">✕</td></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-n"></span>n</td><td>1.0 µm</td><td>semiconductor</td><td class="delete-btn">✕</td></tr>
+          </table>
+          <button class="add-layer-btn">+ Add layer</button>
+          <div style="font-size:11px;color:#555;font-style:italic">
+            Overlay regions are in the "Overlays" sidebar section →
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="option-desc">Overlays live in their own nav section.<br>
+      Clean layers panel, but overlays feel disconnected<br>from the layer stack they modify.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ OPTION B -->
+  <div class="option">
+    <div class="option-label">B — Below the layer table (same panel)</div>
+    <div class="app">
+      <div class="header">
+        <span class="logo">Simudo</span>
+        <span class="project-path">fourlayer_example.yaml</span>
+        <button class="btn primary">Save</button>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-item active">Layers</div>
+          <div class="nav-item">Materials</div>
+          <div class="nav-item">Bands</div>
+          <div class="nav-item">Processes</div>
+          <div class="nav-item">Opt. Fields</div>
+          <div class="nav-item">Contacts</div>
+          <div class="nav-divider"></div>
+          <div class="nav-item">Simulation</div>
+          <div class="nav-item">Output</div>
+        </div>
+        <div class="main">
+          <div class="panel-title">Layer Stack</div>
+          <div class="schematic">
+            <div class="contact-marker">●</div>
+            <div class="layer-block fsf">FSF</div>
+            <div class="interface"></div>
+            <div class="layer-block p" style="position:relative">p
+              <div class="overlay-span" style="left:80%;right:-60px;border-left:none;border-radius:0 2px 2px 0"></div>
+            </div>
+            <div class="interface"></div>
+            <div class="layer-block I" style="position:relative">I (IB)
+              <div class="overlay-span" style="right:70%;left:-14px;border-right:none;border-radius:2px 0 0 2px"></div>
+            </div>
+            <div class="interface"></div>
+            <div class="layer-block n">n</div>
+            <div class="contact-marker">●</div>
+          </div>
+
+          <table class="layer-table">
+            <tr><th></th><th>Name</th><th>Thickness</th><th>Material</th><th></th></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-fsf"></span>fsf</td><td>0.05 µm</td><td>fsf</td><td class="delete-btn">✕</td></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-p"></span>p</td><td>1.0 µm</td><td>semiconductor</td><td class="delete-btn">✕</td></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-I"></span>I</td><td>3.0 µm</td><td>IB_semiconductor</td><td class="delete-btn">✕</td></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-n"></span>n</td><td>1.0 µm</td><td>semiconductor</td><td class="delete-btn">✕</td></tr>
+          </table>
+          <button class="add-layer-btn">+ Add layer</button>
+
+          <div class="divider-line"></div>
+
+          <div class="section-header">
+            <span class="section-title collapsible open">Overlay Regions</span>
+            <button class="add-btn">+ Add overlay</button>
+          </div>
+
+          <div class="overlay-item">
+            <div class="ov-header">
+              <span class="ov-name">pI_degraded</span>
+              <span class="delete-btn">✕</span>
+            </div>
+            <div class="ov-extent">Layers: p, I</div>
+            <div class="ov-prop"><span>SRH/CB/tau</span>: 1.0×10⁻¹² s</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="option-desc">Overlays sit below the layer table in the same panel.<br>
+      Visually close to what they modify; schematic<br>can hint at overlay extents with dashed outlines.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ OPTION C -->
+  <div class="option">
+    <div class="option-label">C — Click interface in schematic to create overlay</div>
+    <div class="app">
+      <div class="header">
+        <span class="logo">Simudo</span>
+        <span class="project-path">fourlayer_example.yaml</span>
+        <button class="btn primary">Save</button>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-item active">Layers</div>
+          <div class="nav-item">Materials</div>
+          <div class="nav-item">Bands</div>
+          <div class="nav-item">Processes</div>
+          <div class="nav-item">Opt. Fields</div>
+          <div class="nav-item">Contacts</div>
+          <div class="nav-divider"></div>
+          <div class="nav-item">Simulation</div>
+          <div class="nav-item">Output</div>
+        </div>
+        <div class="main">
+          <div class="panel-title">Layer Stack</div>
+
+          <div class="schematic-wrapper">
+            <div class="click-tooltip">Click to add overlay spanning p / I</div>
+            <div class="schematic">
+              <div class="contact-marker">●</div>
+              <div class="layer-block fsf">FSF</div>
+              <div class="interface"></div>
+              <div class="layer-block p" style="position:relative">p
+                <div class="overlay-span" style="left:80%;right:-8px;border-left:none;border-right:none;border-radius:0"></div>
+              </div>
+              <div class="interface clickable-hint" title="Click to add overlay here"></div>
+              <div class="layer-block I" style="position:relative">I (IB)
+                <div class="overlay-span" style="right:70%;left:-8px;border-right:none;border-left:none;border-radius:0"></div>
+              </div>
+              <div class="interface"></div>
+              <div class="layer-block n">n</div>
+              <div class="contact-marker">●</div>
+            </div>
+          </div>
+
+          <table class="layer-table">
+            <tr><th></th><th>Name</th><th>Thickness</th><th>Material</th><th></th></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-fsf"></span>fsf</td><td>0.05 µm</td><td>fsf</td><td class="delete-btn">✕</td></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-p"></span>p</td><td>1.0 µm</td><td>semiconductor</td><td class="delete-btn">✕</td></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-I"></span>I</td><td>3.0 µm</td><td>IB_semiconductor</td><td class="delete-btn">✕</td></tr>
+            <tr><td><span class="drag-handle">⠿</span></td><td><span class="color-dot dot-n"></span>n</td><td>1.0 µm</td><td>semiconductor</td><td class="delete-btn">✕</td></tr>
+          </table>
+          <button class="add-layer-btn">+ Add layer</button>
+
+          <!-- popup that appears after clicking the interface -->
+          <div class="popup">
+            <div class="popup-title">New Overlay Region — spanning p / I</div>
+            <div class="popup-row">
+              <span class="popup-label">Name</span>
+              <span class="popup-val">pI_degraded</span>
+            </div>
+            <div class="popup-row">
+              <span class="popup-label">Covers</span>
+              <span class="popup-val">p, I</span>
+            </div>
+            <div class="popup-actions">
+              <button class="popup-btn cancel">Cancel</button>
+              <button class="popup-btn ok">Create →</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <p class="option-desc">Clicking a highlighted interface divider opens a popup<br>
+      to create an overlay spanning the adjacent layers.<br>
+      Most discoverable but hardest to implement; overlays<br>spanning 3+ layers need a different entry point.</p>
+  </div>
+
+</div>
+</body>
+</html>

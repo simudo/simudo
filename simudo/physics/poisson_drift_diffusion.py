@@ -149,8 +149,7 @@ band\_type: str or class or None
     defined below:
 
     - "nondegenerate", "boltzmann" -> :py:class:`MixedQflNondegenerateBand`
-    - "degenerate", "parabolic" -> :py:class:`MixedQflDegenerateBand`
-      (not implemented yet)
+    - "degenerate", "parabolic", "fermi" -> :py:class:`MixedQflDegenerateBand`
     - "intermediate", "sharp" -> :py:class:`MixedQflIntermediateBand`
 
     If `None`, the type will be deduced from the band name:
@@ -198,9 +197,8 @@ band: :py:class:`Band`
         # resolve string cls to class
         if cls == "nondegenerate" or cls == "boltzmann":
             cls = MixedQflNondegenerateBand
-        elif cls == "degenerate" or cls == "parabolic":
-            raise NotImplementedError(
-                "degenerate parabolic bands not implemented yet")
+        elif cls == "degenerate" or cls == "parabolic" or cls == "fermi":
+            cls = MixedQflDegenerateBand
         elif cls == "intermediate" or cls == "sharp":
             cls = MixedQflIntermediateBand
 
@@ -282,13 +280,14 @@ band: :py:class:`Band`
     def easy_auto_pre_solve(self, parameters=None):
         solver = self.easy_create_newton_solver()
         if parameters is not None:
-            solver.parameters.update(parameters)
+            solver.parameters.update(parameters)        
         name = self.problem_data.goal_abbreviated
         solver.logger = logging.getLogger("newton." + name)
 
         tol_func = self.mixed_function_helper.make_tolerance_function()
         solver.parameters.update(
-             absolute_tolerance_vector=tol_func.function.vector()[:]
+             absolute_tolerance_vector=tol_func.function.vector()[:],
+             mumps_icntl = self.mumps_icntl if hasattr(self,'mumps_icntl') else () 
         )
 
         solver.solve()
@@ -506,6 +505,10 @@ mobility:
 subdomain:
     Region name on which the band exists.
 '''
+    is_degenerate_band = False # Initialize attribute for all bands. Overwrite for degenerate bands
+    # Whether this band is a trap band rather than a dispersing band. 
+    # Deliberately None here: concrete band classes must answer True or False
+    is_trap_band = None
     @property
     def name(self):
         return self.key
@@ -537,8 +540,26 @@ subdomain:
 
     @property
     def g(self):
-        return sum(proc.get_generation(self) for proc in
+
+        U = self.pdd.unit_registry
+
+        generation = sum(proc.get_generation(self) for proc in
                    self.pdd.electro_optical_processes)
+        
+        if not hasattr(generation, "units") and generation == 0:
+            # no defined generation process, should give a properly dimensioned zero
+            generation = U("0 cm^-3 s^-1")
+        elif not hasattr(generation, "units") and generation != 0:
+            Warning(
+                "Generation should have [length]^-3*[time]^-1, but the generation term does not have dimension, and is non-zero"
+            )
+        
+        if generation.check("[length]^-1 * [time]^-1"):
+            Warning(
+                f"Generation should have [length]^-3*[time]^-1, but the generation term has {generation.units}"
+            )
+
+        return generation
 
 class NondegenerateBand(pyaml_pdd.NondegenerateBand, Band):
     r'''This represents a nondegenerate band obeying Boltzmann
@@ -574,6 +595,7 @@ energy_level:
     Band effective energy level. By default taken from
     :py:attr:`~PoissonDriftDiffusion.spatial`.
 '''
+    is_trap_band = False
 
     @property
     def effective_energy_level(self):
@@ -635,8 +657,9 @@ effective_energy_level:
     @property
     def effective_energy_level(self):
         mu = self.mesh_util
+        #Add small offset so degeneracy==0 doesn't give nans
         return (self.energy_level - self.sign * self.pdd.kT *
-                mu.ln(self.degeneracy))
+                mu.ln(self.degeneracy + 1e-20)) 
 
 class IntermediateBand(DegeneracyMixin, pyaml_pdd.IntermediateBand, Band):
     r'''This represents an intermediate band with an energetically
@@ -683,6 +706,48 @@ use_constant_mobility: bool
     on the mobility. (default: False)
 '''
     use_constant_mobility = False
+    is_degenerate_band = True
+    is_trap_band = True
+
+class DegenerateBand(DegeneracyMixin, pyaml_pdd.DegenerateBand, Band):
+    r'''This represents a degenerate band obeying Fermi-Dirac
+statistics, with an effective density of states
+:py:attr:`effective_density_of_states` (:math:`N`) at an energy
+level :py:attr:`energy_level` (:math:`E_0`).
+This is assuming parabolic band.
+See Daisy's notes 20220504 and 20220505.
+
+For non-parabolic band, one needs to change the phiqfl2u and u2phiqfl approximation's coefficients.
+See Joyce+Dixon1977.
+
+The defining relationship is
+
+.. math::
+   
+   u = N * \frac{K_n}{N}\int \frac{(s(E-E_0))^{1/2} \textrm{d}E}{e^{s(E-w-phi)/kT} + 1}
+
+where
+
+- :code:`s` is :py:attr:`Band.sign`,
+
+- :code:`w` is :py:attr:`Band.qfl`,
+
+- :code:`kT` is :py:attr:`PoissonDriftDiffusion.kT`,
+
+- :math:`\phi` is :py:attr:`Poisson.phi`.
+
+Attributes
+----------
+effective_density_of_states:
+    Band effective density of states. By default taken from
+    :py:attr:`~PoissonDriftDiffusion.spatial`.
+energy_level:
+    Band effective energy level. By default taken from
+    :py:attr:`~PoissonDriftDiffusion.spatial`.
+'''
+    is_degenerate_band = True
+    is_trap_band = False
+    pass
 
 class MixedQflBandMixin(pyaml_pdd.MixedQflBand):
     '''Mixed method for the drift-diffusion and continuity equations
@@ -701,6 +766,10 @@ variables.
 
     @cached_property
     def mixedqfl_drift_diffusion_heterojunction_bc_term(self):
+        return DelayedForm()
+
+    @cached_property
+    def mixedqfl_surface_recombination_term(self):
         return DelayedForm()
 
     @cached_property
@@ -755,6 +824,10 @@ class MixedQflIntermediateBand(
         MixedQflBandMixin, IntermediateBand):
     _base_band_class = IntermediateBand
 
+class MixedQflDegenerateBand(
+        InitializeFromByAttributesMixin,
+        MixedQflBandMixin, DegenerateBand):
+    _base_band_class = DegenerateBand
 
 class MixedDensityBandMixin(pyaml_pdd.MixedDensityBand):
     '''**DO NOT USE THIS!**

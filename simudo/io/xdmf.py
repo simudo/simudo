@@ -15,6 +15,8 @@ import dolfin
 
 from ..fem import force_ufl
 from ..util import generate_base32_token
+from . import h5yaml
+import logging
 
 
 def magnitude(x):
@@ -24,11 +26,21 @@ class PlotAddMixin(object):
     def add(self, name, units, expr, space=None, subdomain=None):
         fsr = self.function_subspace_registry
 
+        if hasattr(expr,"geometry"):
+            #expr is actually a mesh
+            self._add_func(expr)
+            return
+
         if space is None:
             try:
                 space = fsr.get_function_space(magnitude(expr), new=True)
             except:
                 pass
+
+        try:
+            space_name = space.name
+        except AttributeError:
+            space_name = None
 
         e = (expr/units)
         if hasattr(e, 'm_as'):
@@ -40,9 +52,13 @@ class PlotAddMixin(object):
         # except: # output a warning or something
 
         e = force_ufl(e)
-        func = dolfin.project(e, space)
-        func.rename(name, name)
-        self._add_func(func)
+        try:
+            func = dolfin.project(e, space)
+            func.rename(name, name)
+            self._add_func(func, space_name)
+        except RuntimeError:
+            logging.info("xdmf PlotAddMixin could not add integral {} with value {}, units {}".format(name,e, units))
+            pass
 
 class XdmfPlot(PlotAddMixin):
     timestamp = 0.0
@@ -53,14 +69,25 @@ class XdmfPlot(PlotAddMixin):
         self.xdmf_file = dolfin.XDMFFile(dolfin.MPI.comm_world, filename)
         self.xdmf_file.parameters['rewrite_function_mesh'] = False
         self.xdmf_file.parameters['functions_share_mesh'] = True
+        self.metadata_filename = os.path.splitext(filename)[0] + "_func_names.yaml"
+        self.funcs_plotted = {"funcs": []}
 
-    def _add_func(self, func):
-        if self.checkpoint:
+    def _add_func(self, func, space_name = None):
+        if hasattr(func,"geometry"):
+            #func is actuallly a mesh
+            self.xdmf_file.write(func)
+        elif self.checkpoint:
             # write_checkpoint() is needed to
             # properly visualize discontinuous datasets and datasets of degree>1.
-            self.xdmf_file.write_checkpoint(func, func.name(), 0., append=True)
+            self.xdmf_file.write_checkpoint(func, func.name(), 0., append=True)            
+            self.funcs_plotted["funcs"].append( func.name())
+            if space_name:
+                self.funcs_plotted[func.name()] = space_name 
         else:
             self.xdmf_file.write(func, 0.)
+            self.funcs_plotted["funcs"].append( func.name())
+            if space_name:
+                self.funcs_plotted[func.name()] = space_name 
 
     def _add_meshfunction(self, name, meshfunction):
         self.xdmf_file.write(meshfunction)

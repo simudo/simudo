@@ -7,7 +7,7 @@ import dolfin
 
 from .. import pyaml
 from ..util import SetattrInitMixin
-from .debug_probe import DebugProbe
+from .debug_probe import DebugProbe, DebugFacetProbe
 from .delayed_form import DelayedForm
 from .expr import CellFunctionFunction
 from .function_space_cache import FunctionSpaceCache
@@ -266,3 +266,6 @@ measures: tuple of :py:class:`.expr.DelayedForm`
         if isinstance(space, str):
             space = getattr(self.space, space)
         return DebugProbe(quantity, space, self.mesh_unit)
+
+    def get_debug_facet_probe(self, quantity, boundary):
+        return DebugFacetProbe(quantity, boundary, self, self.mesh_unit)

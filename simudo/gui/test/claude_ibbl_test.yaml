@@ -1,0 +1,144 @@
+# Minimal IBBeerLambert convergence test.
+# p-I-n stack; IB confined to I region; one IBBeerLambert IB->CB process
+# (no radiative recombination); NonRadiativeTrap CB<->IB and IB<->VB to
+# lift the IB continuity null space (no ShockleyReadBand2BandTrap).
+# Single optical bin above the 0.8 eV IB->CB threshold.
+
+layers:
+- name: p
+  thickness: {value: 1.0, unit: um}
+  mesh: {start: 0.005, factor: 1.2}
+  properties:
+    poisson/static_rho: {value: -1.0e+17, unit: elementary_charge/cm^3}
+- name: I
+  thickness: {value: 3.0, unit: um}
+  mesh: {start: 0.005, factor: 1.2}
+  properties:
+    poisson/static_rho: {value: 1.25e17, unit: elementary_charge/cm^3}
+    nr_top/sigma_th: {value: 5.0e-18, unit: cm^2}
+    nr_top/v_th:     {value: 2.0e7,   unit: cm/s}
+    nr_bottom/sigma_th: {value: 5.0e-18, unit: cm^2}
+    nr_bottom/v_th:     {value: 2.0e7,   unit: cm/s}
+    IB/number_of_states: {value: 2.5e17, unit: cm^-3}
+    IB/mobility0:        {value: 500.0,  unit: cm^2/V/s}
+    IB/simple_mobility_model: {value: true, unit: ''}
+- name: n
+  thickness: {value: 1.0, unit: um}
+  mesh: {start: 0.005, factor: 1.2}
+  properties:
+    poisson/static_rho: {value: 1.0e17, unit: elementary_charge/cm^3}
+
+regions:
+- name: domain
+  properties:
+    temperature: {value: 300.0, unit: K}
+    CB/energy_level: {value: 2.0, unit: eV}
+    VB/energy_level: {value: 0.0, unit: eV}
+    IB/energy_level: {value: 1.2, unit: eV}
+    CB/effective_density_of_states: {value: 2.0e19, unit: cm^-3}
+    VB/effective_density_of_states: {value: 2.0e19, unit: cm^-3}
+    CB/mobility: {value: 500.0, unit: cm^2/V/s}
+    VB/mobility: {value: 500.0, unit: cm^2/V/s}
+    poisson/permittivity: {value: 13.0, unit: vacuum_permittivity}
+    IB/degeneracy: {value: 1, unit: ''}
+    refractive_index: {value: 3.5, unit: ''}
+
+bands:
+- name: CB
+  type: nondegenerate
+  sign: -1
+  extent: all
+- name: IB
+  type: intermediate
+  sign: -1
+  extent: [I]
+- name: VB
+  type: nondegenerate
+  sign: 1
+  extent: all
+
+processes:
+# IB -> CB optical absorption. sigma top-hat from 0.8 eV to +inf.
+- class: IBBeerLambert
+  name: opt_ci
+  dst_band: CB
+  src_band: IB
+  trap_band: IB
+  radiative_recombination:
+    integration_bins: 50
+    E_min: {value: 0.8, unit: eV}
+    E_max: {value: 4.0, unit: eV}
+  sigma:
+    I:
+      top_hat:
+        E_low:  {value: 0.8,  unit: eV}
+        E_high: {value: .inf, unit: eV}
+        value:  3.0e-14
+        unit:   cm^2
+
+# Non-radiative traps. These lift the IB continuity null space because
+# their rates depend on u_CB / u_VB (asymmetric Jacobian contributions
+# to the IB row), unlike a two-band ShockleyReadBand2BandTrap.
+- class: NonRadiativeTrap
+  name: nr_top
+  dst_band: CB
+  src_band: IB
+  trap_band: IB
+- class: NonRadiativeTrap
+  name: nr_bottom
+  dst_band: IB
+  src_band: VB
+  trap_band: IB
+
+optical_fields:
+- name: forward_ci
+  direction: +x
+  photon_energy: {value: 0.85, unit: eV}
+  intensity:
+    mode: blackbody_band
+    T_source: {value: 6000.0, unit: K}
+    concentration: 100
+    E_min: {value: 0.8, unit: eV}
+    E_max: {value: 1.2, unit: eV}
+
+contacts:
+  left:
+    role: swept
+    bands:
+      CB: zero_current
+      IB: ohmic
+      VB: ohmic
+  right:
+    role: reference
+    bands:
+      CB: ohmic
+      IB: ohmic
+      VB: zero_current
+
+simulation:
+  intensity_ramp:
+    enabled: true
+    selfconsistent_optics: false
+    step_size: 1.0e-25
+  voltage_sweep:
+    enabled: true
+    values: [0.0]
+    selfconsistent_optics: true
+    step_size: 0.0001
+  output:
+    spatial_profiles: true
+    xdmf_mesh: false
+  checkpoints:
+    intensity_ramp:
+      checkpoint_at_end: false
+      at_values: []
+    voltage_sweep:
+      checkpoint_at_end: false
+      at_values: []
+    directory: checkpoints
+
+output:
+  folder: out/claude_ibbl_test_svr
+
+mesh:
+  max_edge_length: 0.02

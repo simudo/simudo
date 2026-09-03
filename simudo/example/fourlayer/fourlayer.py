@@ -107,6 +107,13 @@ from simudo.util import make_unit_registry, DictAttrProxy, TypicalLoggingSetup
 
 from simudo.io import h5yaml
 
+from simudo.physics import VoltageStepper, OpticalIntensityAdaptiveStepper
+from simudo.io.output_writer import (
+    OutputWriter,
+    MetaExtractorBandInfo,
+    MetaExtractorIntegrals,
+)
+
 from functools import partial
 from cached_property import cached_property
 import pandas as pd
@@ -114,7 +121,7 @@ import numpy as np
 import os
 from os import path as osp
 from pathlib import Path
-from argh import ArghParser, arg, expects_obj
+from argh import ArghParser, arg
 import itertools
 from datetime import datetime
 from atomicwrites import atomic_write
@@ -317,6 +324,7 @@ def run(submitfile):
     # Set up logging if it hasn't already been set up
     if not logging.getLogger().hasHandlers():
         logsetup = TypicalLoggingSetup(filename_prefix=str(PREFIX) + os.sep)
+        logsetup.delta_time = True  # add elapsed time to outputs
         logsetup.setup()
 
         # remove the junk going to console (riot convo 7 July 2020)
@@ -410,7 +418,7 @@ def run(submitfile):
     F.n_contact = F.right_contact
 
     # F.IB_bounds = F.pI_junction | F.In_junction
-    F.IB_bounds = R.IB.boundary(R.domain - R.IB) | R.IB.boundary(R.exterior)
+    F.I_bounds = R.I.boundary(R.domain - R.I) | R.I.boundary(R.exterior)
     ## end topology
 
     def create_problemdata(goal="full", V_ext=None, phi_cn=None):
@@ -460,8 +468,11 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
         spatial.add_rule(
             "nr_bottom/sigma_th", R.I, U(str(P["sigma_th_iv"]) + " cm**2")
         )
-        spatial.add_rule("nr_top/v_th", R.I, U(str(P["vth_CB"]) + " cm/s"))
-        spatial.add_rule("nr_bottom/v_th", R.I, U(str(P["vth_VB"]) + " cm/s"))
+        #In 0.7.0, vth lives on the band, not the process
+        # spatial.add_rule("nr_top/vth", R.I, U(str(P["vth_CB"]) + " cm/s"))
+        # spatial.add_rule("nr_bottom/vth", R.I, U(str(P["vth_VB"]) + " cm/s"))
+        spatial.add_rule("CB/vth", R.I, U(str(P["vth_CB"]) + " cm/s"))
+        spatial.add_rule("VB/vth", R.I, U(str(P["vth_VB"]) + " cm/s"))
 
         ib_material = IBSemiconductor(problem_data=root, params=P)
         ib_material.dict["IB/simple_mobility_model"] = bool(
@@ -568,7 +579,7 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
             # spatial.add_BC('IB/j', F.exterior,
             #                U('A/cm^2') * mu.zerovec)
             spatial.add_BC(
-                "IB/j", F.nonconductive | F.IB_bounds, U("A/cm^2") * mu.zerovec
+                "IB/j", F.nonconductive | F.I_bounds, U("A/cm^2") * mu.zerovec
             )
 
             # majority contact, Ohmic BC
@@ -600,31 +611,47 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
 
         spatial.add_BC("poisson/E", zeroE, U("V/m") * mu.zerovec)
 
+        if "mumps_icntl" in P:
+            pdd.mumps_icntl = P["mumps_icntl"]
+
         return root
 
-    problem = create_problemdata(goal="local charge neutrality")
 
-    problem.pdd.easy_auto_pre_solve()
-
-    problem0 = problem
-    problem = create_problemdata(
-        goal="thermal equilibrium", phi_cn=problem0.pdd.poisson.phi
-    )
-    problem.pdd.initialize_from(problem0.pdd)
-
-    problem.pdd.easy_auto_pre_solve()
-
+    checkpoint_write_values_opt = []
+    checkpoint_write_filename_opt = None
+    checkpoint_write_values_V = []
+    checkpoint_write_filename_V = None
+    checkpoint_reload_yaml_V = None
+    checkpoint_reload_yaml_opt = None
+    # This is fragile, as it allows the user to specify one of these required options but not all of them. 
+    # Should put in some checking to make sure options are set consistently.
+    if "checkpoint_write_values_opt" in P:
+        checkpoint_write_values_opt = P["checkpoint_write_values_opt"]
+    if "checkpoint_write_values_V" in P:
+        checkpoint_write_values_V = P["checkpoint_write_values_V"]        
+    if "checkpoint_write_filename_opt" in P:
+        checkpoint_write_filename_opt = str(PREFIX) + "/" + P["checkpoint_write_filename_opt"]
+    if "checkpoint_write_filename_V" in P:
+        checkpoint_write_filename_V = str(PREFIX) + "/" + P["checkpoint_write_filename_V"]        
+    if "checkpoint_reload_yaml_V" in P:
+        checkpoint_reload_yaml_V = str(PREFIX) + "/" + P["checkpoint_reload_yaml_V"]
+    if "checkpoint_reload_yaml_opt" in P:
+        checkpoint_reload_yaml_opt = str(PREFIX) + "/" + P["checkpoint_reload_yaml_opt"]
+    
     V_ext = U.V * dolfin.Constant(0.0)
-    problem0 = problem
-    problem = create_problemdata(goal="full", V_ext=V_ext)
-    problem.pdd.initialize_from(problem0.pdd)
+    full_problem = create_problemdata(goal="full", V_ext=V_ext)
+    if checkpoint_reload_yaml_V is None and checkpoint_reload_yaml_opt is None:
+        lcn_problem = create_problemdata(goal="local charge neutrality")
+        lcn_problem.pdd.easy_auto_pre_solve()
 
-    from simudo.physics import VoltageStepper, OpticalIntensityAdaptiveStepper
-    from simudo.io.output_writer import (
-        OutputWriter,
-        MetaExtractorBandInfo,
-        MetaExtractorIntegrals,
-    )
+        # eqm_problem = problem
+        eqm_problem = create_problemdata(
+                        goal="thermal equilibrium", phi_cn=lcn_problem.pdd.poisson.phi
+                    )
+        eqm_problem.pdd.initialize_from(lcn_problem.pdd)
+        eqm_problem.pdd.easy_auto_pre_solve()
+
+        full_problem.pdd.initialize_from(eqm_problem.pdd)
 
     meta_extractors = (
         MetaExtractorBandInfo,
@@ -637,9 +664,9 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
 
     optics = float(P["X"]) != 0
 
-    if optics:
+    if optics and checkpoint_reload_yaml_V is None:
         stepper = OpticalIntensityAdaptiveStepper(
-            solution=problem,
+            solution=full_problem,
             parameter_target_values=[0, 1],
             step_size=1e-25,
             stepper_rel_tol=1e-6,
@@ -648,27 +675,26 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
                 parameter_name="I",
                 plot_1d=True,
                 plot_iv=False,
-                plot_mesh=False,
+                plot_mesh=True,
+                plot_du=False,
                 meta_extractors=meta_extractors,
             ),
             selfconsistent_optics=True,
+            checkpoint_write_values=checkpoint_write_values_opt,
+            checkpoint_write_filename=checkpoint_write_filename_opt,
+            checkpoint_reload_yaml=checkpoint_reload_yaml_opt,
         )
-
+        if "opt_success_factor" in P:
+            stepper.update_parameter_success_factor = P["opt_success_factor"]
+        if "opt_fail_factor" in P:            
+            stepper.update_parameter_failure_factor = P["opt_fail_factor"]
+        if "find_unconverged" in P:
+            stepper.debug_find_unconverged_parameters = P["find_unconverged"]
         stepper.do_loop()
-
-    # #parameter changed from "a parameter" to "V parameter" 10Jul2020
-    # stepper = VoltageStepper(
-    #     solution=problem, constants=[V_ext],
-    #     parameter_target_values=P['V_exts'],
-    #     parameter_unit=U.V,
-    #     output_writer=OutputWriter(
-    #         filename_prefix=str(PREFIX)+"/V", plot_1d=True, plot_iv=True,
-    #         meta_extractors=meta_extractors),
-    #     selfconsistent_optics=optics)
 
     # Adapted from Matt, minutiae 13 Jul 2020
     stepper = VoltageStepper(
-        solution=problem,
+        solution=full_problem,
         # constants=[problem.contacts[bias_contact]['bias']],
         constants=[V_ext],
         step_size=1e-4,
@@ -680,13 +706,22 @@ goal in {'full', 'local neutrality', 'thermal equilibrium'}
             filename_prefix=str(PREFIX) + "/pd",
             parameter_name="V",
             meta_extractors=meta_extractors,
-            line_cut_resolution=10000,
+            # line_cut_resolution=10000,
             plot_1d=True,
             plot_mesh=False,
             plot_iv=True,
         ),
         selfconsistent_optics=optics,
+        checkpoint_write_values=checkpoint_write_values_V,
+        checkpoint_write_filename=checkpoint_write_filename_V,
+        checkpoint_reload_yaml=checkpoint_reload_yaml_V,
     )
+    if "V_success_factor" in P:
+        stepper.update_parameter_success_factor = P["V_success_factor"]
+    if "V_fail_factor" in P:            
+        stepper.update_parameter_failure_factor = P["V_fail_factor"]
+    if "find_unconverged" in P:
+        stepper.debug_find_unconverged_parameters = P["find_unconverged"]
 
     stepper.do_loop()
 

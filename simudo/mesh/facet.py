@@ -90,7 +90,7 @@ facet_value_dict : dict
         ffa[f_index] = v
     return (ff, d)
 
-### BROKEN!!! broken in FEniCS 2018. works in 2017.
+### Broken in FEniCS 2018. worked in 2017. Kept for historical record.
 # _boundary_mesh_entities_dim_dict = {'facet': (-1, dolfin.Facet),
 #                                     'cell' : ( 0, dolfin.Cell)}
 # def boundary_mesh_entities_broken(mesh, dim='facet', type='exterior', order=True):

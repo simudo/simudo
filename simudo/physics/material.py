@@ -23,8 +23,14 @@ Attributes
 ----------
 name: str, optional
     Material name.
+required_spatial_params: list of str
+    Spatial rule keys that must be registered in ``spatial`` before
+    ``get_dict()`` can evaluate correctly (e.g. ``['MoleFractionX']``
+    for alloy materials).  The GUI uses this list to prompt the user to
+    set these values per layer.  Subclasses should override as needed.
 '''
     name = None
+    required_spatial_params: list = []
 
     def get_dict(self):
         '''Construct dictionary of material parameters.

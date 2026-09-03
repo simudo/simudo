@@ -9,6 +9,7 @@ from os import path as osp
 
 from cached_property import cached_property
 from pkg_resources import resource_string
+from atomicwrites import atomic_write
 
 from . import pyaml1
 from ..util import generate_base32_token
@@ -57,10 +58,8 @@ class BaseSourceTranslator(object):
         fn = osp.join(self.cache_path, 'h_{}.py'.format(shash))
 
         if not osp.exists(fn):
-            fn_temp = fn+'.tmp'
-            with open(fn_temp, 'wb') as h:
-                h.write(source)
-            os.rename(fn_temp, fn) # atomic
+            with atomic_write(fn, mode="wb", overwrite=True) as f:
+                f.write(source)
 
         return fn
 

@@ -2,6 +2,48 @@
 Tutorial
 &&&&&&&&
 
+Using the GUI
+#############
+
+The GUI lets you build and run a Simudo simulation without writing any
+Python. Start it from inside the ``simudo_gui`` conda environment::
+
+  conda activate simudo_gui
+  cd /path/to/simudo/gui
+  panel serve app.py --show --port 5006
+
+Your browser will open at ``http://localhost:5006/app``.
+
+.. tip::
+
+   Store your YAML project files in a directory **outside** the Simudo
+   source tree (e.g. ``~/simudo_projects/``). This keeps your simulation
+   data separate from the code and avoids accidental version-control
+   conflicts when the source tree is updated.
+
+Loading a project file
+======================
+
+Click the **Open ▾** button in the top toolbar and choose **Open file…**.
+A file-picker dialog will appear; navigate to your YAML file and open it.
+The GUI will populate all panels (Layers, Materials, Bands, Processes,
+etc.) with the settings from the file.
+
+To start a new project from scratch, click **Open ▾ → New project**.
+
+Running a simulation
+====================
+
+1. Configure your device in the **Layers**, **Materials**, **Bands**,
+   **Processes**, and **Optical fields** panels.
+2. Set up the voltage sweep and output options in the **Simulation**
+   panel.
+3. Verify that the execution backend is correctly configured (see the
+   *Configuring the execution backend* section in :doc:`install`).
+4. Click **Run** in the **Simulation** panel. Progress is streamed to
+   the log panel in real time; output files are written to the folder
+   specified under **Output → Folder**.
+
 pn-diode example
 ################
 
@@ -41,9 +83,11 @@ is to provide a model that you can modify for your own purposes.
 .. _fourlayer: https://github.com/simudo/simudo/raw/master/simudo/example/fourlayer/fourlayer.py
 
 
-The most useful method in :file:`fourlayer.py` is :command:`run`, which takes in a yaml file containing
-a dict of parameters and runs Simudo as requested in that file. You can set up a 
-submitfile using :command:`fourlayer.multiplex_setup`. 
+The most useful method in :file:`fourlayer.py` is
+:py:func:`~simudo.example.fourlayer.fourlayer.run`, which takes in a yaml file
+containing a dict of parameters and runs Simudo as requested in that file. You
+can set up a submitfile using
+:py:func:`~simudo.example.fourlayer.fourlayer.multiplex_setup`.
 
 Look at fourlayer_example_ for an example of using :file:`fourlayer`. It is not chosen to be a particularly good IBSC! 
 You can move fourlayer_example_ to a location of your choosing and then run::
@@ -60,14 +104,21 @@ with spatially varying quantities on a line cut through the centre of the device
 The sample simulation should give an efficiency of 34.1%. 
 Note that most of the output that you saw in the pn-diode example is not sent to the screen. You can see more details in the info.log and debug.log files.
 
-The methods in sweep_extraction_ are helpful for gathering the output from 
-:file:`fourlayer_example` and making a variety of plots. The example comes configured to run 
-a single Simudo calculation and output both a JV curve and a band diagram at short circuit, which should appear as png files. 
+The functions in sweep_extraction_ are helpful for gathering the output from
+:file:`fourlayer_example` and making a variety of plots. The example comes
+configured to run a single Simudo calculation and output both a JV curve and a
+band diagram at short circuit, which should appear as png files.
 
 .. _sweep_extraction: https://github.com/simudo/simudo/raw/master/simudo/example/fourlayer/sweep_extraction.py
 
-There are several helpful features in :file:`fourlayer_example`, which you can find
-in that file. For example, you can modify it to find the value of `IB_thickness` that optimizes device efficiency by setting :code:`params['optimize_key'] = 'IB_thickness'`. Please `contact us <mailto:jkrich@uottawa.ca>`_ if you have any questions.
+There are several helpful features in :file:`fourlayer_example`, which you can
+find in that file. For example, you can modify it to find the value of
+``IB_thickness`` that optimizes device efficiency by setting
+:code:`params['optimize_key'] = 'IB_thickness'`. The voltage sweep uses
+:py:class:`~simudo.physics.steppers.VoltageStepper` and the optical ramp uses
+:py:class:`~simudo.physics.steppers.OpticalIntensityAdaptiveStepper`, both of
+which wrap :py:class:`~simudo.physics.steppers.NonequilibriumCoupledStepper`.
+Please `contact us <mailto:jkrich@uottawa.ca>`_ if you have any questions.
 
 Jupyter notebook
 ################

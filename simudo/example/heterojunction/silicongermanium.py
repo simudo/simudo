@@ -1,8 +1,8 @@
 from math import pi
 from simudo.physics import Material
 
-from .silicon import SiliconMaterial
-from .germanium import GermaniumMaterial
+from simudo.example.heterojunction.silicon import SiliconMaterial
+from simudo.example.heterojunction.germanium import GermaniumMaterial
 
 
 class SiliconGermaniumAlloy(Material):

@@ -21,10 +21,11 @@ from simudo.io.output_writer import (
 import dolfin
 from simudo.util import TypicalLoggingSetup
 
-from .silicon import SiliconMaterial
-from .silicongermanium import SiliconGermaniumAlloy
+from simudo.example.heterojunction.silicon import SiliconMaterial
+from simudo.example.heterojunction.silicongermanium import SiliconGermaniumAlloy
 
 from datetime import date
+
 
 
 def topology_standard_contacts(cell_regions, facet_regions):

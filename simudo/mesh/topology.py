@@ -273,7 +273,7 @@ class FacetRegionByName(FacetRegion):
         self.name = name
 
     def evaluate(self, context):
-        return context['facet_name_to_fvs'][self.name]
+        return context['facets_name_to_fvs'][self.name]
 
     def __repr__(self):
         return 'f{!r}'.format(self.name)

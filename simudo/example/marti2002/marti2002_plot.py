@@ -6,7 +6,27 @@ from simudo.plot import (
 from simudo.util import (
     outdir_path_helper, mkdirp, TODO, with_default_kwargs,
     read_xcsv, to_xcsv)
-from argh import expects_obj
+from argparse import Namespace
+
+
+def expects_obj(func):
+    """Pass the parsed arguments as a single namespace, as argh used to.
+
+argh removed its own ``expects_obj`` in 0.30.  The functions below take one
+``args`` object and read attributes off it, while the ``@arg`` decorators
+already declare the command line, so the wrapper just repacks the keywords.
+
+Deliberately not ``functools.wraps``: that sets ``__wrapped__``, which makes
+``inspect.signature`` report the wrapped ``(args)`` signature, and argh then
+rejects every ``@arg`` as not fitting it.  This goes away with the rest of argh
+when these scripts move to argparse.
+"""
+    def wrapper(**kwargs):
+        return func(Namespace(**kwargs))
+    wrapper.__name__ = func.__name__
+    wrapper.__doc__ = func.__doc__
+    return wrapper
+
 from simudo.io import h5yaml
 from tabulate import tabulate
 import pandas as pd
@@ -226,7 +246,7 @@ def plot_main(basename, submitfile, savefig):
     plt.close(fig)
 
 
-# FIXME: hardcoded because I'm stupid
+# FIXME: hardcoded 
 IB_SPATIAL_RANGE = (1050.0, 1050.0 + 1300)
 def df_mask_IB(df):
     df["IB_exists"] = exists = df['x'].between(*IB_SPATIAL_RANGE)

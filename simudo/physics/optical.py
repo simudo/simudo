@@ -16,7 +16,8 @@ from .. import pyaml
 from ..fem import (
     MixedFunctionHelper, Spatial, WithSubfunctionsMixin, opportunistic_assign)
 from ..util import NameDict, SetattrInitMixin
-from .poisson_drift_diffusion import GetToSaveMixin, SaveItem
+from .poisson_drift_diffusion import (
+    GetToSaveMixin, SaveItem, InitializeFromByAttributesMixin)
 from .problem_data_child import DefaultProblemDataChildMixin
 
 pyaml_optical = pyaml.load_res(__name__, 'optical1.py1')
@@ -84,6 +85,27 @@ Phi_scale: :py:class:`dolfin.Constant`
         for x in self.fields:
             r.update(x.get_to_save())
         return r
+
+    def initialize_from(self, other_optical):
+        '''Copy solved optical state (:py:attr:`Phi_scale` and each
+field's solved photon flux) from *other_optical* into this instance.
+
+Unlike :py:meth:`~.poisson_drift_diffusion.PoissonDriftDiffusion.initialize_from`,
+which only carries over PDD (Poisson + band) state, this must be called
+separately since :py:class:`Optical` is a sibling of ``pdd`` on
+:py:class:`~.problem_data.ProblemData`, not one of its children. Skipping
+this leaves the copied-in carrier state (fully illuminated, via
+``pdd.initialize_from``) inconsistent with a not-yet-solved (effectively
+zero) photon flux, which reliably fails to converge on the first solve.
+'''
+        fsr = self.function_subspace_registry.from_union(
+            (self.function_subspace_registry,
+             other_optical.function_subspace_registry))
+        self.Phi_scale.magnitude.assign(
+            other_optical.Phi_scale.m_as(self.Phi_scale.units))
+        for key in self.fields.keys():
+            self.fields[key].initialize_from(
+                other_optical.fields[key], function_subspace_registry=fsr)
 
 class OpticalField(SetattrInitMixin):
     '''A single optical field subproblem. This represents a scalar
@@ -275,9 +297,11 @@ This updates :py:attr:`alpha` and :py:attr:`g`.
 
 class OpticalFieldMSORTE(
         pyaml_optical.OpticalFieldMSORTE,
+        InitializeFromByAttributesMixin,
         WithSubfunctionsMixin,
         OpticalField,
         GetToSaveMixin):
+    initialize_from_attributes = ('Phi',)
 
     def get_weak_form(self):
         return self.msorte_form
@@ -352,10 +376,31 @@ transitions. See :py:meth:`get_transition_lower_bounds` for more.
             lst = []
             for k2, lower2 in lowers.items():
                 if k == k2: continue
+                
+                # debug lower and lower2
+                # mu = self.problem_data.pdd.mesh_util
+                # probe_x = [0.01, 0.2, 0.5]
+                # probe_y = 0.5
+                
+                # debug_probe_lower = mu.get_debug_probe(lower, "DG1")
+                # debug_probe_lower2 = mu.get_debug_probe(lower2, "DG1")
+                
+                # for xx in probe_x:
+                #     logging.info(f"lower: {debug_probe_lower(xx, probe_y).to('eV')}")
+                #     logging.info(f"lower2: {debug_probe_lower2(xx, probe_y).to('eV')}")
 
-                # FIXME: this is WRONG if lower is exactly equal to lower2
+                # Claude Sonnet 4.6:
+                # Condition: use ∞ if lower2 ≤ lower (same or smaller gap does
+                # not constrain our upper bound); use lower2 only when it is
+                # strictly larger than lower (i.e. it represents a transition
+                # at a higher photon energy than ours).
+                # NOTE: the previous version used strict `<` here, which was
+                # wrong when another transition has the same lower bound as
+                # ours (e.g. IB/energy_level = 0 outside the IB subdomain
+                # makes lower_{CB,IB} = lower_{CB,VB} = E_gap, incorrectly
+                # collapsing the CV interval to [E_gap, E_gap) = empty).
                 lst.append(dolfin.conditional(
-                    ufl.as_ufl(lower2.m) < lower.m, upper_bound, lower2.m))
+                    ufl.le(ufl.as_ufl(lower2.m), lower.m), upper_bound, lower2.m))
 
             if not lst:
                 lst.append(upper_bound)

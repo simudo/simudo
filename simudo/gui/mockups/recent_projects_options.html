@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Recent Projects UI Options</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 8px; font-size: 18px; color: #aaa; }
+  .subtitle { text-align: center; margin-bottom: 24px; font-size: 13px; color: #666; }
+
+  .options { display: flex; gap: 20px; align-items: flex-start; }
+  .option { flex: 1; }
+  .option-label { text-align: center; font-size: 13px; font-weight: 600;
+                  color: #7eb8f7; margin-bottom: 8px; letter-spacing: 0.5px; }
+
+  /* ── shared chrome ── */
+  .app { border: 1px solid #444; border-radius: 6px; overflow: hidden;
+         background: #1e1e2e; }
+
+  /* header bar */
+  .header { background: #16213e; padding: 8px 12px; display: flex;
+            align-items: center; gap: 10px; border-bottom: 1px solid #333; }
+  .header .logo { font-size: 12px; font-weight: 700; color: #7eb8f7; }
+  .header .project-path { font-size: 11px; color: #888; flex: 1; }
+  .header .btn { font-size: 11px; background: #2a2a4a; border: 1px solid #555;
+                 color: #ccc; padding: 3px 8px; border-radius: 3px; cursor: pointer; }
+  .header .btn:hover { background: #3a3a6a; }
+  .header .btn.primary { background: #2d5a8e; border-color: #4a8fcc; color: #fff; }
+
+  /* body = sidebar + main */
+  .body { display: flex; height: 340px; }
+
+  /* sidebar */
+  .sidebar { width: 130px; background: #16213e; border-right: 1px solid #333;
+             padding: 6px 0; flex-shrink: 0; }
+  .nav-item { padding: 6px 12px; font-size: 12px; color: #aaa; cursor: pointer;
+              border-left: 3px solid transparent; }
+  .nav-item:hover { background: #1e2d4a; color: #ddd; }
+  .nav-item.active { background: #1e2d4a; color: #7eb8f7;
+                     border-left-color: #7eb8f7; }
+  .nav-item.home { color: #f0a040; }
+  .nav-item.home.active { border-left-color: #f0a040; }
+  .nav-divider { border-top: 1px solid #333; margin: 4px 0; }
+
+  /* main panel */
+  .main { flex: 1; overflow: auto; }
+
+  /* recent list (used in options A and C) */
+  .recent-panel { padding: 16px; }
+  .recent-panel h2 { font-size: 13px; color: #888; margin-bottom: 12px;
+                     text-transform: uppercase; letter-spacing: 0.8px; }
+  .new-btn { display: block; width: 100%; padding: 8px 12px; margin-bottom: 14px;
+             background: #2d5a8e; border: 1px solid #4a8fcc; color: #fff;
+             border-radius: 4px; font-size: 12px; text-align: center; cursor: pointer; }
+  .recent-item { display: flex; justify-content: space-between; align-items: center;
+                 padding: 7px 10px; margin-bottom: 4px; background: #252540;
+                 border-radius: 4px; border: 1px solid #333; cursor: pointer; }
+  .recent-item:hover { background: #2e2e55; border-color: #555; }
+  .recent-item .name { font-size: 12px; color: #ddd; }
+  .recent-item .meta { font-size: 10px; color: #666; }
+  .recent-item .actions { display: flex; gap: 4px; }
+  .tag { font-size: 9px; padding: 2px 5px; border-radius: 3px; cursor: pointer;
+         border: 1px solid; white-space: nowrap; }
+  .tag.settings { color: #7eb8f7; border-color: #3a6a9a; background: #1a3050; }
+  .tag.results  { color: #7ed4a0; border-color: #3a7a5a; background: #1a3028; }
+  .tag:hover { opacity: 0.8; }
+
+  /* device form (placeholder content) */
+  .device-form { padding: 16px; }
+  .device-form h2 { font-size: 13px; color: #888; margin-bottom: 12px;
+                    text-transform: uppercase; letter-spacing: 0.8px; }
+  .layer-row { display: flex; gap: 6px; align-items: center; margin-bottom: 5px; }
+  .layer-block { flex: 1; height: 28px; border-radius: 3px; display: flex;
+                 align-items: center; justify-content: center; font-size: 11px; }
+  .layer-p   { background: #2d3f6e; border: 1px solid #4a6aaa; color: #9ab8f0; }
+  .layer-I   { background: #3d2d6e; border: 1px solid #7a4aaa; color: #b89af0; }
+  .layer-n   { background: #2d5a3d; border: 1px solid #4aaa6a; color: #9af0b8; }
+  .layer-fsf { background: #5a3d2d; border: 1px solid #aa6a4a; color: #f0b89a; }
+  .field-row { display: flex; gap: 6px; margin-bottom: 5px; align-items: center; }
+  .field-label { font-size: 11px; color: #888; width: 80px; flex-shrink: 0; }
+  .field-box { flex: 1; background: #252540; border: 1px solid #444; border-radius: 3px;
+               padding: 3px 6px; font-size: 11px; color: #ccc; }
+
+  /* ── OPTION B specific: dropdown from header ── */
+  .recent-dropdown { position: relative; }
+  .recent-dropdown .dropdown-menu {
+    position: absolute; top: 100%; right: 0; width: 280px; margin-top: 4px;
+    background: #252540; border: 1px solid #555; border-radius: 4px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5); z-index: 10; padding: 8px;
+  }
+  .dropdown-menu .recent-item { margin-bottom: 3px; }
+
+  /* ── OPTION C specific: empty-state overlay ── */
+  .empty-state { padding: 20px 16px; }
+  .empty-state h2 { font-size: 13px; color: #888; margin-bottom: 6px;
+                    text-transform: uppercase; letter-spacing: 0.8px; }
+  .empty-state p  { font-size: 11px; color: #666; margin-bottom: 14px; }
+  .empty-hint { font-size: 11px; color: #555; margin-top: 16px;
+                border-top: 1px solid #333; padding-top: 10px; }
+  .empty-hint span { color: #7eb8f7; }
+</style>
+</head>
+<body>
+
+<h1>Recent Projects — Three Layout Options</h1>
+<p class="subtitle">Mockups for discussion. All show the same app with the same content.</p>
+
+<div class="options">
+
+  <!-- ═══════════════════════════════════════════════════════ OPTION A -->
+  <div class="option">
+    <div class="option-label">A — "Home" entry at top of sidebar</div>
+    <div class="app">
+      <div class="header">
+        <span class="logo">Simudo</span>
+        <span class="project-path">untitled project</span>
+        <button class="btn primary">Save</button>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-item home active">⌂ Home</div>
+          <div class="nav-divider"></div>
+          <div class="nav-item">Layers</div>
+          <div class="nav-item">Materials</div>
+          <div class="nav-item">Bands</div>
+          <div class="nav-item">Processes</div>
+          <div class="nav-item">Opt. Fields</div>
+          <div class="nav-item">Contacts</div>
+          <div class="nav-divider"></div>
+          <div class="nav-item">Simulation</div>
+          <div class="nav-item">Output</div>
+        </div>
+        <div class="main">
+          <div class="recent-panel">
+            <h2>Recent Projects</h2>
+            <div class="new-btn">+ New blank project</div>
+            <div class="recent-item">
+              <div>
+                <div class="name">Four-layer IB cell</div>
+                <div class="meta">2026 Apr 29 · gui/fourlayer_example.yaml</div>
+              </div>
+              <div class="actions">
+                <span class="tag settings">settings</span>
+                <span class="tag results">+ results</span>
+              </div>
+            </div>
+            <div class="recent-item">
+              <div>
+                <div class="name">GaAs pn diode</div>
+                <div class="meta">2026 Apr 15 · projects/gaas_pn.yaml</div>
+              </div>
+              <div class="actions">
+                <span class="tag settings">settings</span>
+                <span class="tag results">+ results</span>
+              </div>
+            </div>
+            <div class="recent-item">
+              <div>
+                <div class="name">IB sweep μ_I</div>
+                <div class="meta">2026 Apr 10 · sweep/mu_sweep.yaml</div>
+              </div>
+              <div class="actions">
+                <span class="tag settings">settings</span>
+                <span class="tag results">+ results</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#666;margin-top:6px;text-align:center">
+      App opens here. Click a section or "New blank project" to start editing.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ OPTION B -->
+  <div class="option">
+    <div class="option-label">B — "Recent ▼" dropdown in header</div>
+    <div class="app">
+      <div class="header">
+        <span class="logo">Simudo</span>
+        <span class="project-path">untitled project</span>
+        <div class="recent-dropdown">
+          <button class="btn" style="background:#3a2a5a;border-color:#7a5aaa;color:#c0a0f0">
+            Recent ▼
+          </button>
+          <div class="dropdown-menu">
+            <div class="recent-item">
+              <div>
+                <div class="name">Four-layer IB cell</div>
+                <div class="meta">2026 Apr 29</div>
+              </div>
+              <div class="actions">
+                <span class="tag settings">settings</span>
+                <span class="tag results">+ results</span>
+              </div>
+            </div>
+            <div class="recent-item">
+              <div>
+                <div class="name">GaAs pn diode</div>
+                <div class="meta">2026 Apr 15</div>
+              </div>
+              <div class="actions">
+                <span class="tag settings">settings</span>
+                <span class="tag results">+ results</span>
+              </div>
+            </div>
+            <div class="recent-item">
+              <div>
+                <div class="name">IB sweep μ_I</div>
+                <div class="meta">2026 Apr 10</div>
+              </div>
+              <div class="actions">
+                <span class="tag settings">settings</span>
+                <span class="tag results">+ results</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn primary">Save</button>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-item active">Layers</div>
+          <div class="nav-item">Materials</div>
+          <div class="nav-item">Bands</div>
+          <div class="nav-item">Processes</div>
+          <div class="nav-item">Opt. Fields</div>
+          <div class="nav-item">Contacts</div>
+          <div class="nav-divider"></div>
+          <div class="nav-item">Simulation</div>
+          <div class="nav-item">Output</div>
+        </div>
+        <div class="main">
+          <div class="device-form">
+            <h2>Layer Stack</h2>
+            <div class="layer-row">
+              <div class="layer-block layer-fsf">FSF  0.05 µm</div>
+            </div>
+            <div class="layer-row">
+              <div class="layer-block layer-p">p  1.0 µm</div>
+            </div>
+            <div class="layer-row">
+              <div class="layer-block layer-I">I (IB)  3.0 µm</div>
+            </div>
+            <div class="layer-row">
+              <div class="layer-block layer-n">n  1.0 µm</div>
+            </div>
+            <div style="margin-top:10px">
+              <div class="field-row">
+                <span class="field-label">mesh unit</span>
+                <span class="field-box">micrometer</span>
+              </div>
+              <div class="field-row">
+                <span class="field-label">max edge</span>
+                <span class="field-box">0.02</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#666;margin-top:6px;text-align:center">
+      App opens directly to editing. Recent projects always reachable via header.
+      Shown here with dropdown open.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ OPTION C -->
+  <div class="option">
+    <div class="option-label">C — Recent projects fill the blank main area</div>
+    <div class="app">
+      <div class="header">
+        <span class="logo">Simudo</span>
+        <span class="project-path">untitled project</span>
+        <button class="btn primary">Save</button>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-item">Layers</div>
+          <div class="nav-item">Materials</div>
+          <div class="nav-item">Bands</div>
+          <div class="nav-item">Processes</div>
+          <div class="nav-item">Opt. Fields</div>
+          <div class="nav-item">Contacts</div>
+          <div class="nav-divider"></div>
+          <div class="nav-item">Simulation</div>
+          <div class="nav-item">Output</div>
+        </div>
+        <div class="main">
+          <div class="empty-state">
+            <h2>Recent Projects</h2>
+            <p>Open a recent project, or click any section in the sidebar to start a new one.</p>
+            <div class="recent-item">
+              <div>
+                <div class="name">Four-layer IB cell</div>
+                <div class="meta">2026 Apr 29 · gui/fourlayer_example.yaml</div>
+              </div>
+              <div class="actions">
+                <span class="tag settings">settings</span>
+                <span class="tag results">+ results</span>
+              </div>
+            </div>
+            <div class="recent-item" style="margin-top:4px">
+              <div>
+                <div class="name">GaAs pn diode</div>
+                <div class="meta">2026 Apr 15 · projects/gaas_pn.yaml</div>
+              </div>
+              <div class="actions">
+                <span class="tag settings">settings</span>
+                <span class="tag results">+ results</span>
+              </div>
+            </div>
+            <div class="recent-item" style="margin-top:4px">
+              <div>
+                <div class="name">IB sweep μ_I</div>
+                <div class="meta">2026 Apr 10 · sweep/mu_sweep.yaml</div>
+              </div>
+              <div class="actions">
+                <span class="tag settings">settings</span>
+                <span class="tag results">+ results</span>
+              </div>
+            </div>
+            <div class="empty-hint">
+              → Click <span>Layers</span> in the sidebar to start defining a new device.
+              This panel disappears once you begin editing.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#666;margin-top:6px;text-align:center">
+      App opens here. Sidebar is already visible. Click any section to start editing —
+      this panel is replaced by the normal UI.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

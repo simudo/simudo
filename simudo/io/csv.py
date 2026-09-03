@@ -51,7 +51,10 @@ class LineCutCsvPlot(PlotAddMixin):
         df['coord_y'] = coords.view()[:,1]
         return coords
 
-    def _add_func(self, func):
+    def _add_func(self, func, space_name = None):
+        if hasattr(func,"geometry"):
+            #func is a mesh; just continue
+            return
         coords = self._compute_coords(func.function_space().mesh())
 
         renderer = DolfinFunctionLineCutRenderer(func, {})

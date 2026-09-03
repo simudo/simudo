@@ -1,0 +1,148 @@
+diff --git a/dolfin/fem/SystemAssembler.cpp b/dolfin/fem/SystemAssembler.cpp
+index 9b64bfc..1c7a485 100644
+--- a/dolfin/fem/SystemAssembler.cpp
++++ b/dolfin/fem/SystemAssembler.cpp
+@@ -681,6 +681,16 @@ void SystemAssembler::facet_wise_assembly(
+   std::array<const ufc::interior_facet_integral*, 2> interior_facet_integrals
+     = { { ufc[0]->default_interior_facet_integral.get(),
+           ufc[1]->default_interior_facet_integral.get() } };
++  // // New pointers for each cell [form][cell] when assembling over interior cells
++  // // tmp array is for initializing, just like cell_integrals
++  std::array<const ufc::cell_integral*, 2> tmp_array_0
++    = { { ufc[0]->default_cell_integral.get(),
++          ufc[0]->default_cell_integral.get() } };
++  std::array<const ufc::cell_integral*, 2> tmp_array_1
++    = { { ufc[1]->default_cell_integral.get(),
++          ufc[1]->default_cell_integral.get() } };
++  std::array<std::array<const ufc::cell_integral*, 2>, 2> cell_integrals_by_cell
++    = { tmp_array_0,  tmp_array_1 };
+ 
+   // Check whether integrals are domain-dependent
+   bool use_cell_domains = cell_domains && !cell_domains->empty();
+@@ -692,7 +702,9 @@ void SystemAssembler::facet_wise_assembly(
+   // Indicator whether or not tensor is required
+   std::array<bool, 2> tensor_required_cell = {{false, false}};
+   std::array<bool, 2> tensor_required_facet = {{false, false}};
+-
++  // New indicators on per-cell basis [form][cell]
++  std::array <std::array<bool, 2>, 2> tensor_required_cell_by_cell = {{{false, false}, {false, false}}};
++  
+   // Track whether or not cell contribution has been computed
+   std::array<bool, 2> compute_cell_tensor = {{true, true}};
+   std::vector<bool> cell_tensor_computed(mesh.num_cells(), false);
+@@ -825,20 +837,26 @@ void SystemAssembler::facet_wise_assembly(
+             if (use_cell_domains)
+             {
+               const std::size_t domain = (*cell_domains)[cell[c]];
+-              cell_integrals[form] = ufc[form]->get_cell_integral(domain);
++              //JK When using cell_integrals[form], the cell_integrals get overwritten and 
++              // keep only the c=1 value
++              // If the two cells are in different domains, then compute_interior_facet_tensor
++              // gives both cells the form of the second cell.
++              // cell_integrals[form] = ufc[form]->get_cell_integral(domain);              
++              cell_integrals_by_cell[form][c] = ufc[form]->get_cell_integral(domain);
+             }
+ 
+-            // Check if facet tensor is required
++            // Check if cell tensor is required
+             if (form == 0)
+-            {
+-              tensor_required_cell[form]
++            {                                                        
++              tensor_required_cell_by_cell[form][c]
+                 = cell_matrix_required(tensors[form],
+-                                       cell_integrals[form],
++                                       cell_integrals_by_cell[form][c],                                       
+                                        boundary_values,
+                                        cell_dofs[form][c][1]);
+             }
+-            else
+-              tensor_required_cell[form] = tensors[form] && cell_integrals[form];
++            else              
++              tensor_required_cell_by_cell[form][c]
++                = tensors[form] && cell_integrals_by_cell[form][c];                               
+           }
+         }
+ 
+@@ -857,11 +875,11 @@ void SystemAssembler::facet_wise_assembly(
+       }
+       compute_interior_facet_tensor(ufc, ufc_cell,
+                                     coordinate_dofs,
+-                                    tensor_required_cell,
++                                    tensor_required_cell_by_cell,                                                               
+                                     tensor_required_facet,
+                                     cell, local_facet,
+                                     facet_owner,
+-                                    cell_integrals,
++                                    cell_integrals_by_cell,                                     
+                                     interior_facet_integrals,
+                                     matrix_size,
+                                     vector_size,
+@@ -891,7 +909,8 @@ void SystemAssembler::facet_wise_assembly(
+           mdofs[i].set(macro_dofs[0][i]);
+         tensors[0]->add_local(ufc[0]->macro_A.data(), mdofs);
+       }
+-      else if (tensors[0] && !add_macro_element && tensor_required_cell[0])
++      else if (tensors[0] && !add_macro_element &&       
++              (tensor_required_cell_by_cell[0][0] || tensor_required_cell_by_cell[0][1]) )
+       {
+         // FIXME: This can be simplied by assembling into Ae instead
+         // of macro_A.
+@@ -913,7 +932,7 @@ void SystemAssembler::facet_wise_assembly(
+       // is only one)
+       Cell cell(mesh, facet->entities(mesh.topology().dim())[0]);
+ 
+-      // Check of attached cell needs to be processed
++      // Check if attached cell needs to be processed
+       compute_cell_tensor[0] = !cell_tensor_computed[cell.index()];
+ 
+        // Decide if tensor needs to be computed
+@@ -1062,12 +1081,12 @@ void SystemAssembler::compute_interior_facet_tensor(
+   std::array<UFC*, 2>& ufc,
+   std::array<ufc::cell, 2>& ufc_cell,
+   std::array<std::vector<double>, 2>& coordinate_dofs,
+-  const std::array<bool, 2>& tensor_required_cell,
++  const std::array <std::array<bool, 2>, 2>& tensor_required_cell_by_cell,
+   const std::array<bool, 2>& tensor_required_facet,
+   const std::array<Cell, 2>& cell,
+   const std::array<std::size_t, 2>& local_facet,
+   const bool facet_owner,
+-  const std::array<const ufc::cell_integral*, 2>& cell_integrals,
++  const std::array <std::array<const ufc::cell_integral*, 2>, 2>& cell_integrals_by_cell,
+   const std::array<const ufc::interior_facet_integral*, 2>& interior_facet_integrals,
+   const std::array<std::size_t, 2>& matrix_size,
+   const std::size_t vector_size,
+@@ -1101,11 +1120,11 @@ void SystemAssembler::compute_interior_facet_tensor(
+       if (compute_cell_tensor[c])
+       {
+         // Compute cell tensor, if required
+-        if (tensor_required_cell[form] and !cell[c].is_ghost())
++        if (tensor_required_cell_by_cell[form][c] and !cell[c].is_ghost())
+         {
+           ufc[form]->update(cell[c], coordinate_dofs[c], ufc_cell[c],
+-                            cell_integrals[form]->enabled_coefficients());
+-          cell_integrals[form]->tabulate_tensor(ufc[form]->A.data(),
++                            cell_integrals_by_cell[form][c]->enabled_coefficients());          
++          cell_integrals_by_cell[form][c]->tabulate_tensor(ufc[form]->A.data(),
+                                                 ufc[form]->w(),
+                                                 coordinate_dofs[c].data(),
+                                                 ufc_cell[c].orientation);
+diff --git a/dolfin/fem/SystemAssembler.h b/dolfin/fem/SystemAssembler.h
+index 19ea8bf..6c8d346 100644
+--- a/dolfin/fem/SystemAssembler.h
++++ b/dolfin/fem/SystemAssembler.h
+@@ -170,12 +170,12 @@ namespace dolfin
+       std::array<UFC*, 2>& ufc,
+       std::array<ufc::cell, 2>& ufc_cell,
+       std::array<std::vector<double>, 2>& coordinate_dofs,
+-      const std::array<bool, 2>& tensor_required_cell,
++      const std::array <std::array<bool, 2>, 2>& tensor_required_cell_by_cell,
+       const std::array<bool, 2>& tensor_required_facet,
+       const std::array<Cell, 2>& cell,
+       const std::array<std::size_t, 2>& local_facet,
+       const bool facet_owner,
+-      const std::array<const ufc::cell_integral*, 2>& cell_integrals,
++      const std::array <std::array<const ufc::cell_integral*, 2>, 2>& cell_integrals_by_cell,
+       const std::array<const ufc::interior_facet_integral*, 2>& interior_facet_integrals,
+       const std::array<std::size_t, 2>& matrix_size,
+       const std::size_t vector_size,

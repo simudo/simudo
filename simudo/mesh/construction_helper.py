@@ -5,6 +5,7 @@ from builtins import bytes, dict, int, range, str, super
 from collections import defaultdict
 from functools import partial
 from os import path as osp
+from pathlib import Path
 import warnings
 
 import numpy as np
@@ -328,69 +329,128 @@ class ConstructionHelperManualCellTagging(BaseConstructionHelper):
 
         self.cell_regions = d['tag_to_cell_values']
 
-class ConstructionHelperPygmsh(BaseConstructionHelper):
-    mesh_filename = None
 
-    def user_define_pygmsh_geo(self):
-        '''override me
+class ConstructionHelperPygmsh2(BaseConstructionHelper):
+    """
+    Example::
 
-Returns
--------
-geo:
-    `geo_object` that will be passed to :py:func:`pygmsh.generate_mesh`.
-'''
-        raise NotImplementedError()
+        from simudo.mesh import ConstructionHelperPygmsh2
+        from simudo.mesh.gmsh import AnisotropicPygmshGeneratorHelper
 
-    def pygmsh_generate_mesh(self, geo):
-        import pygmsh
+        class MyMeshConstructor(ConstructionHelperPygmsh2):
+            my_custom_r2_height = 1.5
 
-        p = self.params
+            class GeneratorHelper(AnisotropicPygmshGeneratorHelper):
+                def user_generate(self):
+                    geo = self.geometry
+                    tt = self.tag_tracker
 
-        extra_gmsh_arguments = p.get('extra_gmsh_arguments', [])
+                    # yuo can reference attributes of the ConstructionHelper
+                    constructor = self.user_data
+                    r2h = constructor.my_custom_r2_height
 
-        mesh_algorithm = p.get('mesh_algorithm', '7')
-        if mesh_algorithm is not None:
-            extra_gmsh_arguments.extend(
-                ('-string', 'Mesh.Algorithm={};'.format(mesh_algorithm)))
+                    # construct three overlapping rectangles
+                    r0 = tt(geo.add_rectangle([0.0, 0.0, 0.0], 1.0, 1.0))
+                    r1 = tt(geo.add_rectangle([0.5, 0.5, 0.0], 1.0, 1.0))
+                    r2 = tt(geo.add_rectangle([0.7, 0.2, 0.0], 0.1, r2h))
 
-        dim = self.params.get('dim', 2)
+                    # no need to wait until the end to define physical tags!
+                    self.regions["r0"] = r0
+                    self.regions["core"] = r0 & r1 & r2
 
-        generate_mesh_kwargs = p.get(
-            'generate_mesh_kwargs', {})
+                    # merge the shapes together
+                    tt.merge(r0, r1, r2)
 
-        generate_mesh_kwargs.setdefault('prune_z_0', (dim == 2))
-        generate_mesh_kwargs.setdefault('dim', dim)
+                    # finish defining regions
+                    self.regions["r1"] = r1
+                    self.regions["r2"] = r2
 
-        mesh = pygmsh.generate_mesh(
-            geo,
-            extra_gmsh_arguments=extra_gmsh_arguments,
-            **generate_mesh_kwargs)
-        return mesh, dim
+                    # poke a hole in the mesh!
+                    tt.remove((r2 & r0) - r1)
+
+            def user_density_function(self, mesh, cell_function, tag_values):
+                cf = cell_function
+                r = tag_values
+                dx = dolfin.dx()
+
+                element = dolfin.VectorElement("DG", mesh.ufl_cell(), 1, 9)
+                space = dolfin.FunctionSpace(mesh, element)
+                u = dolfin.Function(space)
+                v = dolfin.TestFunction(space)
+                expr = -dolfin.inner(v, u) * dx
+
+                a = r["r0"] - r["r1"] - r["r2"]
+                b = r["r1"] - r["r0"] - r["r2"]
+                c = (r["r0"] | r["r1"] | r["r2"]) - a - b
+
+                A = 2000
+                B = 20
+                for cvs, vec in [
+                    [a, [A, 0.0, 0.0, 0.0, B, 0.0, 0.0, 0.0, 1.0]],
+                    [b, [B, 0.0, 0.0, 0.0, A, 0.0, 0.0, 0.0, 1.0]],
+                    [c, [B,   A, 0.0,   A, B, 0.0, 0.0, 0.0, 1.0]],
+                ]:
+                    dx1 = dolfin.dx(subdomain_data=cf, subdomain_id=tuple(cvs))
+                    expr += dolfin.inner(v, dolfin.Constant(vec)) * dx1
+
+                solver = NewtonSolver(F=expr, u_=u, bcs=[])
+                solver.solve()
+                return u
+    """
+
+    GeneratorHelper: type = ...
+    xdmf_output: str = None #set to save output mesh to location xdmf_output. 
+
+    def user_density_function(self, mesh, cell_function, tag_values):
+        """override me
+
+        Parameters
+        ----------
+        mesh: FEM mesh
+            Initial generated mesh.
+        cell_function:
+            Cell function with region information.
+        tag_values:
+            Dictionary mapping region names to sets of cell values.
+
+        Returns
+        -------
+        function:
+            Vector 9-component FEM function representing a 3x3 anisotropic
+            metric matrix.
+        """
+        raise NotImplementedError
+
+    def _generator(self):
+        return self.GeneratorHelper.prepare(dim=self.dim, user_data=self)
 
     def generate_mesh(self):
-        import meshio
+        from .gmsh import generate_anisotropic_mesh
 
-        geo = self.user_define_pygmsh_geo()
-        pymesh, dim = self.pygmsh_generate_mesh(geo)
-
-        d = PygmshMakeRegions().process(
-            cells=pymesh.cells,
-            cell_data=pymesh.cell_data,
-            field_data=pymesh.field_data,
-            dim=dim)
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            if self.mesh_filename is not None:
-                mesh_file = self.mesh_filename
+        
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            if self.xdmf_output is None:
+                xdmf_output = tmp / "mesh.xdmf"
             else:
-                mesh_file = osp.join(str(tmpdir), 'mesh.xdmf')
-            meshio.write(
-                mesh_file, pymesh)
+                #check that xdmf_output is a Path
+                xdmf_output = Path(self.xdmf_output)
+                #if xdmf_output is in a directory that doesn't exist, create it
+                xdmf_output.parent.mkdir(parents=True, exist_ok=True)
 
-            with dolfin.XDMFFile(mesh_file) as file:
+            cvs = generate_anisotropic_mesh(
+                xdmf_output=xdmf_output,
+                mesh_generator=self._generator(),
+                density_function=self.user_density_function,
+                refinement_iterations=self.params.get('refinement_iterations', 0),
+            )
+
+            with dolfin.XDMFFile(str(xdmf_output)) as file:
                 mesh = dolfin.Mesh()
                 file.read(mesh)
-                cf = dolfin.MeshFunction('size_t', mesh, dim, 0)
+                cf = dolfin.MeshFunction(
+                    "size_t", mesh, mesh.topology().dim(), 0
+                )
                 file.read(cf)
 
         self.mesh = mesh
@@ -398,14 +458,11 @@ geo:
 
         # initialize facets-cells mapping
         D = self.dim
-        mesh.init(D-1, D)
+        mesh.init(D - 1, D)
 
         # TODO: turn physical objects with dim-1 into facetfunction
 
-        self.cell_regions = d['tag_to_cell_values']
-        self.cell_regions['domain'] = domain_cvs = set()
-        for cvs in d['tag_to_cell_values'].values():
-            domain_cvs.update(cvs)
+        self.cell_regions = cvs
 
 class ConstructionHelperIntervalProduct2DMesh(BaseConstructionHelper):
     Interval1DTag = Interval1DTag
@@ -445,11 +502,30 @@ class ConstructionHelperIntervalProduct2DMesh(BaseConstructionHelper):
 
 class ConstructionHelperLayeredStructure(
         ConstructionHelperIntervalProduct2DMesh):
-    '''
+    '''Mesh-construction helper for 1-D layered device structures (optionally
+extruded to 2-D).
+
+Layers are specified as a list of dicts, each containing at minimum
+``'name'`` (str), ``'material'`` (str), and ``'thickness'`` (float, in
+mesh units).  Pass the list as ``params['layers']``.  Additional mesh
+refinement regions can be supplied as ``params['extra_regions']``.
+
+See :py:class:`ConstructionHelperIntervalProduct2DMesh` for the underlying
+mesh-generation machinery, and
+:py:class:`~simudo.physics.problem_data.ProblemData` for the solver object
+that consumes the resulting mesh.
+
 Attributes
 ----------
 material_to_region: dict
-    Mapping from material to abstract CellRegion.
+    Mapping from material name (str) to the union
+    :py:class:`~simudo.mesh.topology.CellRegion` covering all layers with
+    that material.
+layers: list of dict
+    The layer definitions as supplied in ``params['layers']``.
+extra_regions: list
+    Extra refinement regions, from ``params['extra_regions']``
+    (formerly ``params['simple_overmesh_regions']``).
 '''
     @cached_property
     def layers(self):

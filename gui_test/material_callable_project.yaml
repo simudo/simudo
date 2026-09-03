@@ -1,0 +1,135 @@
+# Test: IBBeerLambert with sigma provided by a material file (not inline YAML).
+# Verifies the v1 callable convention end-to-end:
+#   - IBTestMaterial.get_dict() returns 'opt_ci/sigma_function' as a top-hat callable spec
+#   - runner's _register_material_dict dispatches it to spatial.add_callable_rule
+#   - IBBeerLambert.get_sigma() retrieves it via the registered callable rule
+# Same band structure and processes as claude_ibbl_test.yaml; the only
+# difference is that opt_ci has NO inline 'sigma:' block — it relies on the
+# material attached to the I layer to provide σ(E).
+
+layers:
+- name: p
+  thickness: {value: 1.0, unit: um}
+  mesh: {start: 0.005, factor: 1.2}
+  properties:
+    poisson/static_rho: {value: -1.0e+17, unit: elementary_charge/cm^3}
+- name: I
+  thickness: {value: 3.0, unit: um}
+  mesh: {start: 0.005, factor: 1.2}
+  material: ib_test
+  # No properties block — everything comes from the material.
+- name: n
+  thickness: {value: 1.0, unit: um}
+  mesh: {start: 0.005, factor: 1.2}
+  properties:
+    poisson/static_rho: {value: 1.0e17, unit: elementary_charge/cm^3}
+
+materials:
+  ib_test:
+    source: library://IBTestMaterial
+
+regions:
+- name: domain
+  properties:
+    temperature: {value: 300.0, unit: K}
+    CB/energy_level: {value: 2.0, unit: eV}
+    VB/energy_level: {value: 0.0, unit: eV}
+    IB/energy_level: {value: 1.2, unit: eV}
+    CB/effective_density_of_states: {value: 2.0e19, unit: cm^-3}
+    VB/effective_density_of_states: {value: 2.0e19, unit: cm^-3}
+    CB/mobility: {value: 500.0, unit: cm^2/V/s}
+    VB/mobility: {value: 500.0, unit: cm^2/V/s}
+    poisson/permittivity: {value: 13.0, unit: vacuum_permittivity}
+    IB/degeneracy: {value: 1, unit: ''}
+    refractive_index: {value: 3.5, unit: ''}
+    # use_constant_mobility flag is applied per-band by the runner from
+    # the layer property; set it on the I layer below.
+    IB/simple_mobility_model: {value: true, unit: ''}
+
+bands:
+- name: CB
+  type: nondegenerate
+  sign: -1
+  extent: all
+- name: IB
+  type: intermediate
+  sign: -1
+  extent: [I]
+- name: VB
+  type: nondegenerate
+  sign: 1
+  extent: all
+
+processes:
+# IB→CB optical absorption. σ(E) comes from the material on the I layer.
+# Intentionally no `sigma:` block here.
+- class: IBBeerLambert
+  name: opt_ci
+  dst_band: CB
+  src_band: IB
+  trap_band: IB
+  radiative_recombination: false
+
+- class: NonRadiativeTrap
+  name: nr_top
+  dst_band: CB
+  src_band: IB
+  trap_band: IB
+- class: NonRadiativeTrap
+  name: nr_bottom
+  dst_band: IB
+  src_band: VB
+  trap_band: IB
+
+optical_fields:
+- name: forward_ci
+  direction: +x
+  photon_energy: {value: 0.85, unit: eV}
+  intensity:
+    mode: blackbody_band
+    T_source: {value: 6000.0, unit: K}
+    concentration: 100
+    E_min: {value: 0.8, unit: eV}
+    E_max: {value: 1.2, unit: eV}
+
+contacts:
+  left:
+    role: swept
+    bands:
+      CB: zero_current
+      IB: ohmic
+      VB: ohmic
+  right:
+    role: reference
+    bands:
+      CB: ohmic
+      IB: ohmic
+      VB: zero_current
+
+simulation:
+  intensity_ramp:
+    enabled: true
+    selfconsistent_optics: false
+    step_size: 1.0e-25
+  voltage_sweep:
+    enabled: true
+    values: [0.0]
+    selfconsistent_optics: true
+    step_size: 0.0001
+  output:
+    spatial_profiles: true
+    xdmf_mesh: false
+  checkpoints:
+    intensity_ramp:
+      checkpoint_at_end: false
+      at_values: []
+    voltage_sweep:
+      checkpoint_at_end: false
+      at_values: []
+    directory: checkpoints
+
+output:
+  folder: out/claude_ibbl_material_test
+
+mesh:
+  max_edge_length: 0.02

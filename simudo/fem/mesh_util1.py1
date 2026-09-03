@@ -136,6 +136,9 @@ classes:
       exp: !c |
         lambda z: dolfin.exp(dless(z))
 
+      lambert_w0: !c |
+        lambda z: ufle.lambert_w0_conditional(dless(z))
+
       fermidirac_f: !c |
         lambda x: 1/(1 + dolfin.exp(dless(x)))
       fermidirac_f_inv: !c |

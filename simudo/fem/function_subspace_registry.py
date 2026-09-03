@@ -149,7 +149,7 @@ Also, FunctionAssigner is broken, so we're also taking over that functionality.
             u, no_indices=True)[:2]
 
     def get_function_space(self, subfunction, collapsed=False):
-        '''Get function space for a (sub)function. Use collapsed=True to return
+        '''Get function space of a (sub)function. Use collapsed=True to return
 a fresh independent/unattached copy.'''
         # if hasattr(subfunction, 'function_space'):
         #     return subfunction.function_space()
@@ -157,6 +157,7 @@ a fresh independent/unattached copy.'''
             'subspace_copy' if collapsed else 'subspace']
 
     def new_independent_function(self, subfunction):
+        '''Make a new function in the same subspace as subfunction'''
         return dolfin.Function(
             self.get_function_space(subfunction, collapsed=True))
 

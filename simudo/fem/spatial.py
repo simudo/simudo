@@ -17,6 +17,58 @@ from .expr import constantify_if_literal
 logger = logging.getLogger(__name__)
 
 
+#: Legacy spatial-key spellings mapped onto their canonical form.
+#:
+#: Thermal velocity was historically written ``v_th`` when supplied as a trap
+#: *process* parameter (``nr_top/v_th``) and ``vth`` when supplied as a *band*
+#: property (``CB/vth``). It is a band property, so ``vth`` is canonical.
+#:
+#: Aliases are applied to the final path component only, so ``nr_top/v_th``
+#: normalises to ``nr_top/vth`` while a region or process whose *name* happens
+#: to be ``v_th`` is left alone.
+KEY_ALIASES = {
+    'v_th': 'vth',
+}
+
+# Legacy keys already reported, so each is mentioned once per session rather
+# than on every lookup inside the Newton loop.
+_warned_legacy_keys = set()
+
+
+def canonicalize_key(key):
+    '''Map a deprecated spatial key onto its canonical spelling.
+
+Applied by every :py:class:`Spatial` method that takes a key, so material
+files, YAML input and hand-written ``add_rule`` calls are all normalised on
+the way in and on the way out. Unrecognised keys are returned unchanged.
+
+Parameters
+----------
+key: str
+    Spatial key, e.g. :code:`"nr_top/v_th"` or :code:`"temperature"`.
+
+Returns
+-------
+str
+    The canonical spelling of `key`.
+'''
+    prefix, sep, last = key.rpartition('/')
+    canonical_last = KEY_ALIASES.get(last)
+    if canonical_last is None:
+        return key
+
+    new_key = prefix + sep + canonical_last
+    if key not in _warned_legacy_keys:
+        _warned_legacy_keys.add(key)
+        message = (
+            "spatial key {!r} is deprecated; use {!r} instead. The old "
+            "spelling still works, but will be removed in a future release."
+            .format(key, new_key))
+        logger.warning(message)
+        warnings.warn(message, DeprecationWarning, stacklevel=3)
+    return new_key
+
+
 class BoundaryCondition(SetattrInitMixin):
     '''Boundary condition class, used both for essential and natural BCs.
 
@@ -55,6 +107,22 @@ region: :py:class:`.topology.CellRegion`
     Cell region where this value applies.
 value: :py:class:`ufl.core.expr.Expr`
     Value.
+'''
+
+class CallableValueRule(SetattrInitMixin):
+    '''Rule for a spatially-dependent value defined by a callable
+    e.g., of photon energy.
+
+Parameters
+----------
+priority:
+    Priority of this rule. Lower values have higher priority.
+region: :py:class:`.topology.CellRegion`
+    Cell region where this callable applies.
+func: callable
+    Callable with signature ``f(E: pint.Quantity) -> pint.Quantity``.
+    Returns a scalar pint Quantity (possibly wrapping a dolfin.Constant or
+    live UFL expression for state-dependent quantities).
 '''
 
 class ExtractedBoundaryCondition(SetattrInitMixin):
@@ -344,11 +412,16 @@ bcs: defaultdict(SortedList)
         return defaultdict(lambda: SortedList(key=lambda x: x.priority))
 
     @cached_property
+    def callable_value_rules(self):
+        return defaultdict(lambda: SortedList(key=lambda x: x.priority))
+
+    @cached_property
     def bcs(self):
         return defaultdict(lambda: SortedList(key=lambda x: x.priority))
 
     def get(self, key):
         '''Get spatially dependent quantity named `key`.'''
+        key = canonicalize_key(key)
 
         mapping = {}
         for rule in self.value_rules[key]:
@@ -381,6 +454,7 @@ bcs: defaultdict(SortedList)
             raise AssertionError(
                 "`region` argument should not be a string, have you "
                 "swapped the first two arguments by mistake?")
+        key = canonicalize_key(key)
         value = constantify_if_literal(value)
         bc = BoundaryCondition(region=region,
                                value=value,
@@ -407,11 +481,87 @@ value: :py:class:`ufl.core.expr.Expr`
 priority:
     Priority of this rule. Lower values have higher priority.
 '''
+        key = canonicalize_key(key)
         value = constantify_if_literal(value)
         self.value_rules[key].add(ValueRule(
             region=region,
             value=value,
             priority=priority))
+
+    def add_callable_rule(self, key, region, func, priority=0):
+        '''Add a callable rule for a (usually energy)-dependent spatially-varying quantity.
+
+Parameters
+----------
+key : str
+    Spatial key, e.g. ``'opt_cv/alpha_function'``.
+region : :py:class:`.topology.CellRegion`
+    Cell region where this callable applies.
+func : callable
+    Callable with signature ``f(E: pint.Quantity) -> pint.Quantity``.
+    Called at assembly time with a fixed value of e.g., photon energy; returns a scalar
+    pint Quantity (may wrap a dolfin.Constant or a live UFL expression for
+    state-dependent quantities such as intermediate-band fill factors).
+priority : int, optional
+    Lower values have higher priority.  Default 0.
+'''
+        key = canonicalize_key(key)
+        self.callable_value_rules[key].add(CallableValueRule(
+            region=region, func=func, priority=priority))
+
+    def get_callable(self, key, E):
+        '''Evaluate callable rules for ``key`` at photon energy ``E``.
+
+Iterates over :py:attr:`callable_value_rules` ``[key]`` in priority order,
+calls ``func(E)`` for each registered region, and assembles a piecewise UFL
+expression using the cell-marker mechanism (same as :py:meth:`get`).
+
+Cell markers not covered by any rule default to zero.
+
+Parameters
+----------
+key : str
+    Spatial key, e.g. ``'opt_cv/alpha_function'``.
+E : pint.Quantity
+    (e.g.) Photon energy.  Treated as a fixed Python-side scalar at each call
+
+Returns
+-------
+pint.Quantity wrapping a UFL expression
+    Piecewise expression assembled from the per-region callables.
+
+Raises
+------
+AssertionError
+    If no callable rules are registered for ``key``.
+'''
+        key = canonicalize_key(key)
+
+        mapping = {}
+        for rule in self.callable_value_rules[key]:
+            value = rule.func(E)
+            cvs = self.mesh_data.evaluate_topology(rule.region)
+            for cv in cvs:
+                mapping.setdefault(cv, value)
+
+        if not mapping:
+            raise AssertionError(
+                "no callable rules for key {!r}".format(key))
+
+        sample_value = next(iter(mapping.values()))
+        if hasattr(sample_value, 'units'):
+            units = sample_value.units
+            magnitude_mapping = {k: v.m_as(units) for k, v in mapping.items()}
+        else:
+            units = None
+            magnitude_mapping = {k: float(v) for k, v in mapping.items()}
+
+        expr = self.mesh_util.cell_function_function.make_cases(magnitude_mapping)
+
+        if units is not None:
+            expr = units * expr
+
+        return expr
 
     def add_value_rule(self, region, key, value, priority=0):
         '''Deprecated. Use :py:meth:`add_rule`.'''
@@ -430,6 +580,20 @@ priority:
             key=key,
             region=region,
             value=value,
+            priority=priority)
+
+    def add_material_callable_data(self, key, material_name, func, priority=0):
+        '''Register a callable rule for the cells where *material_name* is
+        applied.  Mirror of :py:meth:`add_material_data` for callables.
+        '''
+        region = self.material_to_region_map.get(material_name, None)
+        if region is None:
+            return
+
+        self.add_callable_rule(
+            key=key,
+            region=region,
+            func=func,
             priority=priority)
 
     def make_combined_bc(self, key, value_extractor=None, **kwargs):

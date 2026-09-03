@@ -251,6 +251,47 @@ classes:
     env:
       default_:
         p: !c self.mesh_util
+  
+  DegenerateBand:
+    inherit: [PyamlBase]
+    eval:
+      # make sure to use the correct effective density of states for nonparabolic band
+      N: !c |
+        _.effective_density_of_states
+
+      # below is parabolic only. Non-parabloic coefficient can also be calculated. See Joyce+Dixon1977
+      A1: !c |
+        2 ** (-3/2)
+
+      u_to_phiqfl: !c |
+        lambda u: _.energy_level - _.sign * _.kT * (p.ln(u/_.N) + _.A1 * u/_.N)
+      phiqfl_to_u: !c |
+        lambda phiqfl: _.N / _.A1 * p.lambert_w0(_.A1 * p.exp(_.sign*(_.energy_level - phiqfl) / _.kT))
+      
+      # For SRH recombination, it is needed to calculate the Boltzmann density, too
+      nondegenerate_N0: !c |
+        _.effective_density_of_states*p.exp(
+          _.sign*_.energy_level/_.kT)
+      phiqfl_to_u_nondegenerate: !c | 
+        lambda phiqfl: _.nondegenerate_N0 * p.exp(-_.sign * phiqfl / _.kT)
+      u_nondegenerate: !c |       
+        _.phiqfl_to_u_nondegenerate(_.e_phi + _.qfl)
+
+      energy_level: !c |
+        _.spatial.get(_.spatial_prefix + "energy_level")
+
+      effective_density_of_states: !c |
+        _.spatial.get(_.spatial_prefix + "effective_density_of_states")
+
+      # Einstein relation: μ = Dβe
+      diffusivity: !c |
+        %raise NotImplementedError()
+
+    env:
+      default_:
+        u: !c self.unit_registry
+        p: !c self.mesh_util
+
 
   MixedQflBand:
     inherit: [PyamlBase]
@@ -288,9 +329,12 @@ classes:
         external_j_term: !c |
           + _.dx_inv * p.dot(_.j, _.xi) *  p.Constant(u("1 V*s*cm"))
 
+        surface_recombination_term: !c 'band.mixedqfl_surface_recombination_term'
+
         weak_form: !c |
           + _.continuity_j_term
           + _.continuity_g_term
+          + _.surface_recombination_term
 
           + _.drift_diffusion_bc_term
           + _.drift_diffusion_heterojunction_bc_term
@@ -420,7 +464,7 @@ classes:
            dict(element     = p.element("BDM", _.degree),
                 trial_key   = "j",
                 trial_units = u("A / mesh_unit^2"),
-                trial_tolerance = 1e-10,
+                trial_tolerance = 1e-13,
                 test_key    = "xi",
                 test_units  = u("1 / mesh_unit^2 / electron_volt"))]
 

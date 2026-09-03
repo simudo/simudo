@@ -88,7 +88,7 @@ def main():
     args = parser.parse_args()
 
     for input in args.inputs:
-        with open(input, "rt") as h:
+        with open(input, "rt", encoding="utf-8") as h:
             tree = h5yaml.load(h)
         prefix = os.path.dirname(input).rstrip('/')+'/'
         def thunk():
@@ -106,9 +106,9 @@ def main():
         with with_item:
             thunk()
 
-        with open(prefix+'cachegrind.out.0', 'wt') as file:
+        with open(prefix+'cachegrind.out.0', 'wt', encoding='utf-8') as file:
             prof.callgrind(file)
-        with open(prefix+'pprofile.txt', 'wt') as file:
+        with open(prefix+'pprofile.txt', 'wt', encoding='utf-8') as file:
             prof.annotate(file)
 
 def submain(prefix, tree):

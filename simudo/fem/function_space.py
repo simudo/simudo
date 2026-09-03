@@ -139,7 +139,7 @@ class MixedFunctionSpace(object):
                            in zip(descs, subfunctions))
 
 class MixedFunctionHelper(SetattrInitMixin):
-    '''Utility mixin for objects that hold a mixed function make up of
+    '''Utility mixin for objects that hold a mixed function made up of
 many subfunctions that need to be gathered from different objects, for
 example :py:class:`.poisson_drift_diffusion.PoissonDriftDiffusion`.
 
@@ -147,7 +147,7 @@ Parameters
 ----------
 mesh_util: :py:class:`.mesh_util.MeshUtil`
     Instance of MeshUtil.
-subspace_descriptors_for_solution_space: sequence of dict
+subspace_descriptors_for_solution_space: 
     Sequence of subspace descriptor dicts. This property must contain
     the subspace descriptors that will be used to build the solution
     space. Typically one would gather these by calling

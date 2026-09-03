@@ -20,7 +20,7 @@ class Blackbody():
 
     def blackbody_I_E(self, energy_unit):
         u = self.u
-        h, c = u.h, u.c
+        h, c = u.planck_constant, u.c
 
         fac = (2*energy_unit**3/h**3/c**2)
 
@@ -68,6 +68,17 @@ photon_flux: quantity
         eu, factor, f = self.blackbody_I_E_solar_on_earth()
         r = quad(f, 0, 20.)[0]
         return (r*factor*eu).to('W/m^2')
+    
+    # define illuminated power for each field;
+    def field_intensity_integral(self, eu_prefactor_B, E0, E1):
+        eu, factor, f = eu_prefactor_B
+        r = quad(f, E0.m_as(eu), E1.m_as(eu))[0]
+        return (r*factor*eu).to('W/m^2')
+    
+    def field_intensity_integral_on_earth(self, E0, E1):
+        return self.field_intensity_integral(
+            self.blackbody_I_E_solar_on_earth(), E0, E1).to('W/m^2')
+
 
     @cached_property
     def geometric_factor(self):

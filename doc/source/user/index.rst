@@ -5,4 +5,5 @@ User guide
 
    install
    tutorial
+   gui_tutorial
 

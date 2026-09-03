@@ -1,0 +1,321 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Degenerate heterojunction boundary condition
+\end_layout
+
+\begin_layout Date
+28 June 2022
+\end_layout
+
+\begin_layout Standard
+The thermionic boundary condition for parabolic bands has continuous band
+ current and temperature across the junction.
+\end_layout
+
+\begin_layout Standard
+In the 
+\series bold
+nondegenerate limit
+\series default
+, the current obeys (Sentaurus manual 2021 Eq.
+ 870, among other sources) in band 
+\begin_inset Formula $k$
+\end_inset
+
+
+\begin_inset Formula 
+\[
+J_{k}=-s_{k}a_{k}q\left[v_{th,b}u_{b}-\frac{m_{k,b}}{m_{k,l}}v_{th,l}u_{l}\exp\left(s_{k}\frac{\Delta E_{k}}{kT}\right)\right]
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $s_{k}$
+\end_inset
+
+ is the band sign, 
+\begin_inset Formula $q$
+\end_inset
+
+ is the elementary charge, 
+\begin_inset Formula $v_{th}$
+\end_inset
+
+ is the thermal velocity, and the subscripts 
+\begin_inset Formula $b$
+\end_inset
+
+ and 
+\begin_inset Formula $l$
+\end_inset
+
+ represent the barrier and low side of the heterojunction, where 
+\begin_inset Formula $\Delta E_{k}=E_{b}-E_{l}>0$
+\end_inset
+
+ is the barrier height.
+ 
+\begin_inset Formula $a_{k}$
+\end_inset
+
+ is a constant that Sentaurus takes to be 2, but I can't see any reason
+ to do that.
+ Their reference does not support the claim.
+ In the nondegenerate limit, 
+\begin_inset Formula 
+\[
+u_{k}=N_{k}\exp(s_{k}(E_{k}-w_{k})/kT)\equiv N_{k}\exp\eta_{k}
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $w_{k}$
+\end_inset
+
+ is the qfl (or phiqfl if 
+\begin_inset Formula $\phi$
+\end_inset
+
+ is not included in 
+\begin_inset Formula $E_{k}$
+\end_inset
+
+), 
+\begin_inset Formula $N_{k}$
+\end_inset
+
+ is the effective density of states, and we define 
+\begin_inset Formula $\eta_{k}$
+\end_inset
+
+ for future use, as it is defined in the Sentaurus manual.
+\end_layout
+
+\begin_layout Standard
+Note that for a parabolic band semiconductor
+\begin_inset Formula 
+\[
+v_{th}=\sqrt{\frac{kT}{2\pi m}}
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+N_{k}=2g_{k}\left(\frac{2\pi mkT}{h^{2}}\right)^{3/2}
+\]
+
+\end_inset
+
+so 
+\begin_inset Formula $\frac{m_{b}}{m_{l}}v_{th,l}N_{l}=v_{th,b}N_{b}$
+\end_inset
+
+.
+ Then 
+\begin_inset Formula 
+\[
+\frac{J_{k}}{-s_{k}qa_{k}v_{th,b}N_{b}}=\exp(\eta_{b})-\exp\left(\eta_{l}+s_{k}\frac{\Delta E_{k}}{kT}\right).
+\]
+
+\end_inset
+
+Dividing through by 
+\begin_inset Formula $\exp\eta_{b}$
+\end_inset
+
+, we have
+\begin_inset Formula 
+\[
+\frac{J_{k}}{-s_{k}a_{k}v_{th,b}u_{b}}=1-\exp\left(\eta_{l}-\eta_{b}+s_{k}\frac{\Delta E_{k}}{kT}\right)
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+\eta_{l}-\eta_{b}+s_{k}\frac{\Delta E_{k}}{kT}=\frac{s_{k}}{kT}(E_{l}-w_{l}-E_{b}+w_{b}+E_{b}-E_{l})=\frac{s_{k}}{kT}(w_{b}-w_{l})=\frac{s_{k}}{kT}\Delta w,
+\]
+
+\end_inset
+
+so our HJBC in the nondegenerate limit is
+\begin_inset Formula 
+\[
+\Delta w\equiv w_{b}-w_{l}=s_{k}kT\ln\left(1+\frac{J_{k}}{s_{k}a_{k}v_{th,b}u_{b}}\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the 
+\series bold
+degenerate limit
+\series default
+, the current obeys (Sentaurus manual 2021 Eq.
+ 879)
+\begin_inset Formula 
+\[
+J_{k}=-s_{k}a_{k}q\left[v_{th,b}N_{b}\zeta_{b}-\frac{m_{k,b}}{m_{k,l}}v_{th,l}N_{l}\zeta_{l}^{\prime}\right]
+\]
+
+\end_inset
+
+(note that 
+\begin_inset Formula $\zeta^{\prime}$
+\end_inset
+
+ notation is mine, not in the manual), with
+\begin_inset Formula 
+\begin{align*}
+\zeta_{x} & =\ln(1+\exp\eta_{x})\\
+\zeta_{x}^{\prime} & =\ln\left[1+\exp\left(\eta_{x}+s_{k}\frac{\Delta E_{k}}{kT}\right)\right]
+\end{align*}
+
+\end_inset
+
+where 
+\begin_inset Formula $\eta^{\prime}\equiv\eta_{l}+s_{k}\frac{\Delta E_{k}}{kT}$
+\end_inset
+
+.
+ Note that in the nondegenerate limit, 
+\begin_inset Formula $\eta_{x}\ll-1$
+\end_inset
+
+, so 
+\begin_inset Formula $\zeta_{x}\approx\exp\eta_{x}$
+\end_inset
+
+ and 
+\begin_inset Formula $\zeta_{x}^{\prime}\approx\exp\eta_{x}^{\prime}$
+\end_inset
+
+, which gives back the nondegenerate limit for 
+\begin_inset Formula $J$
+\end_inset
+
+.
+ We want an expression for 
+\begin_inset Formula $\Delta w$
+\end_inset
+
+, so start from 
+\begin_inset Formula $J_{k}$
+\end_inset
+
+ and let 
+\begin_inset Formula $B\equiv\frac{J_{k}}{-s_{k}a_{k}qv_{th,b}N_{b}}$
+\end_inset
+
+, so
+\begin_inset Formula 
+\begin{align*}
+B= & \zeta_{b}-\zeta_{l}^{\prime}=\ln\left(\frac{1+\exp\eta_{b}}{1+\exp\eta_{l}^{\prime}}\right)=\ln\left(\frac{1+\exp(-\eta_{b})}{\exp(-\eta_{b})+\exp(\eta_{l}^{\prime}-\eta_{b})}\right).
+\end{align*}
+
+\end_inset
+
+Note that 
+\begin_inset Formula $\eta_{l}^{\prime}-\eta_{b}=s_{k}\Delta w/kT$
+\end_inset
+
+, so 
+\begin_inset Formula 
+\begin{align*}
+\exp(B)= & \frac{1+\exp(-\eta_{b})}{\exp(-\eta_{b})+\exp(s_{k}\Delta w/kT)}\\
+\exp(-\eta_{b})+\exp(s_{k}\Delta w/kT)= & \exp(-B)+\exp(-(B+\eta_{b}))\\
+\exp(s_{k}\Delta w/kT)= & \exp(-B)+\exp(-(B+\eta_{b}))-\exp(-\eta_{b})\\
+\Delta w= & s_{k}kT\ln[\exp(-B)+\exp(-(B+\eta_{b}))-\exp(-\eta_{b})],
+\end{align*}
+
+\end_inset
+
+which is the form we use in Simudo.
+\end_layout
+
+\end_body
+\end_document

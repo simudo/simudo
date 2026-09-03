@@ -1,0 +1,22 @@
+include AUTHORS.md
+include CHANGELOG.md
+include COPYRIGHT
+include LICENSE
+include README.md
+include manifest.uuid
+include build_docs.sh
+
+recursive-include docker *
+recursive-include gui_test *
+recursive-include tests *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+
+include doc/Makefile
+include doc/structure.md
+recursive-include doc/source *
+recursive-exclude doc/build *
+prune doc/release0_7
+
+recursive-exclude * .gitkeep
+global-exclude .DS_Store

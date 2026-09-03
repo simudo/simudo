@@ -90,7 +90,7 @@ def run():
         """
 Create the ProblemData object for a given solver stage `goal`.
 
-goal in {'full', 'local neutrality', 'thermal equilibrium'}
+goal in {'full', 'local charge neutrality', 'thermal equilibrium'}
 """
         root = ProblemData(
             goal=goal,
