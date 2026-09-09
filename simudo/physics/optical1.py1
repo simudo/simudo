@@ -22,7 +22,7 @@ classes:
         alpha: !c self.alpha
         g: !c self.g
 
-        omega: !c 'dolfin.as_vector(tuple(self.direction)) * u.dimensionless'
+        omega: !c 'dolfin.as_vector(tuple(self.mesh_direction)) * u.dimensionless'
 
         preform: !c |
           %

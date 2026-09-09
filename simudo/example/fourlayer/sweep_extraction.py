@@ -301,14 +301,18 @@ class SpatialXdmf():
 
         Returns ``(values, x_array)``
         '''
-        if y is None:
+        is_1d = len(self.mesh_bbox) == 1  # true-1D (interval) mesh
+        if y is None and not is_1d:
             y = np.mean(self.mesh_bbox[1]) #use the midpoint along the y-axis
         if x is None:
             x_box = self.mesh_bbox[0]
             x_array = np.linspace(x_box[0], x_box[1],num_points)
         else:
             x_array = x
-        values = [quantity(dolfin.Point((x,y))) for x in x_array]
+        if is_1d:
+            values = [quantity(dolfin.Point(x)) for x in x_array]
+        else:
+            values = [quantity(dolfin.Point((x,y))) for x in x_array]
         # xhat = [1.,0.]
     
         if type(values[0]) is np.ndarray:

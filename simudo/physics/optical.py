@@ -26,7 +26,8 @@ __all__ = [
     'Optical',
     'OpticalField',
     'OpticalFieldMSORTE',
-    'AbsorptionRangesHelper']
+    'AbsorptionRangesHelper',
+    'adapt_direction_to_gdim']
 
 class Optical(DefaultProblemDataChildMixin, GetToSaveMixin, SetattrInitMixin):
     '''Contains optical part of the problem. Note that unlike PDD, the
@@ -107,6 +108,57 @@ zero) photon flux, which reliably fails to converge on the first solve.
             self.fields[key].initialize_from(
                 other_optical.fields[key], function_subspace_registry=fsr)
 
+def adapt_direction_to_gdim(direction, gdim, name=None):
+    """Fit a propagation direction to a mesh's geometric dimension.
+
+A direction with more components than the mesh has dimensions is accepted
+when the extra components are zero, and is truncated. That is what lets a
+script written for the 2D strip -- where ``(1, 0)`` and ``(-1, 0)`` are the
+only directions a layered device can use -- run unchanged on a true-1D
+interval mesh, which wants ``(1,)`` and ``(-1,)``.
+
+Anything else raises :py:exc:`ValueError`: a transverse component has no
+meaning on an interval mesh, and a direction with too few components cannot
+be completed without guessing.
+
+Parameters
+----------
+direction:
+    Direction of propagation, as given by the user.
+gdim: int
+    Geometric dimension of the mesh the field lives on.
+name: str, optional
+    Field name, used in the error message.
+
+Returns
+-------
+:py:class:`numpy.ndarray`
+    Direction with exactly `gdim` components.
+"""
+    d = numpy.atleast_1d(numpy.asarray(direction, dtype='double'))
+    if len(d) == gdim:
+        return d
+
+    where = "optical field {!r}".format(name) if name else "optical field"
+    if len(d) > gdim:
+        dropped = d[gdim:]
+        if not numpy.any(numpy.abs(dropped) > 1e-12):
+            return d[:gdim]
+        raise ValueError(
+            "{} has direction {}, which cannot be used on a mesh of "
+            "geometric dimension {}: the components beyond the first {} are "
+            "not zero, and dropping them would change the direction. On an "
+            "interval mesh light travels along x, so use (1,) or (-1,) -- "
+            "(1, 0) and (-1, 0) are also accepted, for scripts written "
+            "against the 2D strip."
+            .format(where, tuple(d), gdim, gdim))
+
+    raise ValueError(
+        "{} has direction {}, which has fewer components than the mesh's "
+        "geometric dimension of {}."
+        .format(where, tuple(d), gdim))
+
+
 class OpticalField(SetattrInitMixin):
     '''A single optical field subproblem. This represents a scalar
 photon flux at a single wavelength and direction of propagation.
@@ -182,6 +234,17 @@ TODO: write down radiative transfer equation
     @property
     def mesh_util(self):
         return self.optical.mesh_util
+
+    @property
+    def mesh_direction(self):
+        '''Propagation direction, fitted to the mesh's geometric dimension.
+
+:py:attr:`direction` is kept as the user gave it; this is what the weak form
+uses. See :py:func:`adapt_direction_to_gdim` for which directions are
+accepted.
+'''
+        return adapt_direction_to_gdim(
+            self.direction, self.mesh_util.gdim, getattr(self, 'key', None))
 
     @property
     def spatial(self):

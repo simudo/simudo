@@ -15,7 +15,10 @@ class XRegionsBase(object):
 
     def __getitem__(self, name):
         if isinstance(name, (set, frozenset)):
-            return {k: self[k] for k in name}
+            # sorted: a set's iteration order depends on string hashing,
+            # which varies between Python processes; downstream consumers
+            # (output columns) must not depend on it.
+            return {k: self[k] for k in sorted(name)}
 
         mapping = self._mapping_
         try:

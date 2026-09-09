@@ -1,6 +1,6 @@
 # GUI tutorial: two solar cells
 
-*Created by Claude Opus 5 (Anthropic), 2026-08-17.*
+*Created with Claude Opus 5 (Anthropic), 2026-08-17.*
 
 This tutorial builds two complete devices in the Simudo GUI, runs them, and
 looks at the results. It is a guided path rather than a manual: every panel is
@@ -44,7 +44,7 @@ python -m simudo.gui --show --port 5006
 Launch it from your own project directory rather than anywhere else: the GUI's
 Open and Save dialogs start in the directory you launched from.
 
-To open a particular project at startup, give the path to its yaml file as an 
+To open a particular project at startup, give the path to its yaml file as an
 argument:
 
 ```bash
@@ -69,13 +69,13 @@ that is now activated.
 > pip install -e . --no-deps
 > ```
 >
-> then launch as above. 
+> then launch as above.
 
 ---
 
-# Part 1 — A silicon p-n diode
+## Part 1 — A silicon p-n diode
 
-## 1.1 Layers and materials
+### 1.1 Layers and materials
 
 Simudo in general can treat 2D devices, but the GUI is designed for 1D
 structures.
@@ -154,7 +154,7 @@ temperature.
 > load in a material and manually override any parameters you want to change,
 > without changing the material file.
 
-## 1.2 Bands
+### 1.2 Bands
 
 ![The Bands panel](../_static/gui_tutorial/si_dark_bands.png)
 
@@ -171,7 +171,7 @@ charge the band carries, and the GUI turns that into the −1 or +1 you would se
 in the saved project file. **Extent** says where the band exists; *Domain (all
 layers)* is the whole device. Part 2 uses a band that exists in only one layer.
 
-## 1.3 Recombination
+### 1.3 Recombination
 
 ![The Processes panel](../_static/gui_tutorial/si_dark_processes.png)
 
@@ -225,7 +225,7 @@ overrides everything.
 > parameter is set *somewhere*. Set parameters on `domain` when you mean them
 > to apply device-wide.
 
-## 1.4 Contacts, and the first run
+### 1.4 Contacts, and the first run
 
 ![The Boundary Conditions panel](../_static/gui_tutorial/si_dark_boundary_cond.png)
 
@@ -244,7 +244,7 @@ restart the simulation) at the end of the voltage sweep.
 box in the same panel, and it defaults to **0.02 µm** — sensible for a
 micron-scale cell, far too fine for this one. Left alone it puts about 5000
 points into a 100 µm device and the run drags on for many minutes. Set it to
-**1 µm**: the mesh becomes 174 points and the run takes under half a minute.
+**1 µm**: the mesh becomes 174 points and the run takes about fifteen seconds.
 Each layer also has its own starting spacing and expansion factor, on the
 Layers panel; the defaults (0.005 µm, growing by 1.2×) keep the mesh fine at
 the junction and at the contacts, which is where it needs to be, and the
@@ -267,11 +267,11 @@ SSH. Set that up (see the [installation instructions](install.rst)) and choose
 "Set as Default" to avoid needing to do so again. Then press **▶ Run
 Simulation** and watch the log.
 
-This device takes about half a minute on an M2 Mac Mini once the JIT cache is
+This device takes about fifteen seconds on an M2 Mac Mini once the JIT cache is
 warm; the log scrolls as each bias point converges. The very first run of your
 life will be slower, because FEniCS compiles the forms.
 
-### What you should get
+#### What you should get
 
 Open the **Output** panel. It already points at the run that just finished, and
 the J–V curve is drawn; switch the scale to **Log|J|** to see the exponential
@@ -291,7 +291,7 @@ The current rises by a factor of about 46.5 per 100 mV. Since n =
 (q/kT)·dV/d(ln J), that is an **ideality factor of 1.008** — an almost
 perfectly ideal diode, which is what this device should be.
 
-## 1.5 Turning the light on
+### 1.5 Turning the light on
 
 To study this device under illumination, we need to make the material absorb
 light and add the light itself.
@@ -322,6 +322,14 @@ between cutoff energies E_min and E_max. If you add one, it sits on one or more
 layers, and layer rules outrank material rules, so it will override the α(E)
 from the material file.
 
+**One more parameter.** Adding an optical process makes `refractive_index`
+required, and the **Layers** panel will now list it among the missing
+parameters. `BeerLambert` includes spontaneous emission by default, and the
+Shockley–van Roosbroeck term that models it needs the material's refractive
+index. Set `refractive_index` on the `domain` region to **3.5**. Without it the
+run stops before solving, with a message naming the process that wanted it.
+§2.5 explains what this emission term does, and when it is worth turning off.
+
 **The light.** In **Opt. Fields**, add a field set:
 
 ![The Optical Fields panel](../_static/gui_tutorial/si_light_opt_fields.png)
@@ -350,10 +358,10 @@ comes out of thin air. Use `0, 0.1, 0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6`.
 Keeping 0.6 V is worth it as a check on the whole calculation — see the note
 below.
 
-The illuminated run takes two to three minutes — the intensity ramp and the
+The illuminated run takes about half a minute — the intensity ramp and the
 optical solve at each bias point cost more than the dark sweep did.
 
-### Looking at the results
+#### Looking at the results
 
 ![The illuminated J–V curve for the 100 µm cell](../_static/gui_tutorial/si_thick_output.png)
 
@@ -403,7 +411,7 @@ levels sit about 0.4 eV apart, flat across the whole 99 µm. Flat quasi-Fermi
 levels mean no net driving force: the current at that bias is being carried by
 diffusion down a concentration gradient too small to see on this scale.
 
-### Looking inside the device
+#### Looking inside the device
 
 The J–V curve says what came out; the **spatial plots** say why.
 
@@ -480,7 +488,7 @@ only interesting to plot when checking whether simulations have converged.
 > `simudo/example/fourlayer/sweep_extraction.py`, which load the XDMF output
 > directly and give you the fields as arrays.
 
-### Absorbing is not collecting
+#### Absorbing is not collecting
 
 Every photon above silicon's 1.12 eV gap in the AM1.5 spectrum, if collected,
 would give 43.8 mA/cm². This cell delivers 23.8 — a little over half — even
@@ -499,30 +507,40 @@ The lifetime that governs it is the one in the **base** — the `n` layer here �
 so it is a good exercise to set `SRH/VB/tau` on the `n` layer, as you did for
 the `p` layer earlier, and watch Jsc move.
 
-## 1.6 Checkpoints and resuming
+### 1.6 Checkpoints and resuming
 
 Long sweeps are worth checkpointing. In **Simulation**, set the checkpoint
 directory and ask for a checkpoint at the end of the voltage sweep.
 
-To continue, open the project, set **resume from** to the checkpoint file —
-`../c/checkpoints/sim_V=0.6.yaml`, relative to the new run's output folder —
-and extend the voltage list to include 0.7 and 0.8 V. The run picks up where it
-left off, which you can confirm in the log — it prints a line like:
+To continue, use the **Checkpoint** selector at the top of any panel and pick
+`sim_V=0.6.yaml`. Choosing that checkpoint reopens the project
+inside the run's own output folder, sets **resume from** for you, and leaves
+the output folder the same as in the original run. You can extend the voltage list to
+include 0.7 and 0.8 V and run again.
+
+Resuming *into the run's own folder* makes this cheap. The runner
+skips any bias point already recorded in that folder's `sim_V.csv`, so only
+0.7 and 0.8 V are solved and the new rows are appended to the curve you
+already have. If you make the output folder somewhere new, the checkpoint still saves
+you the intensity ramp, but every bias point below 0.6 V is computed again.
+
+You can also reload from checkpoints by hand: leave the output folder as it is
+and set **resume from** on the **Simulation** panel to
+`checkpoints/sim_V=0.6.yaml`, relative to that folder.
+
+Either way the log confirms it, printing a line like:
 
 ```text
 Resuming from checkpoint: V=0.6  (stage=up_v, .../checkpoints/sim_V=0.6.yaml)
 ```
 
-and then continues from 0.6 V rather than starting over at zero. Adding two new
-voltage points takes less than 20 seconds, and the **Output** panel now lets
-you visualize the device under all of the voltages.
-
-You can also resume from a checkpoint using the **Checkpoint** selector at the
-top of all panels in the GUI.
+and then continuing from 0.6 V rather than starting over at zero. The two new
+voltage points take about seven seconds. The **Output** panel now lets you
+visualize the device under all of the voltages.
 
 ---
 
-# Part 2 — An intermediate-band cell with a heterojunction
+## Part 2 — An intermediate-band cell with a heterojunction
 
 An intermediate band (IB) is a narrow band inside the standard semiconductor
 band gap. A photon too weak to cross the whole gap can promote a carrier from
@@ -554,9 +572,9 @@ them. The `ib | n` interface is a real one: AlGaAs and GaAs differ by 0.29 eV
 in the conduction band and 0.10 eV in the valence band.
 
 **The mesh needs attention.** Leave the
-maximum spacing (on the **Simulation** panel) at its default **0.02 µm** — 
-in section §1.4 you raised it to 100 µm for the silicon cell. Here the whole 
-device is 4.5 µm, so the default is already the right scale. 
+maximum spacing (on the **Simulation** panel) at its default **0.02 µm** —
+in section §1.4 you raised it to 100 µm for the silicon cell. Here the whole
+device is 4.5 µm, so the default is already the right scale.
 What matters instead is the *starting*
 spacing at each layer's edges. Click each layer's dot on the **Layers** panel, expand
 **MESH OPTIONS**, and set **Starting mesh spacing = 1e-5 µm** — the box will
@@ -574,14 +592,13 @@ That is five hundred times finer than the 0.005 µm default, and it matters:
 | 1e-6 µm | 493 | 21.40 | 18.5 % |
 
 The default overstates the short-circuit current by 7.4 %. Refining a further
-decade to 1e-6 changes it by 0.03 %, which is how we know 1e-5 is enough — and
-it costs about three minutes more to run. Voc and fill factor are barely
-affected; it is the current that moves. The device is graded either side of the
-`ib` layer: a heterojunction at `ib | n` and the IB's own extent boundary at `p
-| ib`, and both need to be resolved.
+decade to 1e-6 changes it by 0.03 %, which is how we know 1e-5 is enough. Voc
+and fill factor are barely affected; it is the current that moves. The device
+is graded either side of the `ib` layer: a heterojunction at `ib | n` and the
+IB's own extent boundary at `p | ib`, and both need to be resolved.
 
 
-## 2.1 Overlay regions
+### 2.1 Overlay regions
 
 `AluminumGalliumArsenideAlloy` needs to be told its composition (the aluminum
 fraction), and that is a good excuse to meet the third way of specifying a
@@ -589,7 +606,7 @@ parameter.
 
 Every parameter so far has been set either device-wide (on `domain`) or on a
 single layer. An **overlay region** sits between the two: it spans a chosen set
-of layers, and properties set on an overlay region take priority over both 
+of layers, and properties set on an overlay region take priority over both
 `domain` and layers.
 
 This device has a natural one — the two AlGaAs layers. In the **Layers** panel,
@@ -621,7 +638,7 @@ named overlay region  >  layer  >  domain  >  material
 so it sits below layers in priority: it states the default, and anything more specific
 overrides it.
 
-## 2.2 The intermediate band
+### 2.2 The intermediate band
 
 ![The Bands panel with an IB](../_static/gui_tutorial/ib_bands.png)
 
@@ -668,7 +685,7 @@ With these numbers the energy levels in the `ib` layer are:
 | IB | 0.611 eV |
 | VB | 0 |
 
-## 2.3 The heterojunction
+### 2.3 The heterojunction
 
 To configure the interface, in the **Layers** panel, click the narrow blue bar
 between `ib` and `n` in the schematic at the top of the Layer Stack panel. Add
@@ -679,7 +696,7 @@ The enhancement factor scales how strongly the interface condition is imposed
 on the solver. Leave it at 1. On this device raising it changes nothing
 measurable — 1e3 and 1e6 give results identical to 1.
 
-## 2.4 Processes
+### 2.4 Processes
 
 ![The Processes panel for the IB device](../_static/gui_tutorial/ib_processes.png)
 
@@ -750,21 +767,21 @@ Leave the `E<` boxes unticked, which means the top hat has no upper cutoff.
 > `IB/number_of_states`, the optical cross-section, or the `ib` layer thickness
 > all increase the absorption.
 
-## 2.5 Radiative recombination, and why it is off here
+### 2.5 Radiative recombination, and why it is off here
 
 We have just turned radiative recombination off for all three optical
-processes, which is *not* the usual recommendation. 
+processes, which is *not* the usual recommendation.
 
 Spontaneous emission is always physically present, and Simudo models it with a
-Shockley–van Roosbroeck term: every process that absorbs also emits. 
+Shockley–van Roosbroeck term: every process that absorbs also emits.
 Simudo does not model **photon recycling** — a photon emitted inside the
 device is gone, rather than potentially being reabsorbed somewhere else. So radiative
 recombination here is a pure loss, and the simulated device is pessimistic by
 however much recycling a real one would achieve.
 
 For most devices that overestimate is small and you should leave the radiative emission
-in. For this one it is not small, due to the large optical cross sections. 
-With purely lossy radiative emission on, this cell manages about 2% 
+in. For this one it is not small, due to the large optical cross sections.
+With purely lossy radiative emission on, this cell manages about 2%
 efficiency; with it off, about 18%. Much of the difference is an
 artifact of the missing recycling, so the version worth looking at is the one
 with emission off.
@@ -776,7 +793,7 @@ unless your material files already supply it, in which case it is picked up
 automatically. Without it the run stops before solving, with a message naming
 the process that wanted it.
 
-## 2.6 Light, and the run
+### 2.6 Light, and the run
 
 ![The Optical Fields panel for the IB device](../_static/gui_tutorial/ib_opt_fields.png)
 
@@ -790,7 +807,7 @@ sweep both — the checkbox beside each stage in the Simulation panel. Optical
 processes through an intermediate band need it. Both `IBBeerLambert` processes
 take their absorption from the IB's occupancy — `opt_iv` needs empty states in
 the IB to absorb into, `opt_ci` needs filled ones to absorb from — so
-absorption depends on the electrical solution and the electrical solution depends 
+absorption depends on the electrical solution and the electrical solution depends
 on absorption. With
 the box ticked the optical problem is re-solved after every Newton iteration
 instead of once per bias point. Device 1's `BeerLambert` had a fixed α(E) from
@@ -799,40 +816,22 @@ the material, with nothing to be self-consistent about.
 > **Note:** On *this* device it makes almost no difference, and costs almost
 > nothing. In this device, IB stays near half filling here, so
 > absorption does not change significantly during Newton steps.
-> Self-consistency is more important 
+> Self-consistency is more important
 > when the occupancy really does move: concentrated light, a low-density IB,
 > or a cell driven hard enough to bleach the sub-gap transitions.
-
-
-
-**Two step sizes are worth setting**, in the same panel. They are the boxes
-labelled `Step size` under Intensity Ramp and Voltage Sweep, and they control
-the solver's *first* step, not the spacing of your output.
-
-| | default | use | why |
-|---|---|---|---|
-| Intensity ramp | 1e-25 | **1e-20** | the ramp climbs from darkness to one sun; the first 5 decades are wasted |
-| Voltage sweep | 1e-4 | **0.1** | at V = 0 the device is already solved, so the first step can be a whole point |
-
-Both were measured on this device, not guessed. For the ramp, 1e-20 is the
-largest first step that succeeds. For the voltage sweep, the solver takes a 0.3 V first
-step happily; 0.1 is simply the largest value your voltage list can use, since
-we're asking for output at V = 0.1 V. Together these step sizes cut about
-four minutes off this run. Leave them blank and the defaults still work — you
-just wait longer.
 
 The Simulation panel should look like this:
 
 ![The Simulation panel for the IB device](../_static/gui_tutorial/ib_simulation.png)
 
-This run takes about fourteen minutes on an M2 Mac Mini: three optical
+This run takes about two minutes on an M2 Mac Mini: three optical
 processes over ten spectral bins on a 424-point mesh. It is a
 good moment to note that the **execution profile** exists precisely so Simudo
 can run on a bigger machine than the one serving the GUI, and that the
 checkpoint you asked for at the end of the intensity ramp means a second sweep
 — a different voltage list, say — costs seconds rather than repeating the ramp.
 
-### What you should get
+#### What you should get
 
 ![The Output panel for the IB device](../_static/gui_tutorial/ib_output.png)
 
@@ -848,7 +847,7 @@ crosses zero, so interpolating linearly between the two bracketing points
 underestimates it by 10–20 mV. Add points near the crossing if you need more
 precision.
 
-### Things worth trying
+#### Things worth trying
 
 The device is built now, so it is cheap to ask it questions. A few that change
 the answer in instructive ways:
@@ -865,9 +864,9 @@ the answer in instructive ways:
 
 ---
 
-# Reference
+## Reference
 
-## Where the output goes
+### Where the output goes
 
 Each run writes to the folder named in the **Output** panel. If that folder
 already exists, the runner **increments the last character** rather than
@@ -878,7 +877,7 @@ Inside you will find `sim_V.csv` (the J–V curve), a spatial profile per bias
 point, the log, a copy of the project (a yaml file that can be reloaded back
 into the GUI), and any checkpoints.
 
-## The panels
+### The panels
 
 | Panel | What it holds |
 |---|---|
@@ -891,7 +890,7 @@ into the GUI), and any checkpoints.
 | **Simulation** | Intensity ramp, voltage sweep, checkpoints, mesh, output, and where the run executes |
 | **Output** | J–V curves, band diagrams, and spatial plots from a finished run |
 
-## Process classes
+### Process classes
 
 | Class | Use it for |
 |---|---|

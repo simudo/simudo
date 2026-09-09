@@ -51,7 +51,7 @@ for name in ["panel", "param", "bokeh", "tornado"]:
 
 # Generate anchors for headings up to level 3, so in-page links written as
 # Markdown (e.g. [Layers](#layers-panel)) resolve.
-myst_heading_anchors = 3
+myst_heading_anchors = 4
 
 # $...$ and $$...$$ maths in Markdown pages.
 myst_enable_extensions = ['dollarmath']

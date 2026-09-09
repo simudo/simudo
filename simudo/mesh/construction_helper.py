@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
 import tempfile
 from builtins import bytes, dict, int, range, str, super
 from collections import defaultdict
@@ -465,8 +466,86 @@ class ConstructionHelperPygmsh2(BaseConstructionHelper):
         self.cell_regions = cvs
 
 class ConstructionHelperIntervalProduct2DMesh(BaseConstructionHelper):
+    '''Mesh built from tagged x-intervals.
+
+By default (``params['mesh_dimension'] == 1``) a true 1D dolfin interval
+mesh is built: one cell per x-interval, and the exterior boundary marked
+``exterior_left`` / ``exterior_right`` (``exterior_top`` and
+``exterior_bottom`` are defined but empty, so topology code written for the
+strip keeps working).
+
+With ``params['mesh_dimension'] == 2`` the same x coordinates are instead
+extruded into a 2D strip of triangles with vertices at
+:py:attr:`product2d_Ys`. That was the only route before the 1D one existed,
+and is kept for backward compatibility: it doubles the vertex count and
+roughly triples the degrees of freedom of a 1D device for no gain in
+accuracy, and its line cuts do not conserve current as exactly. Prefer the
+default unless you specifically need the extruded mesh.
+
+If :py:attr:`product2d_Ys` has been customized (i.e. differs from the
+default ``(0.0, 1.0)``), the mesh is extruded even without an explicit
+``mesh_dimension``: those Y coordinates mean nothing on an interval mesh,
+so a subclass that sets them is asking for a genuinely 2D mesh, and
+silently flattening it would be worse than ignoring the new default.
+
+Everything downstream (element choice, zero vectors, output) detects the
+mesh dimension automatically; see
+:py:meth:`~simudo.fem.mesh_util.MeshUtil.element_hdiv`.
+'''
     Interval1DTag = Interval1DTag
+
+    #: Y coordinates of the extruded strip. Only used when the mesh is 2D.
     product2d_Ys = (0.0, 1.0)
+
+    #: Mesh dimension used when ``params`` does not specify one.
+    default_mesh_dimension = 1
+
+    @cached_property
+    def mesh_dimension(self):
+        d = self.params.get('mesh_dimension', None)
+        if d is None:
+            d = self.default_mesh_dimension
+            if d != 2 and tuple(self.product2d_Ys) != (0.0, 1.0):
+                logging.getLogger(__name__).info(
+                    "product2d_Ys is set to %r, so building the extruded 2D "
+                    "mesh rather than the default interval mesh. Pass "
+                    "mesh_dimension explicitly to silence this.",
+                    tuple(self.product2d_Ys))
+                d = 2
+        d = int(d)
+        if d not in (1, 2):
+            raise ValueError(
+                "mesh_dimension must be 1 (interval mesh) or 2 (extruded "
+                "strip), got {!r}".format(d))
+        return d
+
+    def user_mark_external_boundary_facets(
+            self, mesh, boundary_facet_function):
+        if self.mesh_dimension != 1:
+            return super().user_mark_external_boundary_facets(
+                mesh, boundary_facet_function)
+
+        # 1D: a boundary facet is a vertex with a single adjacent cell.
+        # Classify by the outward normal (dolfin supports Facet.normal on
+        # intervals): normal pointing towards -x is the left boundary.
+        cell_regions = self.cell_regions
+        exterior = cell_regions['exterior'] = set()
+
+        offset = self.allocate_subdomain_range(2)
+
+        def facet1d_side(facet):
+            ''' left_value=0, right_value=1 '''
+            return 0 if facet.normal(0) < 0 else 1
+
+        mark_boundary_facets(mesh, boundary_facet_function,
+                             facet1d_side, offset)
+        for k, v in dict(left=0, right=1).items():
+            cv = v + offset
+            cell_regions['exterior_' + k] = set((cv,))
+            exterior.add(cv)
+        # kept for compatibility with 2D topology code; empty regions
+        for k in ('top', 'bottom'):
+            cell_regions['exterior_' + k] = set()
 
     def user_define_interval_regions(self):
         '''override me
@@ -492,8 +571,11 @@ class ConstructionHelperIntervalProduct2DMesh(BaseConstructionHelper):
 
     def generate_mesh(self):
         o = self.interval_1d_tag
-        o.product2d_Ys = self.product2d_Ys
-        pm = o.product2d_mesh
+        if self.mesh_dimension == 1:
+            pm = o.interval_1d_mesh
+        else:
+            o.product2d_Ys = self.product2d_Ys
+            pm = o.product2d_mesh
         self.mesh = mesh = pm.mesh
         self.cf = pm.cell_function
 
@@ -509,6 +591,14 @@ Layers are specified as a list of dicts, each containing at minimum
 ``'name'`` (str), ``'material'`` (str), and ``'thickness'`` (float, in
 mesh units).  Pass the list as ``params['layers']``.  Additional mesh
 refinement regions can be supplied as ``params['extra_regions']``.
+
+The mesh is a true 1D interval mesh by default. Set
+``params['mesh_dimension'] = 2`` for the 2D strip Simudo extruded these
+layer stacks into before the 1D route existed; see
+:py:class:`ConstructionHelperIntervalProduct2DMesh`. The physics, boundary
+conditions and outputs are the same either way, but the strip has roughly
+three times the degrees of freedom and is correspondingly slower.
+Checkpoints are not portable between the two mesh dimensions.
 
 See :py:class:`ConstructionHelperIntervalProduct2DMesh` for the underlying
 mesh-generation machinery, and

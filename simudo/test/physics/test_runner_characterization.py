@@ -75,39 +75,64 @@ requires_reference_arch = pytest.mark.skipif(
     ).format("/".join(REFERENCE_ARCH), platform.machine()),
 )
 
+#: Captured 2026-09-04 on the true-1D interval mesh, which became the runner's
+#: default (``mesh.dimension: 1``) when the 1D route was added.  Before/after
+#: for the same fixtures on the 2D strip vs the interval mesh:
+#:
+#:   iso V=0     J_CB right  0.06595489370182285   ->  1.8998561072939093e-05
+#:   hj  V=0.1   J_CB right  46678.068830323056    ->  46729.19389724924  (+0.11 %)
+#:   bidir V=0.1 J_CB right  3242508.7784823463    ->  3242553.4918776373 (+1.4e-5)
+#:   bidir V=-0.1            -29840711.80159044    ->  -29837092.813603953 (+1.2e-4)
+#:
+#: The V=0 currents are the residual of an equilibrium solve (the true value is
+#: zero); the interval mesh conserves current exactly along x, hence the much
+#: smaller residual.  The biased points moved by less than the golden tests'
+#: 1 % tolerance (test_golden_jv.py passed unchanged).  The strip values are
+#: kept in REFERENCE_STRIP and pinned by test_isotype_v0_strip_matches_reference.
 REFERENCE = {
     'iso': {
-        0.0: {'avg:current_CB:right_contact': 0.06595489370182285,
-              'avg:current_CB:left_contact':  0.06595489370182804,
-              'avg:current_VB:right_contact': 5.0025827073484733e-26},
+        0.0: {'avg:current_CB:right_contact': 1.8998561072939093e-05,
+              'avg:current_CB:left_contact':  1.8998561072939103e-05,
+              'avg:current_VB:right_contact': 1.3920354460463433e-29},
     },
     'pn': {
-        0.0: {'avg:current_CB:right_contact': -1.825770919563591e-14,
-              'avg:current_CB:left_contact':  -5.481233359052779e-20,
-              'avg:current_VB:right_contact': -3.019631162021201e-21},
+        0.0: {'avg:current_CB:right_contact': -1.0775875237686182e-17,
+              'avg:current_CB:left_contact':  -3.2351444544345846e-23,
+              'avg:current_VB:right_contact': -1.782258077387216e-24},
     },
     # Re-captured when ThermionicHeterojunction switched from the mean thermal
     # speed to the Richardson emission velocity (vth/4), which is the correct
     # average for a flux across the interface. J at 0.1 V fell by 3.83x -- close
     # to the 4x in the velocity, the shortfall being that the device is not
     # purely emission-limited. This is a deliberate physics change, not drift.
+    # (Values below are the 1D-mesh capture of 2026-09-04.)
     'hj': {
-        0.0: {'avg:current_CB:right_contact': 0.0012104248252693072,
-              'avg:current_CB:left_contact':  0.001210424825269401,
-              'avg:current_VB:right_contact': 1.2497114021799164e-27},
-        0.1: {'avg:current_CB:right_contact': 46678.068830323056,
-              'avg:current_CB:left_contact':  46678.06883032672,
-              'avg:current_VB:right_contact': 1.8916272236753632e-19},
+        0.0: {'avg:current_CB:right_contact': 3.489376963883302e-07,
+              'avg:current_CB:left_contact':  3.4893769638833004e-07,
+              'avg:current_VB:right_contact': 1.2942504204363108e-31},
+        0.1: {'avg:current_CB:right_contact': 46729.19389724924,
+              'avg:current_CB:left_contact':  46729.193897249206,
+              'avg:current_VB:right_contact': 1.8916025950018712e-19},
+    },
+}
+
+#: The 2D-strip mesh (``mesh.dimension: 2``), which was the only route before
+#: 2026-09-04 and is still selectable.  Same fixture as REFERENCE['iso'].
+REFERENCE_STRIP = {
+    'iso': {
+        0.0: {'avg:current_CB:right_contact': 0.06595489370182285,
+              'avg:current_CB:left_contact':  0.06595489370182804,
+              'avg:current_VB:right_contact': 5.0025827073484733e-26},
     },
 }
 
 #: Bidirectional sweep. The negative branch builds a *second* full problem
 #: (``full_problem_neg``), a path none of the single-direction cases reach.
 REFERENCE_BIDIR = [
-    (0.0,  0.06595489370182285),
-    (0.1,  3242508.7784823463),
-    (0.0,  0.06595489370182285),
-    (-0.1, -29840711.80159044),
+    (0.0,  1.8998561072939093e-05),
+    (0.1,  3242553.4918776373),
+    (0.0,  1.8998561072939093e-05),
+    (-0.1, -29837092.813603953),
 ]
 
 
@@ -128,6 +153,17 @@ def test_isotype_v0_matches_reference(runner, tmp_path):
     config = make_isotype_config()
     out_dir = run_project(runner, config, tmp_path)
     _check_against_reference(read_jv(out_dir), REFERENCE['iso'])
+
+
+@requires_reference_arch
+@pytest.mark.solver
+def test_isotype_v0_strip_matches_reference(runner, tmp_path):
+    """The legacy 2D strip mesh, selected explicitly, must still reproduce
+    the currents it produced before the true-1D route became the default."""
+    config = make_isotype_config()
+    config['mesh']['dimension'] = 2
+    out_dir = run_project(runner, config, tmp_path)
+    _check_against_reference(read_jv(out_dir), REFERENCE_STRIP['iso'])
 
 
 @requires_reference_arch

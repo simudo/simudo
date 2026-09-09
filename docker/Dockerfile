@@ -13,10 +13,10 @@
 # silently wrong answers on some 2D problems rather than an error.
 #
 # Build (native architecture):
-#     docker build -t ecdee/simudo:0.7.0.3 docker/
+#     docker build -t ecdee/simudo:0.7.1.0 docker/
 #
 # Build for a different architecture (slow -- emulated):
-#     docker buildx build --platform linux/amd64 -t ecdee/simudo:0.7.0.3 docker/
+#     docker buildx build --platform linux/amd64 -t ecdee/simudo:0.7.1.0 docker/
 #
 # See README.md for publishing a multi-architecture tag.
 
@@ -25,9 +25,9 @@ FROM ubuntu:24.04
 # Number of parallel compile jobs for the DOLFIN rebuild.
 ARG MAKE_J=4
 # What to install Simudo from.  A released version by default; pass e.g.
-# --build-arg SIMUDO_SPEC=/wheels/simudo-0.7.0.3-py3-none-any.whl to use a
+# --build-arg SIMUDO_SPEC=/wheels/simudo-0.7.1.0-py3-none-any.whl to use a
 # locally built wheel (mount it with --build-context or COPY it in).
-ARG SIMUDO_SPEC=simudo==0.7.0.3
+ARG SIMUDO_SPEC=simudo==0.7.1.0
 ARG FOR_DOCS=
 
 ENV DEBIAN_FRONTEND=noninteractive

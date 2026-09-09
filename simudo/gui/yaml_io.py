@@ -332,6 +332,7 @@ def load_project(path: str) -> Project:
 
     proj.output_folder = data.get("output", {}).get("folder", "out")
     proj.mesh_max_edge_length = float(data.get("mesh", {}).get("max_edge_length", 0.02))
+    proj.mesh_dimension = int(data.get("mesh", {}).get("dimension", 1))
 
     # Execution profile (per-project override — merged with user default in app.py)
     if "execution" in data:
@@ -620,7 +621,8 @@ def project_to_dict(proj: Project) -> dict:
     d["simulation"] = sim
 
     d["output"] = {"folder": proj.output_folder or "out"}
-    d["mesh"] = {"max_edge_length": proj.mesh_max_edge_length}
+    d["mesh"] = {"max_edge_length": proj.mesh_max_edge_length,
+                 "dimension": int(proj.mesh_dimension or 1)}
 
     # Per-project execution override (only saved if set)
     if proj.execution is not None:

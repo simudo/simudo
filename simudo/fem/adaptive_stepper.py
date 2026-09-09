@@ -658,7 +658,17 @@ See Also
         mesh = mu.mesh
         U = mu.unit_registry
         with xdmf_file as infile:
-            infile.read(mesh)
+            if mesh.geometry().dim() == 1:
+                # dolfin's XDMF reader cannot load an interval mesh that it
+                # wrote itself (the geometry is padded to "XY" on write and
+                # the read then fails to initialize a 1D geometry). The
+                # problem must already be constructed identically to the one
+                # that wrote the checkpoint, so the mesh re-read is redundant;
+                # read_checkpoint() below works on the existing mesh.
+                logging.getLogger('stepper').info(
+                    "1D mesh: skipping XDMF mesh re-read on checkpoint load")
+            else:
+                infile.read(mesh)
             
             for k in split_u:                    
                 cur_fun = split_u[k]

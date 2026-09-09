@@ -262,6 +262,33 @@ measures: tuple of :py:class:`.expr.DelayedForm`
     def element(self, name, *args, **kwargs):
         return dolfin.FiniteElement(name, self.ufl_cell, *args, **kwargs)
 
+    def element_hdiv(self, degree):
+        '''H(div)-conforming vector element used for flux-like quantities
+(electric field ``E`` and band current densities ``j``) in the mixed
+methods.
+
+On 2D and 3D meshes this is the Brezzi-Douglas-Marini element
+``BDM(degree)``, whose normal component is continuous across facets so
+that fluxes are conserved between cells.
+
+On a 1D (interval) mesh no ``BDM`` element exists, but H(div) coincides
+with H^1 there: a flux is conserved across a vertex iff it is continuous.
+The exact analogue of ``BDM(degree)`` (P_degree normal trace on each
+facet) is therefore continuous Lagrange ``CG(degree)``. It is returned as
+a *1-component vector element* so that ``dot``, ``div`` and the facet
+normal work unchanged in the weak forms. Pairing ``CG(k)`` with ``DG(k-1)``
+for the potential mirrors the ``BDM(k)`` / ``DG(k-1)`` pairing used in 2D.
+
+Parameters
+----------
+degree: int
+    Polynomial degree (2 for the standard Simudo mixed methods).
+'''
+        cell = self.ufl_cell
+        if cell.topological_dimension() == 1:
+            return dolfin.VectorElement("CG", cell, degree, dim=1)
+        return dolfin.FiniteElement("BDM", cell, degree)
+
     def get_debug_probe(self, quantity, space):
         if isinstance(space, str):
             space = getattr(self.space, space)

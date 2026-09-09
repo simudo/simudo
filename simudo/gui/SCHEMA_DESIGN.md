@@ -60,6 +60,7 @@ The internal YAML / runner names are terse; the GUI uses friendlier labels:
 | YAML key | GUI label |
 |---|---|
 | `mesh.max_edge_length` | Maximum mesh spacing (global) |
+| `mesh.dimension` | Mesh type: 1 = true-1D interval mesh (default), 2 = 2D strip |
 | `layer.mesh.start` | Starting mesh spacing |
 | `layer.mesh.factor` | Mesh spacing expansion factor |
 

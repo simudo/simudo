@@ -2,47 +2,10 @@
 Tutorial
 &&&&&&&&
 
-Using the GUI
-#############
+This tutorial is a brief introduction to running Simudo simulations using Python.
 
-The GUI lets you build and run a Simudo simulation without writing any
-Python. Start it from inside the ``simudo_gui`` conda environment::
-
-  conda activate simudo_gui
-  cd /path/to/simudo/gui
-  panel serve app.py --show --port 5006
-
-Your browser will open at ``http://localhost:5006/app``.
-
-.. tip::
-
-   Store your YAML project files in a directory **outside** the Simudo
-   source tree (e.g. ``~/simudo_projects/``). This keeps your simulation
-   data separate from the code and avoids accidental version-control
-   conflicts when the source tree is updated.
-
-Loading a project file
-======================
-
-Click the **Open ▾** button in the top toolbar and choose **Open file…**.
-A file-picker dialog will appear; navigate to your YAML file and open it.
-The GUI will populate all panels (Layers, Materials, Bands, Processes,
-etc.) with the settings from the file.
-
-To start a new project from scratch, click **Open ▾ → New project**.
-
-Running a simulation
-====================
-
-1. Configure your device in the **Layers**, **Materials**, **Bands**,
-   **Processes**, and **Optical fields** panels.
-2. Set up the voltage sweep and output options in the **Simulation**
-   panel.
-3. Verify that the execution backend is correctly configured (see the
-   *Configuring the execution backend* section in :doc:`install`).
-4. Click **Run** in the **Simulation** panel. Progress is streamed to
-   the log panel in real time; output files are written to the folder
-   specified under **Output → Folder**.
+For the graphical interface, which builds and runs a simulation without
+writing any Python, see :doc:`gui_tutorial`. 
 
 pn-diode example
 ################

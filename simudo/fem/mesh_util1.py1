@@ -154,14 +154,23 @@ classes:
         %def fold_zeros(e):
           return ufl.replace(magnitude(e), {
             _.zero   : 0,
-            _.zerovec: dolfin.as_vector((0, 0))}) * units(e)
+            _.zerovec: dolfin.as_vector((0,) * _.gdim)}) * units(e)
         return fold_zeros
 
-      zero: !c 'dolfin.Constant(0, cell=ufl_cell)'
-      zerovec: !c "dolfin.Constant((0, 0), cell=ufl_cell)"
+      # Geometric dimension of the mesh. Vector-valued helpers below
+      # (`zerovec`, `unitvec_x`, ...) and the flux elements
+      # (`MeshUtil.element_hdiv`) depend on it, so that the same weak
+      # forms work on a true-1D interval mesh and on 2D/3D meshes.
+      gdim: !c 'mesh.geometry().dim()'
 
-      unitvec_x: !c "dolfin.Constant((1, 0))"
-      unitvec_y: !c "dolfin.Constant((0, 1))"
+      zero: !c 'dolfin.Constant(0, cell=ufl_cell)'
+      zerovec: !c "dolfin.Constant((0,) * _.gdim, cell=ufl_cell)"
+
+      unitvec_x: !c "dolfin.Constant((1,) + (0,) * (_.gdim - 1))"
+      unitvec_y: !c |
+        %if _.gdim < 2:
+          raise ValueError("unitvec_y does not exist on a 1D mesh")
+        return dolfin.Constant((0, 1) + (0,) * (_.gdim - 2))
 
       clip_towards_zero: !c |
         lambda z, threshold, zero=0.0: dolfin.conditional(

@@ -65,7 +65,13 @@ REFERENCE = {
     # That makes this curve a much more stable reference than one taken at the
     # default enhancement.
     'hj_enhancement_1e6': {
-        0.0: 0.0012103981763687925,
+        # V=0 is an equilibrium residual (exact value 0). Re-captured
+        # 2026-09-04 when the runner moved to the true-1D interval mesh, which
+        # conserves current exactly along x: 1.2103981763687925e-03 on the 2D
+        # strip -> 3.489278e-07. It is small enough now to take the residual
+        # branch of the comparison below (|J| < 1e-9 * max|J|) instead of the
+        # 1 % relative check, which is the right test for a residual.
+        0.0: 3.489278e-07,
         0.2: 60302.516673158636,
         0.4: 85629.85320711366,
         0.5: 98276.2797441282,

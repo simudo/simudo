@@ -85,6 +85,7 @@ import sys
 import os
 import re
 import math
+import time
 import logging
 import importlib.util
 from datetime import date
@@ -203,13 +204,52 @@ def _get_eop_class(cls_name):
         f"it to EOP_CLASSES in simudo_1d_runner.py."
     )
 
-# Direction string → (dx, dy) unit vector for optical fields
+# Direction string → (dx, dy) unit vector for optical fields (2D strip mesh).
+# Use _direction_vector() to get the vector for the mesh actually in use.
 DIRECTION_MAP = {
     '+x': (1.0, 0.0),
     '-x': (-1.0, 0.0),
     '+y': (0.0, 1.0),
     '-y': (0.0, -1.0),
 }
+
+#: Default mesh dimension for the runner.  1 = true-1D interval mesh (new
+#: route, about half the degrees of freedom); 2 = the historical 2D strip
+#: (one cell layer of triangles between y=0 and y=1).  Override with
+#: ``mesh: {dimension: 2}`` in the project YAML, e.g. to compare the two.
+DEFAULT_MESH_DIMENSION = 1
+
+
+def _optical_gdim(optical):
+    """Geometric dimension of the mesh an ``Optical`` object lives on.
+
+    Falls back to :py:data:`DEFAULT_MESH_DIMENSION` when the object does not
+    expose a mesh -- e.g. the lightweight stand-ins used by the field-set
+    unit tests.
+    """
+    mu = getattr(optical, 'mesh_util', None)
+    gdim = getattr(mu, 'gdim', None)
+    if gdim is None:
+        md = getattr(optical, 'mesh_data', None)
+        mesh = getattr(md, 'mesh', None)
+        if mesh is not None:
+            gdim = mesh.geometry().dim()
+    return DEFAULT_MESH_DIMENSION if gdim is None else int(gdim)
+
+
+def _direction_vector(direction_str, gdim):
+    """Unit propagation vector for an optical field on a mesh of geometric
+    dimension *gdim* (1 for the true-1D route, 2 for the strip)."""
+    if direction_str not in DIRECTION_MAP:
+        raise ValueError(f"Unsupported optical field direction {direction_str!r}")
+    vec = DIRECTION_MAP[direction_str]
+    if gdim == 1:
+        if direction_str not in ('+x', '-x'):
+            raise ValueError(
+                f"Optical field direction {direction_str!r} is not possible "
+                f"on a 1D mesh; use '+x' or '-x'.")
+        return (vec[0],)
+    return vec
 
 # Large photon energy used in place of "infinity" (eV).
 # Must be modest (≤ ~20 eV) so scipy.quad can resolve the peak of the
@@ -595,16 +635,23 @@ def _build_mesh(config, U):
             mesh      = mesh_spec,
         ))
 
+    dimension = int(mesh_config.get('dimension', DEFAULT_MESH_DIMENSION))
+
     ls = ConstructionHelperLayeredStructure()
     ls.params = dict(
-        edge_length   = max_edge,
-        layers        = layers,
-        extra_regions = [],
-        mesh_unit     = U.um,
+        edge_length    = max_edge,
+        layers         = layers,
+        extra_regions  = [],
+        mesh_unit      = U.um,
+        mesh_dimension = dimension,
     )
     ls.run()
     n_pts = len(ls.interval_1d_tag.coordinates["coordinates"])
-    logging.getLogger('runner').info(f'Mesh points: {n_pts}')
+    log = logging.getLogger('runner')
+    log.info(f'Mesh points (along x): {n_pts}')
+    log.info(f'Mesh dimension: {dimension} '
+             f'({"true-1D interval mesh" if dimension == 1 else "2D strip"}); '
+             f'{ls.mesh.num_vertices()} vertices, {ls.mesh.num_cells()} cells')
     return ls.mesh_data
 
 
@@ -739,7 +786,7 @@ def _expand_field_set(fset_config, U, optical, ospatial, F, existing_names):
 
     edges, E_rep, flux = spec.bin_parameters(E_min, E_max, N)
 
-    d_vec        = DIRECTION_MAP[direction]
+    d_vec        = _direction_vector(direction, _optical_gdim(optical))
     flux_contact = _flux_contact(direction, F)
 
     for i in range(N):
@@ -1231,7 +1278,7 @@ def _create_problemdata(config, R, F, U, mesh_data,
             fname     = field_config['name']
             direction = field_config.get('direction', '+x')
             photon_e  = parse_quantity(field_config['photon_energy'], U)
-            d_vec     = DIRECTION_MAP[direction]
+            d_vec     = _direction_vector(direction, _optical_gdim(optical))
 
             if fname in _registered_optical_names:
                 raise ValueError(f"Duplicate optical field name: {fname!r}")
@@ -1776,12 +1823,24 @@ def run(yaml_path, library_dir=None, new_experiment=True):
     log.info(f'Project: {yaml_path}')
     log.info(f'Output:  {PREFIX}')
 
+    # Wall-clock timing of the main stages, reported at the end (and useful
+    # for comparing the true-1D and 2D-strip mesh routes).
+    _t_start = time.perf_counter()
+    _timings = []
+
+    def _mark(stage, t0):
+        dt = time.perf_counter() - t0
+        _timings.append((stage, dt))
+        log.info(f'Timing: {stage} took {dt:.2f} s')
+
     # ------------------------------------------------------------------
     # Dolfin setup, unit registry, mesh and topology
     # ------------------------------------------------------------------
+    _t0 = time.perf_counter()
     builder = ProblemBuilder(config, library_dir=library_dir)
     U    = builder.U
     R, F = builder.R, builder.F
+    _mark('mesh+topology', _t0)
 
     # ------------------------------------------------------------------
     # Simulation parameters
@@ -1897,13 +1956,17 @@ def run(yaml_path, library_dir=None, new_experiment=True):
     full_problem = builder.problem('full', V_ext=V_ext)
 
     if resume_yaml is None:
+        _t0 = time.perf_counter()
         lcn_problem = builder.problem('local charge neutrality')
         lcn_problem.pdd.easy_auto_pre_solve()
+        _mark('local charge neutrality', _t0)
 
+        _t0 = time.perf_counter()
         eqm_problem = builder.problem(
             'thermal equilibrium', phi_cn=lcn_problem.pdd.poisson.phi)
         eqm_problem.pdd.initialize_from(lcn_problem.pdd)
         eqm_problem.pdd.easy_auto_pre_solve()
+        _mark('thermal equilibrium', _t0)
 
         full_problem.pdd.initialize_from(eqm_problem.pdd)
     elif resume_stage == 'up_v':
@@ -1939,8 +2002,8 @@ def run(yaml_path, library_dir=None, new_experiment=True):
         MetaExtractorBandInfo,
         partial(
             MetaExtractorIntegrals,
-            facets=F[{'left_contact', 'right_contact'}],
-            cells=R[set(layer_names)],
+            facets={k: F[k] for k in ('left_contact', 'right_contact')},
+            cells={k: R[k] for k in layer_names},
         ),
     )
 
@@ -1996,7 +2059,9 @@ def run(yaml_path, library_dir=None, new_experiment=True):
             checkpoint_reload_yaml=opt_reload,
         )
         stepper.solver_parameters = {'extra_iterations': 2}
+        _t0 = time.perf_counter()
         stepper.do_loop()
+        _mark('intensity ramp', _t0)
 
     # ------------------------------------------------------------------
     # "Down" problem (V < initial_v): created and initialised HERE, after the
@@ -2083,7 +2148,9 @@ def run(yaml_path, library_dir=None, new_experiment=True):
             # solve, optical-stepper resume, or the direct load above).
             checkpoint_reload_yaml=None,
         )
+        _t0 = time.perf_counter()
         stepper.do_loop()
+        _mark('voltage sweep (up)', _t0)
 
     # ------------------------------------------------------------------
     # Stage 3: "down" voltage sweep  (initial_v → lower V)
@@ -2118,8 +2185,13 @@ def run(yaml_path, library_dir=None, new_experiment=True):
             # seeded from full_problem just above.
             checkpoint_reload_yaml=None,
         )
+        _t0 = time.perf_counter()
         stepper_neg.do_loop()
+        _mark('voltage sweep (down)', _t0)
 
+    total = time.perf_counter() - _t_start
+    log.info('Timing summary: ' + ', '.join(
+        f'{k}={v:.2f}s' for k, v in _timings) + f', total={total:.2f}s')
     log.info(f'Run complete.  Output in {PREFIX}')
 
 

@@ -64,7 +64,7 @@ classes:
                 test_key    = "w",
                 test_units  = u("1/mesh_unit/volt")),
 
-           dict(element     = p.element("BDM", _.degree),
+           dict(element     = p.element_hdiv(_.degree),
                 trial_key   = "E",
                 trial_units = u("volt/mesh_unit"),
                 trial_tolerance = 1e-4,
@@ -461,7 +461,7 @@ classes:
                 test_key    = "v",
                 test_units  = u("1 / A")),
 
-           dict(element     = p.element("BDM", _.degree),
+           dict(element     = p.element_hdiv(_.degree),
                 trial_key   = "j",
                 trial_units = u("A / mesh_unit^2"),
                 trial_tolerance = 1e-13,
@@ -574,7 +574,7 @@ classes:
                 test_key    = "v",
                 test_units  = u("1 / A")),
 
-           dict(element     = p.element("BDM", _.degree),
+           dict(element     = p.element_hdiv(_.degree),
                 trial_key   = "j",
                 trial_units = u("A / mesh_unit^2"),
                 trial_tolerance = 1e-6,

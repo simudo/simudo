@@ -7,11 +7,13 @@ from cached_property import cached_property
 import dolfin
 
 from .product2d import Product2DMesh
+from .mesh1d import make_1d_mesh_from_points
 
 __all__ = [
     'clip_intervals',
     'Interval', 'CInterval', 'GeometricallyExpandingMeshInterval',
-    'Product2DMeshMixin', 'MinimumCoordinateDistanceMixin',
+    'Product2DMeshMixin', 'Interval1DMesh', 'Interval1DMeshMixin',
+    'MinimumCoordinateDistanceMixin',
     'BaseInterval1DTag', 'Interval1DTag']
 
 def clip_intervals(x0, x1, intervals):
@@ -266,6 +268,60 @@ class Product2DMeshMixin(object):
         return pm
 
 
+class Interval1DMesh(object):
+    '''A true-1D (interval) dolfin mesh built from sorted x coordinates,
+with a cell function attached. Counterpart of :py:class:`Product2DMesh`
+for the true-1D route; cell ``ix`` spans ``Xs[ix]`` to ``Xs[ix+1]``.
+
+Created by Claude Fable 5.1 (Anthropic), 2026-09-04.
+'''
+    def __init__(self, Xs):
+        self.Xs = np.asarray(Xs, dtype='double')
+
+    @cached_property
+    def mesh(self):
+        return make_1d_mesh_from_points(self.Xs)
+
+    @cached_property
+    def nX(self):
+        return len(self.Xs)
+
+    def cells_at_ix(self, ix):
+        return range(ix, ix + 1)
+
+
+class Interval1DMeshMixin(object):
+    '''Build a true-1D interval mesh from the tagged intervals, tagging
+each cell with the cell value of the subdomain it lies in (same
+convention as :py:class:`Product2DMeshMixin`).'''
+    Interval1DMesh = Interval1DMesh
+
+    @cached_property
+    def interval_1d_mesh(self):
+        ''' Use this to get a readily-constructed :py:class:`Interval1DMesh`
+        object. Note that an attribute `cell_function` has been added
+        to it. '''
+        s = self.subdomains
+        c = self.coordinates
+        return self.make_interval_1d_mesh(
+            coordinates=c['coordinates'],
+            subdomain_to_coordinate_range=c['subdomain_to_coordinate_range'],
+            subdomain_to_cell_value=s['subdomain_to_cell_value'])
+
+    def make_interval_1d_mesh(self, coordinates,
+                              subdomain_to_coordinate_range,
+                              subdomain_to_cell_value):
+        im = self.Interval1DMesh(coordinates)
+        mf = im.cell_function = dolfin.MeshFunction("size_t", im.mesh, 1)
+        mfw = mf.array()
+        for crange, cell_value in zip(subdomain_to_coordinate_range,
+                                      subdomain_to_cell_value):
+            for ix in crange:
+                mfw[im.cells_at_ix(ix)] = cell_value
+
+        return im
+
+
 class MinimumCoordinateDistanceMixin(object):
     minimum_coordinate_distance = 1e-10
     def make_interval_coordinates(self, x0, x1, *args, **kwargs):
@@ -289,6 +345,7 @@ class MinimumCoordinateDistanceMixin(object):
         return list(coords[keep])
 
 
-class Interval1DTag(Product2DMeshMixin, MinimumCoordinateDistanceMixin,
+class Interval1DTag(Product2DMeshMixin, Interval1DMeshMixin,
+                    MinimumCoordinateDistanceMixin,
                     BaseInterval1DTag):
     pass

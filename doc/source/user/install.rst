@@ -176,7 +176,7 @@ the above :command:`docker run` command to::
 for macOS. For Windows, replace ``$(pwd)`` with FOLDERNAME.
 
 Graphical User Interface (GUI)
-&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+==============================
 
 The Simudo GUI provides a point-and-click interface for setting up and
 running 1D simulations. The GUI runs on your local machine and submits
@@ -187,7 +187,7 @@ another machine connected by SSH, or a local installation).
 simulation, and most users should install it.
 
 Prerequisites
-=============
+-------------
 
 **You do not need to install DOLFIN on the machine running the GUI.**
 The GUI is a web front end: it reads and writes project files and launches
@@ -246,7 +246,7 @@ and cannot run anything without it.
      pip3 install 'simudo[gui]'
 
 Starting the GUI
-================
+----------------
 
 Activate the conda environment and start the GUI **from whatever directory you
 want to keep your project files in**::
@@ -279,7 +279,7 @@ devices from scratch — a silicon p-n diode and an intermediate-band cell
 with a heterojunction — and is the fastest way to learn the interface.
 
 Configuring the execution backend
-==================================
+----------------------------------
 
 The first time you run a simulation you need to tell the GUI how to
 reach your Simudo installation. Open the **Simulation** panel and click
@@ -298,7 +298,7 @@ then **Save as default** to persist the settings to
 :file:`~/.simudo_gui.yaml`.
 
 Setting up for developing/modifying Simudo
-&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+==========================================
 
 Simudo is developed using `fossil <https://fossil-scm.org>`_. If you would
 like to install a development version of simudo, after installing

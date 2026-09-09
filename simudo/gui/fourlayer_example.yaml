@@ -268,3 +268,8 @@ output:
   folder: out/2026May12/a
 mesh:
   max_edge_length: 0.02
+  # 1 (default) solves on a true-1D interval mesh; 2 uses the 2D one-cell-tall
+  # strip that Simudo used for 1D problems before. Same physics and outputs;
+  # 1 has about half the degrees of freedom. Checkpoints are not portable
+  # between the two.
+  dimension: 1

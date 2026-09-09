@@ -386,6 +386,9 @@ class Project:
     custom_eop_files: List[str] = field(default_factory=list)
     output_folder: str = field(default_factory=_default_output_folder)
     mesh_max_edge_length: float = 0.02   # global maximum mesh spacing (µm)
+    # 1 = true-1D interval mesh (default); 2 = the 2D one-cell-tall strip that
+    # Simudo used for 1D problems before the 1D route existed.
+    mesh_dimension: int = 1
 
     materials: List[Material] = field(default_factory=list)
     interfaces: List[Interface] = field(default_factory=list)

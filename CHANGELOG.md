@@ -5,6 +5,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.7.1.0] - 2026-09-09
+
+### Added
+- True-1D simulations. `ConstructionHelperLayeredStructure` builds a dolfin
+  interval mesh instead of extruding the layer stack into a one-cell-tall 2D
+  strip; `params['mesh_dimension'] = 2` restores the strip. On a
+  1D mesh the electric field and band currents use continuous Lagrange
+  elements of the same degree (as 1-component vectors) in place of `BDM`,
+  which is the exact 1D analogue of the H(div)-conforming mixed method, so
+  the weak forms, boundary conditions, processes and outputs are unchanged.
+  The degrees of freedom roughly halve and solves are correspondingly
+  faster. **This is now the default**: the strip
+  is built only when `mesh_dimension = 2` is asked for, or when a subclass
+  has customized `product2d_Ys` (which only makes sense on an extruded
+  mesh). Existing scripts that build a layered structure therefore get the
+  interval mesh, and their currents move by the difference between two
+  discretizations of the same problem. No user changes should be required to
+  take advantage of this speed improvement.
+- The yaml runner (`simudo_1d_runner.py`) now uses the true-1D mesh by
+  default; set `mesh: {dimension: 2}` in a project to get the previous 2D
+  strip. It also logs the wall time of each stage. Line-cut CSVs from 1D
+  runs have no `coord_y` column, and `SpatialXdmf`/the GUI spatial
+  extractor read 1D XDMF output. Checkpoints are not portable between the
+  two mesh dimensions.
+- The GUI's Simulation panel has a mesh-type selector, "1D (interval mesh)"
+  or "2D strip (legacy)", stored as `mesh_dimension` in the project file.
+- Optical field directions written for the 2D strip keep working on a 1D
+  mesh. `adapt_direction_to_gdim` accepts a direction with more components
+  than the mesh has dimensions when the extra ones are zero, so `(1, 0)` and
+  `(-1, 0)` -- the only directions a layered device could use on the strip --
+  need no editing. A non-zero transverse component now raises `ValueError`
+  instead of being ignored, since it has no meaning on a 1D mesh.
+
+### Fixed
+- `sim_V.csv` could put values under the wrong headings when restarting
+  from a checkpoint. `MetaCSVWriter` now follows the existing
+  header and warns if the two column sets disagree. 
+  This affects output written by all previous versions.
+- Resuming a voltage sweep from a checkpoint failed when the checkpoint had
+  been taken after the optical solve with `selfconsistent_optics = False`.
+
 ## [0.7.0.3] - 2026-09-02
 
 ### Changed

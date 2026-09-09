@@ -40,15 +40,22 @@ class LineCutCsvPlot(PlotAddMixin):
     def _compute_coords(self, mesh=None):
         coords = getattr(self, '_coords', None)
         if coords is None:
-            xl, yl = mesh_bbox(mesh)
-            y0 = npa(yl).mean()
+            bbox = mesh_bbox(mesh)
             t = np.linspace(0, 1, self.resolution)
-            coords = (np.outer(1-t, npa((xl[0], y0))) +
-                      np.outer(t,   npa((xl[1], y0))))
+            if len(bbox) == 1:
+                # true-1D mesh: cut along the whole interval
+                xl, = bbox
+                coords = ((1-t)*xl[0] + t*xl[1]).reshape((-1, 1))
+            else:
+                xl, yl = bbox[:2]
+                y0 = npa(yl).mean()
+                coords = (np.outer(1-t, npa((xl[0], y0))) +
+                          np.outer(t,   npa((xl[1], y0))))
             self._coords = coords
         df = self._df
         df['coord_x'] = coords.view()[:,0]
-        df['coord_y'] = coords.view()[:,1]
+        if coords.shape[1] > 1:
+            df['coord_y'] = coords.view()[:,1]
         return coords
 
     def _add_func(self, func, space_name = None):

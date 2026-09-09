@@ -587,6 +587,19 @@ class SimulationPanel:
             self.app.autosave()
         mesh_max_in.param.watch(_on_mesh_max, "value")
 
+        _MESH_DIMS = {"1D (interval mesh)": 1, "2D strip (legacy)": 2}
+        _dim_cur = int(getattr(self.app.project, "mesh_dimension", 1) or 1)
+        mesh_dim_sel = pn.widgets.Select(
+            value=next((k for k, v in _MESH_DIMS.items() if v == _dim_cur),
+                       "1D (interval mesh)"),
+            options=list(_MESH_DIMS), height=26, width=160, margin=0,
+            stylesheets=SELECT_SS,
+        )
+        def _on_mesh_dim(e):
+            self.app.project.mesh_dimension = _MESH_DIMS[e.new]
+            self.app.autosave()
+        mesh_dim_sel.param.watch(_on_mesh_dim, "value")
+
         # ── Output settings ───────────────────────────────────────────────────
         sp_cb = pn.widgets.Checkbox(
             name="", value=out.spatial_profiles,
@@ -721,6 +734,18 @@ class SimulationPanel:
             pn.pane.HTML(
                 '<div style="font-size:10px;color:#556070;padding:1px 0 4px 0;">'
                 'Global maximum mesh spacing. Per-layer mesh options are set in the Layers panel.</div>',
+                margin=0, sizing_mode="stretch_width",
+            ),
+            pn.Row(
+                label("Mesh type:", 80),
+                mesh_dim_sel,
+                margin=0, styles={"gap": "4px", "align-items": "center"},
+            ),
+            pn.pane.HTML(
+                '<div style="font-size:10px;color:#556070;padding:1px 0 4px 0;">'
+                'A true-1D interval mesh has about half the unknowns of the 2D strip '
+                'Simudo used before, with the same physics. Checkpoints are not portable '
+                'between the two.</div>',
                 margin=0, sizing_mode="stretch_width",
             ),
 

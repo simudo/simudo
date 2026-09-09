@@ -167,7 +167,25 @@ class MetaCSVWriter(SetattrInitMixin):
         # instance. Append to any existing rows instead of truncating them,
         # so long as the file looks like it was written with this same
         # column layout.
+        #
+        # The order of `meta` is not stable across processes (it follows the
+        # order in which the extractors' regions were registered, which has
+        # come from sets), so an appended row must be written in the order
+        # of the *existing* header, not in the new process's order.
+        # Otherwise a resumed run silently writes, e.g., the left-contact
+        # current under the right-contact column.
         append = os.path.exists(filename) and os.path.getsize(filename) > 0
+        if append:
+            with open(filename, 'rt', newline='') as fh:
+                existing = next(csv.reader(fh), None)
+            if existing and set(existing) == set(columns):
+                self.columns = columns = list(existing)
+            else:
+                logging.getLogger('output_writer').warning(
+                    "Appending to %s whose columns differ from this run's "
+                    "(%d existing vs %d new); rows are written in this run's "
+                    "column order and may not line up with the header.",
+                    filename, len(existing or ()), len(columns))
         self.file = open(filename, 'at' if append else 'wt')
         self.writer = csv.writer(self.file)
 
@@ -404,7 +422,10 @@ def write_heterojunction_boundary_condition(
     def probe_interface_values(property_name, unit, interp, x, eps):
         probe = mu.get_debug_probe(property_name, interp)
         mesh_bbox = expr.mesh_bbox(mu.mesh)
-        y = (mesh_bbox[1][1] - mesh_bbox[1][0]) * y_position + mesh_bbox[1][0]
+        if len(mesh_bbox) == 1:
+            y = 0.0  # true-1D mesh; DebugProbe ignores trailing coordinates
+        else:
+            y = (mesh_bbox[1][1] - mesh_bbox[1][0]) * y_position + mesh_bbox[1][0]
         # y = y_position
         left = probe(x - eps, y).m_as(unit)
         right = probe(x + eps, y).m_as(unit)

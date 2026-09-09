@@ -4,10 +4,10 @@ import numpy as np
 from cached_property import cached_property
 
 from ..fem import (
-    AdaptiveStepper, 
-    ConstantStepperMixin, 
-    NewtonSolver, 
-    NewtonSolverMaxDu, 
+    AdaptiveStepper,
+    ConstantStepperMixin,
+    NewtonSolver,
+    NewtonSolverMaxDu,
     NewtonSolverLogDamping)
 from ..util import SetattrInitMixin
 
@@ -79,10 +79,15 @@ output_writer: :py:class:`~.output_writer.OutputWriter`
 
         # previous_successful = len(self.get_last_successful(1)) > 0
 
-        # reset optical auxiliary functions
-        if self.selfconsistent_optics:
-            for o in solution.optical.fields:
-                o.update_output()
+        # Reset optical auxiliary functions.
+        #
+        # If loading from checkpoint, the optical fields need to be initialized,
+        # which is done with update_output.
+        # update_input goes the other way, pushing alpha and g onto the optical
+        # mesh, and is only needed when that problem is actually solved.
+        for o in solution.optical.fields:
+            o.update_output()
+            if self.selfconsistent_optics:
                 o.update_input()
 
         # exercise caution when there's no solution to backtrack to
@@ -109,7 +114,7 @@ output_writer: :py:class:`~.output_writer.OutputWriter`
             mumps_icntl = pdd.mumps_icntl if hasattr(pdd,'mumps_icntl') else () )
         if self.solver_parameters is not None:
             solver.parameters.update(self.solver_parameters)
-        
+
         def _assign_scalar(subfunc, value):
             fsr.assign_scalar(
                 subfunc.magnitude, value.m_as(subfunc.units))
@@ -346,11 +351,11 @@ ramped.
     @cached_property
     def constants(self):
         return [self.solution.pdd.uniform_generation_scale]
-    
+
     @cached_property
     def parameter_unit(self):
         return self.unit_registry.dimensionless
-    
+
     @cached_property
     def parameter_target_values(self):
         return [1.0]

@@ -28,7 +28,7 @@ there.
 ## Building
 
 ```
-docker build -t ecdee/simudo:0.7.0.3 docker/
+docker build -t ecdee/simudo:0.7.1.0 docker/
 ```
 
 Useful build arguments:
@@ -36,15 +36,15 @@ Useful build arguments:
 | Argument | Default | Purpose |
 |---|---|---|
 | `MAKE_J` | `4` | Parallel compile jobs for the DOLFIN rebuild |
-| `SIMUDO_SPEC` | `simudo==0.7.0.3` | What `pip install` is given — a PyPI spec, or a path to a wheel inside the build context |
+| `SIMUDO_SPEC` | `simudo==0.7.1.0` | What `pip install` is given — a PyPI spec, or a path to a wheel inside the build context |
 
 To build against a locally built wheel rather than PyPI, copy it into `docker/`
 first and pass its path:
 
 ```
-cp dist/simudo-0.7.0.3-py3-none-any.whl docker/
-docker build --build-arg SIMUDO_SPEC=/wheels/simudo-0.7.0.3-py3-none-any.whl \
-             -t ecdee/simudo:0.7.0.3 docker/
+cp dist/simudo-0.7.1.0-py3-none-any.whl docker/
+docker build --build-arg SIMUDO_SPEC=/wheels/simudo-0.7.1.0-py3-none-any.whl \
+             -t ecdee/simudo:0.7.1.0 docker/
 ```
 
 (adjusting the `COPY` in the Dockerfile to place the wheel at `/wheels/`).
@@ -52,7 +52,7 @@ docker build --build-arg SIMUDO_SPEC=/wheels/simudo-0.7.0.3-py3-none-any.whl \
 ## Installing a Simudo wheel into a built image
 
 ```
-pip3 install --break-system-packages --no-deps simudo-0.7.0.3-py3-none-any.whl
+pip3 install --break-system-packages --no-deps simudo-0.7.1.0-py3-none-any.whl
 ```
 
 `--no-deps` matters. Most of Simudo's dependencies come from apt in this image,
@@ -73,7 +73,7 @@ was there before. Install the wheel alone; the dependencies are already present.
 The image can be built for a platform other than the host's:
 
 ```
-docker buildx build --platform linux/amd64 -t ecdee/simudo:0.7.0.3 docker/
+docker buildx build --platform linux/amd64 -t ecdee/simudo:0.7.1.0 docker/
 ```
 
 This works anywhere, including on an Apple-silicon Mac, but the DOLFIN
@@ -89,20 +89,20 @@ separately — natively on each — push them under per-architecture tags, then 
 them into one multi-architecture tag:
 
 ```
-docker buildx imagetools create -t ecdee/simudo:0.7.0.3 \
-    ecdee/simudo:0.7.0.3-amd64 \
-    ecdee/simudo:0.7.0.3-arm64
+docker buildx imagetools create -t ecdee/simudo:0.7.1.0 \
+    ecdee/simudo:0.7.1.0-amd64 \
+    ecdee/simudo:0.7.1.0-arm64
 ```
 
 The joined tag is a *manifest list*: a small index that names one image per
-platform. `docker pull ecdee/simudo:0.7.0.3` resolves it to the client's own
+platform. `docker pull ecdee/simudo:0.7.1.0` resolves it to the client's own
 architecture and downloads only that image, so the multi-architecture tag costs
 users nothing in download size.
 
 ### Always verify the published manifest
 
 ```
-docker manifest inspect ecdee/simudo:0.7.0.3
+docker manifest inspect ecdee/simudo:0.7.1.0
 ```
 
 and check that every architecture you meant to publish is listed. **Do not treat
@@ -159,7 +159,7 @@ buildah bud -f Dockerfile -t simudo-for-docs \
     --build-arg APT_HTTP_PROXY=http://192.168.122.1:3142 \
     --build-arg FOR_DOCS=1 \
     -v "$HOME/path/to/simudo/dist/:/wheels:ro" \
-    --build-arg SIMUDO_SPEC=/wheels/simudo-0.7.0.3.tar.gz
+    --build-arg SIMUDO_SPEC=/wheels/simudo-0.7.1.0.tar.gz
 ```
 
 You can omit the `--build-arg APT_HTTP_PROXY=...` if you don't have apt-cacher-ng set
